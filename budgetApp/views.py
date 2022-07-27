@@ -16,6 +16,9 @@ def index(request):
 
     return render(request, "budgetApp/index.html")
 
+def transaction(request):
+
+    return render(request, "budgetApp/transaction.html")
 
 def login_view(request):
     if request.method == "POST":
