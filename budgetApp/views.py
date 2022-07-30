@@ -9,8 +9,9 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
 from django.utils import timezone
+from django import forms
 
-from .models import User
+from .models import User, Categories, SubCategories
 
 def index(request):
 
@@ -19,6 +20,52 @@ def index(request):
 def transaction(request):
 
     return render(request, "budgetApp/transaction.html")
+
+def editCategory(request, id ):
+    
+    if request.method == "POST":
+        category = Categories.objects.get(id=id)
+        category.category = request.POST["name"]
+        category.save()
+        
+        return HttpResponseRedirect(reverse("index"))
+    else :
+        name = Categories.objects.filter(id=id)
+        categories = Categories.objects.all()
+
+        return render(request, "budgetApp/addEdit.html",{
+            "name" : name[0],
+            "categories" : categories,
+            "id" : id,
+            "do" : 'edit',
+            "class" : "parent"
+        })
+
+#make a editSubCategory function
+
+class NewTaskForm(forms.Form):
+    category = forms.IntegerField(label="Category ID")
+
+def addCategory(request):
+    
+    if request.method == "POST":
+        if request.POST["categoryList"] == "":
+            category = Categories()
+            category.category = request.POST["name"]
+            category.save()
+        else :
+            subCategory = SubCategories()
+            subCategory.parentCategory_id = request.POST["categoryList"]
+            subCategory.subCategory = request.POST["name"]
+            subCategory.save()
+            
+        return HttpResponseRedirect(reverse("index"))
+    else :
+        categories = Categories.objects.all()
+        return render(request, "budgetApp/addEdit.html",{
+            "categories" : categories,
+            "do" : 'add'
+        })
 
 def login_view(request):
     if request.method == "POST":

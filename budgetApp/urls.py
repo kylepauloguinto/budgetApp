@@ -10,4 +10,7 @@ urlpatterns = [
     path("register", views.register, name="register"),
 
     path("transaction", views.transaction, name="transaction"),
+
+    path("editCategory/<int:id>",views.editCategory, name="editCategory"),
+    path("addCategory",views.addCategory, name="addCategory"),
 ]
