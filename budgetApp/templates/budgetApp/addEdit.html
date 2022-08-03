@@ -25,33 +25,52 @@
         </div>
         <input class="btn btn-primary" type="submit" value="Save" />
       </form>
-      {% elif do == 'edit' %}
-      <form action="{% url 'editCategory' id %}" method="post">
-        {% csrf_token %}
-        <div class="form-group row">
-          <label for="name" class="col-sm-3 col-form-label">Name : </label>
-          <div class="col-sm-9">
-            <input
-              autofocus
-              class="form-control"
-              type="text"
-              name="name"
-              value="{{ name.category }}"
-            />
+      {% elif do == 'edit' %} 
+        {% if class == 'category' %}
+        <form action="{% url 'editCategory' id %}" method="post">
+          {% csrf_token %}
+          <div class="form-group row">
+            <label for="name" class="col-sm-3 col-form-label">Name : </label>
+            <div class="col-sm-9">
+              <input
+                autofocus
+                class="form-control"
+                type="text"
+                name="name"
+                value="{{ name.category }}"
+              />
+            </div>
           </div>
-        </div>
-        {% if class != 'parent' %}
-        <div class="form-group row">
-          <label class="col-sm-3 col-form-label">Categories :</label>
-          <div class="col-sm-9">
-            <select name="categoryList" class="custom-select" id="categoryList">
-              <option value=""></option>
-              {% for category in categories %}
-              <option value="{{ category.id }}">{{ category.category }}</option>
-              {% endfor %}
-            </select>
-          </div>
-        </div>
+          {% elif class == 'subCategory' %}
+          <form action="{% url 'editSubCategory' id %}" method="post">
+            {% csrf_token %}
+            <div class="form-group row">
+              <label for="name" class="col-sm-3 col-form-label">Name : </label>
+              <div class="col-sm-9">
+                <input
+                  autofocus
+                  class="form-control"
+                  type="text"
+                  name="name"
+                  value="{{ name.subCategory }}"
+                />
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-sm-3 col-form-label">Categories :</label>
+              <div class="col-sm-9">
+                <select name="categoryList" class="custom-select" id="categoryList">
+                  <option value=""></option>
+                  {% for category in categories %}
+                    {% if name.parentCategory.id == category.id %}
+                    <option value="{{ category.id }}" selected>{{ category.category }}</option>
+                    {% else %}
+                    <option value="{{ category.id }}">{{ category.category }}</option>
+                    {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
         {% endif %}
         <input class="btn btn-primary" type="submit" value="Save" />
       </form>

@@ -44,8 +44,6 @@
       integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog=="
       crossorigin="anonymous"
     />
-    <!--CSS-->
-    <link rel="stylesheet" href="./style.css" />
     <!--Bootstrap4 Script-->
     <script
       src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
@@ -100,11 +98,8 @@
             <a class="nav-link" href="{% url 'index' %}">All Posts</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'addCategory' %}">Category add</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'editCategory' 2 %}"
-              >Category edit</a
+            <a class="nav-link" href="{% url 'listCategories' %}"
+              >Category Lists</a
             >
           </li>
           {% if user.is_authenticated %}

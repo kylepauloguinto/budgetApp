@@ -1,0 +1,56 @@
+{% extends "budgetApp/layout.html" %} {% block body %}
+<div id="mainContainer">
+  <div class="row" id="main">
+    <div class="col-2"></div>
+    <div class="col-8">
+      <h2>Categories</h2>
+      <a class="list-group-item list-group-item-action inbx-clck cstm-mrgn" href="{% url 'addCategory' %}">New Category</a>
+      {% for category in categories %}
+      <div class="dropright">
+        <a
+          class="list-group-item list-group-item-action inbx-clck"
+          href="#"
+          id="dropdownMenuLink"
+          role="button"
+          data-toggle="dropdown"
+          aria-haspopup="true"
+          aria-expanded="false"
+          >{{ category.category }}</a
+        >
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+          <a class="dropdown-item" href="{% url 'editCategory' category.id %}"
+            >Edit
+          </a>
+          <a class="dropdown-item" href="#">Delete</a>
+        </div>
+      </div>
+        {% for subCategory in subCategories %} 
+          {% if subCategory.parentCategory.id == category.id %}
+          <div class="dropright">
+            <a
+              class="list-group-item list-group-item-action inbx-clck cstm-pdng"
+              href="#"
+              id="dropdownMenuLink"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+              ><span class="vertical-line">{{ subCategory.subCategory }}</span></a
+            >
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+              <a
+                class="dropdown-item"
+                href="{% url 'editSubCategory' subCategory.id %}"
+                >Edit
+              </a>
+              <a class="dropdown-item" href="#">Delete</a>
+            </div>
+          </div>
+          {% endif %} 
+        {% endfor %} 
+      {% endfor %}
+    </div>
+  </div>
+
+  {% endblock %}
+</div>

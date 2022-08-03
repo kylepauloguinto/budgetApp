@@ -21,6 +21,17 @@ def transaction(request):
 
     return render(request, "budgetApp/transaction.html")
 
+def listCategories(request):
+
+    categories = Categories.objects.all()
+    subCategories = SubCategories.objects.all()
+
+    return render(request, "budgetApp/categories.html",{
+            "categories" : categories,
+            "subCategories" : subCategories
+        })
+
+
 def editCategory(request, id ):
     
     if request.method == "POST":
@@ -28,7 +39,13 @@ def editCategory(request, id ):
         category.category = request.POST["name"]
         category.save()
         
-        return HttpResponseRedirect(reverse("index"))
+        categories = Categories.objects.all()
+        subCategories = SubCategories.objects.all()
+
+        return render(request, "budgetApp/categories.html",{
+            "categories" : categories,
+            "subCategories" : subCategories
+            })
     else :
         name = Categories.objects.filter(id=id)
         categories = Categories.objects.all()
@@ -38,10 +55,36 @@ def editCategory(request, id ):
             "categories" : categories,
             "id" : id,
             "do" : 'edit',
-            "class" : "parent"
+            "class" : "category"
         })
 
-#make a editSubCategory function
+def editSubCategory(request, id ):
+    
+    if request.method == "POST":
+        subCategory = SubCategories.objects.get(id=id)
+        subCategory.parentCategory_id = request.POST["categoryList"]
+        subCategory.subCategory = request.POST["name"]
+        subCategory.save()
+        
+        categories = Categories.objects.all()
+        subCategories = SubCategories.objects.all()
+
+        return render(request, "budgetApp/categories.html",{
+            "categories" : categories,
+            "subCategories" : subCategories
+            })
+    else :
+        name = SubCategories.objects.filter(id=id)
+        categories = Categories.objects.all()
+
+        return render(request, "budgetApp/addEdit.html",{
+            "name" : name[0],
+            "categories" : categories,
+            "id" : id,
+            "do" : 'edit',
+            "class" : "subCategory"
+        })
+
 
 class NewTaskForm(forms.Form):
     category = forms.IntegerField(label="Category ID")
@@ -59,7 +102,13 @@ def addCategory(request):
             subCategory.subCategory = request.POST["name"]
             subCategory.save()
             
-        return HttpResponseRedirect(reverse("index"))
+        categories = Categories.objects.all()
+        subCategories = SubCategories.objects.all()
+
+        return render(request, "budgetApp/categories.html",{
+            "categories" : categories,
+            "subCategories" : subCategories
+            })
     else :
         categories = Categories.objects.all()
         return render(request, "budgetApp/addEdit.html",{

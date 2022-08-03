@@ -1,81 +1,83 @@
-
-#mainContainer{
-    padding-top: 20px;
-    padding-left: 20px;
-    padding-right: 20px;
-    margin-left: 500px;
-    margin-right: 500px;
+#mainContainer {
+  padding-top: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  margin-left: 500px;
+  margin-right: 500px;
 }
-#newPost,#main{
-    border-radius: 5px;
-    margin-bottom: 20px;
-    padding-top: 20px;
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-bottom: 20px;
-    border: 2px solid #cfcdcd;
+#newPost,
+#main {
+  border-radius: 5px;
+  margin-bottom: 20px;
+  padding-top: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: 20px;
+  border: 2px solid #cfcdcd;
 }
 textarea {
-    -webkit-border-radius: 5px;
-    -moz-border-radius: 5px;
-    border-radius: 5px;
-    border: 2px solid #cfcdcd;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  border: 2px solid #cfcdcd;
 }
-.col>p,.col>h1 { 
-    text-align: center;
-    font-weight: bold;
-}
-
-#submit{
-    background-color: #4CAF50; /* Green */
-    border: none;
-    border-radius: 5px;
-    color: white;
-    padding: 10px 22px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
+.col > p,
+.col > h1 {
+  text-align: center;
+  font-weight: bold;
 }
 
-#posts{
-    border-radius: 5px;
-    margin-bottom: 20px;
-    padding-top: 20px;
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-bottom: 20px;
-    border: 2px solid #cfcdcd;
+#submit {
+  background-color: #4caf50; /* Green */
+  border: none;
+  border-radius: 5px;
+  color: white;
+  padding: 10px 22px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
 }
 
-h4{
-    margin-bottom: 0px;
+#posts {
+  border-radius: 5px;
+  margin-bottom: 20px;
+  padding-top: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: 20px;
+  border: 2px solid #cfcdcd;
 }
 
-.content{
-    font-size: 30px;
+h4 {
+  margin-bottom: 0px;
+}
+
+.content {
+  font-size: 30px;
 }
 .btn {
-    width: 100%;
+  width: 100%;
 }
-.page-item, .like{
-    cursor: pointer;
+.page-item,
+.like {
+  cursor: pointer;
 }
-.disabled{
-    cursor: not-allowed;
-    background-color: rgb(184, 178, 178) !important;
+.disabled {
+  cursor: not-allowed;
+  background-color: rgb(184, 178, 178) !important;
 }
-.date{
-    color : rgb(190, 183, 183);
+.date {
+  color: rgb(190, 183, 183);
 }
-.edit{
-    cursor: pointer;
-    color: rgb(53, 53, 238);
+.edit {
+  cursor: pointer;
+  color: rgb(53, 53, 238);
 }
-.line{
-    width: 100%;
-    margin-bottom: 2%;
-    border-bottom: 1px solid rgb(201, 201, 201);
+.line {
+  width: 100%;
+  margin-bottom: 2%;
+  border-bottom: 1px solid rgb(201, 201, 201);
 }
 
 .datepicker-days th.dow:first-child,
@@ -85,4 +87,33 @@ h4{
 .datepicker-days th.dow:last-child,
 .datepicker-days td:last-child {
   color: #00f;
+}
+
+.list-group-item a:hover,
+.list-group-item label:hover,
+.list-group-item:hover {
+  cursor: pointer;
+  background-color: rgb(218, 243, 255);
+}
+
+.cstm-mrgn {
+  margin-bottom: 30px !important;
+  margin-right: 10px !important;
+  text-align: center !important;
+  font-weight: bold;
+}
+
+.cstm-pdng{
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+}
+
+.vertical-line{
+  display: inline-block;
+  border-left: 1px solid #ccc;
+  margin: 0 10px;
+  height: 50px;
+  padding-top: 12px;
+  padding-left: 20px;
+  margin-left: 100px;
 }
