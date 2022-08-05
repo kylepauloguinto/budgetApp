@@ -10,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
 from django.utils import timezone
 from django import forms
+from django.shortcuts import redirect
 
 from .models import User, Categories, SubCategories
 
@@ -23,8 +24,8 @@ def transaction(request):
 
 def listCategories(request):
 
-    categories = Categories.objects.all()
-    subCategories = SubCategories.objects.all()
+    categories = Categories.objects.order_by("category")
+    subCategories = SubCategories.objects.order_by("subCategory")
 
     return render(request, "budgetApp/categories.html",{
             "categories" : categories,
@@ -35,17 +36,14 @@ def listCategories(request):
 def editCategory(request, id ):
     
     if request.method == "POST":
-        category = Categories.objects.get(id=id)
+        category = Categories.objects.get(id=id,userCategory=request.user)
         category.category = request.POST["name"]
         category.save()
         
         categories = Categories.objects.all()
         subCategories = SubCategories.objects.all()
 
-        return render(request, "budgetApp/categories.html",{
-            "categories" : categories,
-            "subCategories" : subCategories
-            })
+        return redirect('listCategories')
     else :
         name = Categories.objects.filter(id=id)
         categories = Categories.objects.all()
@@ -61,7 +59,7 @@ def editCategory(request, id ):
 def editSubCategory(request, id ):
     
     if request.method == "POST":
-        subCategory = SubCategories.objects.get(id=id)
+        subCategory = SubCategories.objects.get(id=id,userSubCategory=request.user)
         subCategory.parentCategory_id = request.POST["categoryList"]
         subCategory.subCategory = request.POST["name"]
         subCategory.save()
@@ -69,10 +67,7 @@ def editSubCategory(request, id ):
         categories = Categories.objects.all()
         subCategories = SubCategories.objects.all()
 
-        return render(request, "budgetApp/categories.html",{
-            "categories" : categories,
-            "subCategories" : subCategories
-            })
+        return redirect('listCategories')
     else :
         name = SubCategories.objects.filter(id=id)
         categories = Categories.objects.all()
@@ -94,10 +89,12 @@ def addCategory(request):
     if request.method == "POST":
         if request.POST["categoryList"] == "":
             category = Categories()
+            category.userCategory = request.user
             category.category = request.POST["name"]
             category.save()
         else :
             subCategory = SubCategories()
+            subCategory.userSubCategory = request.user
             subCategory.parentCategory_id = request.POST["categoryList"]
             subCategory.subCategory = request.POST["name"]
             subCategory.save()
@@ -105,10 +102,7 @@ def addCategory(request):
         categories = Categories.objects.all()
         subCategories = SubCategories.objects.all()
 
-        return render(request, "budgetApp/categories.html",{
-            "categories" : categories,
-            "subCategories" : subCategories
-            })
+        return redirect('listCategories')
     else :
         categories = Categories.objects.all()
         return render(request, "budgetApp/addEdit.html",{
