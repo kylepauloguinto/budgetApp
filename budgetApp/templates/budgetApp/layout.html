@@ -89,22 +89,15 @@
           {% if user.is_authenticated %}
           <li class="nav-item">
             <a class="nav-link" href="{% url 'transaction' %}"
-              ><strong>{{ user.username }}</strong></a
+              ><strong>Transaction</strong></a
             >
           </li>
           {% endif %}
-          <label id="loginUser" hidden>{{user.id}}</label>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'index' %}">All Posts</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'listCategories' %}"
-              >Category Lists</a
-            >
-          </li>
           {% if user.is_authenticated %}
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'index' %}">Following</a>
+            <a class="nav-link" href="{% url 'settings' %}"
+              >Settings</a
+            >
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{% url 'logout' %}">Log Out</a>

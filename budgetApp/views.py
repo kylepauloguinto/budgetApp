@@ -12,7 +12,7 @@ from django.utils import timezone
 from django import forms
 from django.shortcuts import redirect
 
-from .models import User, Categories, SubCategories
+from .models import User, Categories, SubCategories, Account
 
 def index(request):
 
@@ -22,10 +22,57 @@ def transaction(request):
 
     return render(request, "budgetApp/transaction.html")
 
-def listCategories(request):
+def settings(request):
 
-    categories = Categories.objects.order_by("category")
-    subCategories = SubCategories.objects.order_by("subCategory")
+    return render(request, "budgetApp/settings.html")
+
+def accounts(request):
+
+    accounts = Account.objects.filter(userAccount=request.user).order_by("accountName")
+
+    return render(request, "budgetApp/accounts.html",{
+            "accounts" : accounts
+        })
+
+def editAccount(request, id ):
+    
+    if request.method == "POST":
+        accounts = Account.objects.get(id=id,userAccount=request.user)
+        accounts.accountName = request.POST["accountName"]
+        accounts.description = request.POST["description"]
+        accounts.save()
+        
+        return redirect('accounts')
+    else :
+        name = Account.objects.filter(id=id)
+
+        return render(request, "budgetApp/addEditAccount.html",{
+            "name" : name[0],
+            "id" : id,
+            "do" : 'edit'
+        })
+
+def addAccount(request):
+    
+    if request.method == "POST":
+        accounts = Account()
+        accounts.userAccount = request.user
+        accounts.accountName = request.POST["accountName"]
+        accounts.description = request.POST["description"]
+        accounts.save()
+
+        return redirect('accounts')
+    else :
+        accounts = Account.objects.all()
+        return render(request, "budgetApp/addEditAccount.html",{
+            "accounts" : accounts,
+            "do" : 'add'
+        })
+
+def categories(request):
+
+    categories = Categories.objects.filter(userCategory=request.user).order_by("category")
+    subCategories = SubCategories.objects.filter(userSubCategory=request.user).order_by("subCategory")
 
     return render(request, "budgetApp/categories.html",{
             "categories" : categories,
@@ -43,7 +90,7 @@ def editCategory(request, id ):
         categories = Categories.objects.all()
         subCategories = SubCategories.objects.all()
 
-        return redirect('listCategories')
+        return redirect('categories')
     else :
         name = Categories.objects.filter(id=id)
         categories = Categories.objects.all()
@@ -67,7 +114,7 @@ def editSubCategory(request, id ):
         categories = Categories.objects.all()
         subCategories = SubCategories.objects.all()
 
-        return redirect('listCategories')
+        return redirect('categories')
     else :
         name = SubCategories.objects.filter(id=id)
         categories = Categories.objects.all()
@@ -79,10 +126,6 @@ def editSubCategory(request, id ):
             "do" : 'edit',
             "class" : "subCategory"
         })
-
-
-class NewTaskForm(forms.Form):
-    category = forms.IntegerField(label="Category ID")
 
 def addCategory(request):
     
@@ -102,7 +145,7 @@ def addCategory(request):
         categories = Categories.objects.all()
         subCategories = SubCategories.objects.all()
 
-        return redirect('listCategories')
+        return redirect('categories')
     else :
         categories = Categories.objects.all()
         return render(request, "budgetApp/addEdit.html",{

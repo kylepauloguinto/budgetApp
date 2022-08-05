@@ -11,7 +11,13 @@ urlpatterns = [
 
     path("transaction", views.transaction, name="transaction"),
 
-    path("listCategories",views.listCategories, name="listCategories"),
+    path("settings", views.settings, name="settings"),
+
+    path("accounts",views.accounts, name="accounts"),
+    path("addAccount",views.addAccount, name="addAccount"),
+    path("editAccount/<int:id>",views.editAccount, name="editAccount"),
+
+    path("categories",views.categories, name="categories"),
     path("editCategory/<int:id>",views.editCategory, name="editCategory"),
     path("editSubCategory/<int:id>",views.editSubCategory, name="editSubCategory"),
     path("addCategory",views.addCategory, name="addCategory"),
