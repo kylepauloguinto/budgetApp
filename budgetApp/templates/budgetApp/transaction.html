@@ -24,19 +24,53 @@
                     <div class="form-group row">
                         <label for="classifications" class="col-sm-3 col-form-label">Classifications :</label>
                         <div class="col-sm-9">
-                            <input autofocus class="form-control" type="text" name="classifications" placeholder="">
+                          <select name="classification" class="custom-select" id="classification" >
+                            <option value=""></option>
+                            {% for category in categories %}
+                              <option value="{{ category.id }}">{{ category.category }}</option>
+                            {% endfor %}
+                          </select>
+                          <div class="blank-space"></div>
+                          <select name="category" class="custom-select" id="category" hidden="hidden">
+                            <option value=""></option>
+                            {% for subCategory in subCategories %}
+                              <option value="{{ subCategory.parentCategory.id }}-{{ subCategory.id }}">{{ subCategory.subCategory }}</option>
+                            {% endfor %}
+                          </select>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label for="date" class="col-sm-3 col-form-label">Date :</label>
                         <div class="col-sm-9">
-                            <input autofocus class="form-control" type="text" name="date" placeholder="">
+                          <div class="row">
+                            <div class="col-sm-6">
+                              <div class="input-group date" id="datePicker" data-target-input="nearest">
+                                <input type="text" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker" onkeydown="return false"/>
+                                <div class="input-group-append" data-target="#datePicker" data-toggle="datetimepicker">
+                                  <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-sm-6">
+                              <div class="input-group date" id="timePicker" data-target-input="nearest">
+                                <input type="text" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker" onkeydown="return false"/>
+                                <div class="input-group-append" data-target="#timePicker" data-toggle="datetimepicker">
+                                  <div class="input-group-text"><i class="fa fa-clock"></i></div>
+                                </div>
+                            </div>
+                          </div>
+                        </div>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label for="account" class="col-sm-3 col-form-label">Account :</label>
                         <div class="col-sm-9">
-                            <input autofocus class="form-control" type="text" name="account" placeholder="">
+                          <select name="accountName" class="custom-select" id="accountName">
+                            <option value=""></option>
+                            {% for account in accounts %}
+                              <option value="{{ account.id }}">{{ account.accountName }}</option>
+                            {% endfor %}
+                          </select>
                         </div>
                     </div>
                     <input class="btn btn-primary" type="submit" value="Save">
@@ -53,26 +87,12 @@
         <div class="row mt-5">
           <div class="col-3  mt-5">
             <div class="form-group">
-              <div class="input-group date" id="datePicker" data-target-input="nearest">
-                <label for="datePicker" class="pt-1 pr-2">日付:</label>
-                <input type="text" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker"/>
-                <div class="input-group-append" data-target="#datePicker" data-toggle="datetimepicker">
-                  <div class="input-group-text"><i class="fa fa-calendar"></i></div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
         <div class="row">
           <div class="col-3">
             <div class="form-group">
-              <div class="input-group date" id="timePicker" data-target-input="nearest">
-                <label for="timePicker" class="pt-1 pr-2">時間:</label>
-                <input type="text" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker"/>
-                <div class="input-group-append" data-target="#timePicker" data-toggle="datetimepicker">
-                  <div class="input-group-text"><i class="fa fa-clock"></i></div>
-                </div>
-              </div>
             </div>
           </div>
         </div>

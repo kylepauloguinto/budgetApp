@@ -20,7 +20,15 @@ def index(request):
 
 def transaction(request):
 
-    return render(request, "budgetApp/transaction.html")
+    accounts = Account.objects.filter(userAccount=request.user).order_by("accountName")
+    categories = Categories.objects.filter(userCategory=request.user).order_by("category")
+    subCategories = SubCategories.objects.filter(userSubCategory=request.user).order_by("subCategory")
+
+    return render(request, "budgetApp/transaction.html",{
+        "accounts" : accounts,
+        "categories" : categories,
+        "subCategories" : subCategories
+    })
 
 def settings(request):
 
@@ -63,9 +71,7 @@ def addAccount(request):
 
         return redirect('accounts')
     else :
-        accounts = Account.objects.all()
         return render(request, "budgetApp/addEditAccount.html",{
-            "accounts" : accounts,
             "do" : 'add'
         })
 
@@ -86,9 +92,6 @@ def editCategory(request, id ):
         category = Categories.objects.get(id=id,userCategory=request.user)
         category.category = request.POST["name"]
         category.save()
-        
-        categories = Categories.objects.all()
-        subCategories = SubCategories.objects.all()
 
         return redirect('categories')
     else :
@@ -110,9 +113,6 @@ def editSubCategory(request, id ):
         subCategory.parentCategory_id = request.POST["categoryList"]
         subCategory.subCategory = request.POST["name"]
         subCategory.save()
-        
-        categories = Categories.objects.all()
-        subCategories = SubCategories.objects.all()
 
         return redirect('categories')
     else :
@@ -141,9 +141,6 @@ def addCategory(request):
             subCategory.parentCategory_id = request.POST["categoryList"]
             subCategory.subCategory = request.POST["name"]
             subCategory.save()
-            
-        categories = Categories.objects.all()
-        subCategories = SubCategories.objects.all()
 
         return redirect('categories')
     else :
