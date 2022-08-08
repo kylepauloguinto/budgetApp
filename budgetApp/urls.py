@@ -10,6 +10,10 @@ urlpatterns = [
     path("register", views.register, name="register"),
 
     path("transaction", views.transaction, name="transaction"),
+    
+    path("creditAdd", views.creditAdd, name="creditAdd"),
+    path("debitAdd", views.debitAdd, name="debitAdd"),
+    path("transferAdd", views.transferAdd, name="transferAdd"),
 
     path("settings", views.settings, name="settings"),
 

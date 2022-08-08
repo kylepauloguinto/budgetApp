@@ -11,8 +11,9 @@ from django.core.paginator import Paginator
 from django.utils import timezone
 from django import forms
 from django.shortcuts import redirect
+from datetime import datetime
 
-from .models import User, Categories, SubCategories, Account
+from .models import User, Categories, SubCategories, Account, Transaction
 
 def index(request):
 
@@ -29,6 +30,84 @@ def transaction(request):
         "categories" : categories,
         "subCategories" : subCategories
     })
+
+def creditAdd(request):
+    
+    credit = Transaction()
+    credit.userTransaction = request.user
+    credit.accountNameTransaction_id = request.POST["accountName"]
+    credit.transactionType = "credit"
+    credit.amount = request.POST["amount"]
+    credit.descriptionTransaction = request.POST["descriptions"]
+    if request.POST["subCategory"] != "":
+        category = request.POST["subCategory"].split("-")
+        credit.categoryTransaction_id = category[0]
+        credit.subCategoryTransaction_id = category[1]
+    else:
+        credit.categoryTransaction_id = request.POST["classification"]
+    date = request.POST["transactionDate"]
+    time = request.POST["transactionTime"]
+    credit.transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+
+    credit.save()
+
+    account = Account.objects.get(userAccount=request.user,id=request.POST["accountName"])
+    account.balance = account.balance - int(request.POST["amount"])
+    account.save()
+
+    return redirect('index')
+
+def debitAdd(request):
+    
+    debit = Transaction()
+    debit.userTransaction = request.user
+    debit.accountNameTransaction_id = request.POST["accountName"]
+    debit.transactionType = "debit"
+    debit.amount = request.POST["amount"]
+    debit.descriptionTransaction = request.POST["descriptions"]
+    if request.POST["subCategory-debit"] != "":
+        category = request.POST["subCategory-debit"].split("-")
+        debit.categoryTransaction_id = category[0]
+        debit.subCategoryTransaction_id = category[1]
+    else:
+        debit.categoryTransaction_id = request.POST["classification-debit"]
+    date = request.POST["transactionDate"]
+    time = request.POST["transactionTime"]
+    debit.transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+
+    debit.save()
+
+    account = Account.objects.get(userAccount=request.user,id=request.POST["accountName"])
+    account.balance = account.balance + int(request.POST["amount"])
+    account.save()
+
+    return redirect('index')
+
+def transferAdd(request):
+    
+    transfer = Transaction()
+    transfer.userTransaction = request.user
+    transfer.accountNameTransaction_id = request.POST["accountNameFrom"]
+    transfer.accountNameTransferFrom_id = request.POST["accountNameFrom"]
+    transfer.accountNameTransferTo_id = request.POST["accountNameTo"]
+    transfer.transactionType = "transfer"
+    transfer.amount = request.POST["amount"]
+    transfer.descriptionTransaction = request.POST["descriptions"]
+    date = request.POST["transactionDate"]
+    time = request.POST["transactionTime"]
+    transfer.transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+
+    transfer.save()
+
+    accountFrom = Account.objects.get(userAccount=request.user,id=request.POST["accountNameFrom"])
+    accountFrom.balance = accountFrom.balance - int(request.POST["amount"])
+    accountFrom.save()
+
+    accountTo = Account.objects.get(userAccount=request.user,id=request.POST["accountNameTo"])
+    accountTo.balance = accountTo.balance + int(request.POST["amount"])
+    accountTo.save()
+
+    return redirect('index')
 
 def settings(request):
 
@@ -67,6 +146,7 @@ def addAccount(request):
         accounts.userAccount = request.user
         accounts.accountName = request.POST["accountName"]
         accounts.description = request.POST["description"]
+        accounts.balance = 0
         accounts.save()
 
         return redirect('accounts')
