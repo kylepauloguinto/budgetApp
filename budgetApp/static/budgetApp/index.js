@@ -64,28 +64,37 @@ document.addEventListener("DOMContentLoaded", function () {
     $( "#accountNameFrom" ).change(function() {
         let accountNameFrom = this.value;
 
-        if( accountNameFrom != ""){
-            $("#accountNameTo").val('').trigger('change');
+        $("#accountNameTo").val('').trigger('change');
 
-            let option = document.getElementById("accountNameTo").options.length;
-            let accountNameTo =  document.getElementById("accountNameTo");
+        let option = document.getElementById("accountNameTo").options.length;
+        let accountNameTo =  document.getElementById("accountNameTo");
 
-            for(let i = 0 ; i < option ; i++){
-                let value = accountNameTo.options[i].value ;
-                value = value.split("-")
-                if(accountNameFrom == value[0]){
-                    accountNameTo.options[i].setAttribute("hidden", "hidden");
-                }else{
-                    accountNameTo.options[i].removeAttribute("hidden");
-                }
+        for(let i = 0 ; i < option ; i++){
+            let value = accountNameTo.options[i].value ;
+            value = value.split("-")
+            if(accountNameFrom == value[0]){
+                accountNameTo.options[i].setAttribute("hidden", "hidden");
+            }else{
+                accountNameTo.options[i].removeAttribute("hidden");
             }
-        }else{
-            $("#accountNameTo").val('').trigger('change');
-            let option = document.getElementById("accountNameTo").options.length;
-            let accountNameTo =  document.getElementById("accountNameTo");
+        }
+    });
 
-            for(let i = 0 ; i < option ; i++){
-                    accountNameTo.options[i].removeAttribute("hidden");
+    $( "#pills-transfer-tab" ).click(function() {
+        let accountNameFrom =  document.getElementById("accountNameFrom").value ;
+
+        $("#accountNameTo").val('').trigger('change');
+
+        let option = document.getElementById("accountNameTo").options.length;
+        let accountNameTo =  document.getElementById("accountNameTo");
+
+        for(let i = 0 ; i < option ; i++){
+            let value = accountNameTo.options[i].value ;
+            value = value.split("-")
+            if(accountNameFrom == value[0]){
+                accountNameTo.options[i].setAttribute("hidden", "hidden");
+            }else{
+                accountNameTo.options[i].removeAttribute("hidden");
             }
         }
     });

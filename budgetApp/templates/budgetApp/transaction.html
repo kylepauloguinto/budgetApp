@@ -7,9 +7,6 @@
         </div>
         <div class="col-8">
           <div class="row">
-            <div class="col-2" style="padding-top: 5px;">
-              <a href="{% url 'index' %}" class="btn btn-light">Cancel</a>
-            </div>
             <div class="col">
               <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
                 <li class="nav-item">
@@ -20,7 +17,7 @@
                 </li>
                 {% if accounts.count > 1 %}
                 <li class="nav-item">
-                  <a class="nav-link" id="pills-transfer-tab" data-toggle="pill" href="#pills-transfer" role="tab" aria-controls="pills-transfer" aria-selected="false">Transfer</a>
+                  <a class="nav-link" id="pills-transfer-tab" data-toggle="pill" href="#pills-transfer" role="tab" aria-controls="pills-transfer" aria-selected="false" >Transfer</a>
                 </li>
                 {% endif %}
               </ul>
@@ -87,7 +84,6 @@
                       <label for="account" class="col-sm-3 col-form-label">Account :</label>
                       <div class="col-sm-9">
                         <select name="accountName" class="custom-select" id="accountName">
-                          <option value=""></option>
                           {% for account in accounts %}
                             <option value="{{ account.id }}">{{ account.accountName }}</option>
                           {% endfor %}
@@ -157,7 +153,6 @@
                     <label for="account" class="col-sm-3 col-form-label">Account :</label>
                     <div class="col-sm-9">
                       <select name="accountName" class="custom-select" id="accountName">
-                        <option value=""></option>
                         {% for account in accounts %}
                           <option value="{{ account.id }}">{{ account.accountName }}</option>
                         {% endfor %}
@@ -209,7 +204,6 @@
                   <label for="account" class="col-sm-3 col-form-label">From :</label>
                   <div class="col-sm-9">
                     <select name="accountNameFrom" class="custom-select" id="accountNameFrom">
-                      <option value=""></option>
                       {% for account in accounts %}
                         <option value="{{ account.id }}">{{ account.accountName }}</option>
                       {% endfor %}
@@ -220,7 +214,6 @@
                   <label for="account" class="col-sm-3 col-form-label">To :</label>
                   <div class="col-sm-9">
                     <select name="accountNameTo" class="custom-select" id="accountNameTo">
-                      <option value=""></option>
                       {% for account in accounts %}
                         <option value="{{ account.id }}">{{ account.accountName }}</option>
                       {% endfor %}

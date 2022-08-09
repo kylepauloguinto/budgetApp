@@ -4,14 +4,11 @@
     <div class="col-2"></div>
     <div class="col-8">
       <div class="row" style="margin-bottom: 30px;">
-        <div class="col-3"  style="padding-top: 5px;">
-          <a href="{% url 'settings' %}" class="btn btn-light">Settings</a>
-        </div>
         <div class="col">
           <h2>Accounts</h2>
         </div>
       </div>
-      <a class="list-group-item list-group-item-action inbx-clck cstm-mrgn" href="{% url 'addAccount' %}">New Category</a>
+      <a class="list-group-item list-group-item-action inbx-clck cstm-mrgn" href="{% url 'addAccount' %}">New Account</a>
       {% for account in accounts %}
       <div class="dropright">
         <a

@@ -17,7 +17,23 @@ from .models import User, Categories, SubCategories, Account, Transaction
 
 def index(request):
 
-    return render(request, "budgetApp/index.html")
+    accounts = Account.objects.filter(userAccount=request.user)
+
+    return render(request, "budgetApp/index.html",{
+        "accounts" : accounts
+    })
+
+def display(request, id):
+
+    account = Account.objects.get(userAccount=request.user,id=id)
+    transactions = Transaction.objects.filter(userTransaction=request.user,accountNameTransaction_id=id)
+    transactions = transactions.order_by("-transactionDate").all()
+    
+
+    return render(request, "budgetApp/display.html",{
+        "account": account,
+        "transactions": transactions
+    })
 
 def transaction(request):
 
@@ -85,9 +101,25 @@ def debitAdd(request):
 
 def transferAdd(request):
     
+    #account that will be deducted
     transfer = Transaction()
     transfer.userTransaction = request.user
     transfer.accountNameTransaction_id = request.POST["accountNameFrom"]
+    transfer.accountNameTransferFrom_id = request.POST["accountNameFrom"]
+    transfer.accountNameTransferTo_id = request.POST["accountNameTo"]
+    transfer.transactionType = "transfer"
+    transfer.amount = request.POST["amount"]
+    transfer.descriptionTransaction = request.POST["descriptions"]
+    date = request.POST["transactionDate"]
+    time = request.POST["transactionTime"]
+    transfer.transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+
+    transfer.save()
+
+    #account that amount will be transfer
+    transfer = Transaction()
+    transfer.userTransaction = request.user
+    transfer.accountNameTransaction_id = request.POST["accountNameTo"]
     transfer.accountNameTransferFrom_id = request.POST["accountNameFrom"]
     transfer.accountNameTransferTo_id = request.POST["accountNameTo"]
     transfer.transactionType = "transfer"
