@@ -10,6 +10,7 @@ urlpatterns = [
     path("register", views.register, name="register"),
 
     path("display/<int:id>", views.display, name="display"),
+    path("display/unread/<int:id>", views.unread, name="unread"),
 
     path("transaction", views.transaction, name="transaction"),
     

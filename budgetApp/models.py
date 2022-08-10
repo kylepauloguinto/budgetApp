@@ -10,6 +10,8 @@ class Account(models.Model):
     accountName = models.TextField(blank=False)
     description = models.TextField(blank=True)
     balance = models.IntegerField()
+    previousBalance = models.IntegerField()
+    read = models.BooleanField(default=False)
     ins_date = models.DateTimeField(auto_now_add=True, blank=True)
 
     def serialize(self):
@@ -19,6 +21,8 @@ class Account(models.Model):
             "accountName": self.accountName,
             "description": self.description,
             "balance" : self.balance,
+            "previousBalance" : self.previousBalance,
+            "read" : self.read,
             "ins_date": self.date.strftime("%Y-%m-%d %H:%M:%S")
         }
     
@@ -66,10 +70,12 @@ class Transaction(models.Model):
     accountNameTransferTo = models.ForeignKey(Account, on_delete=models.PROTECT, blank=True, null=True, related_name="accountNameTransferTo")
     transactionType = models.TextField(blank=True)
     amount = models.IntegerField()
+    previousAccountBalance = models.IntegerField()
     descriptionTransaction = models.TextField(blank=True)
     categoryTransaction = models.ForeignKey(Categories, on_delete=models.PROTECT, blank=True, null=True, related_name="categoryTransaction")
     subCategoryTransaction = models.ForeignKey(SubCategories, on_delete=models.PROTECT, blank=True, null=True, related_name="subCategoryTransaction")
     transactionDate = models.DateTimeField(auto_now_add=False, blank=True)
+    readTransaction = models.BooleanField(default=False)
     ins_date = models.DateTimeField(auto_now_add=True, blank=True)
 
     def serialize(self):
@@ -79,9 +85,11 @@ class Transaction(models.Model):
             "accountNameTransaction": self.accountNameTransaction,
             "transactionType": self.transactionType,
             "amount": self.amount,
+            "previousBalance": self.previousBalance,
             "descriptionTransaction": self.descriptionTransaction,
             "categoryTransaction": self.categoryTransaction,
             "subCategoryTransaction": self.subCategoryTransaction,
             "transactionDate": self.transactionDate.strftime("%Y-%m-%d %H:%M:%S"),
+            "readTransaction": self.readTransaction,
             "ins_date": self.date.strftime("%Y-%m-%d %H:%M:%S")
         }

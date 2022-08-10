@@ -1,46 +1,161 @@
 {% extends "budgetApp/layout.html" %}
 
 {% block body %}
-    <div id="mainContainer">
-        <div class="row" id="main">
-            <div class="col-2">
+    {% if allAccount %}
+        <div id="mainContainer">
+            <div class="row" id="main">
+                <div class="col-2">
+                </div>
+                <div class="col-8">
+                    <div class="center">
+                        <h3><i class="bi bi-bank"></i> All Account</h3>
+                    </div>
+                    <div class="center">
+                        <h1><i class="bi bi-currency-yen"></i>{{ balance }}</h1>
+                    </div>
+                </div>
             </div>
-            <div class="col-8">
-                <div class="center">
-                    <h3>{{ account.accountName }} Account</h3>
-                </div>
-                <div class="center">
-                    <h1>¥{{ account.balance }}</h1>
-                </div>
+            <div class="col-1 fs-3" style="padding-left: 0px;">
+                <a class="nav-link" href="{% url 'transaction' %}" >
+                <i class="bi bi-plus-circle-fill"></i></a>
             </div>
-        </div>
-    {% for transaction in transactions %}  
-        <div>
-            <a>{{ transaction.transactionDate }}</a>
-        </div>
-        <div id="posts">
-            <div class="row">
-                <div class="col">
-                    <h3>{{ transaction.descriptionTransaction }}</h3>
-                </div>
-                <div class="col">
-                    <h3 style="text-align: right;">
-                        {% if transaction.transactionType == 'credit' %}
-                            ー
-                        {% elif transaction.transactionType == 'debit' %}
-                            ＋
-                        {% else %}
-                            ＜＞
-                            {% if transaction.accountNameTransferFrom_id == account.id %}
-                                ー
-                            {% elif transaction.accountNameTransferTo_id == account.id %}
-                                ＋
-                            {% endif %}
+        {% for transaction in transactions %}  
+            <div>
+                <a>{{ transaction.transactionDate }}</a>
+            </div>
+            <div class="dropright">
+                <a class="list-group-item list-group-item-action inbx-clck fs-2"
+                    href="#"
+                    id="dropdownMenuLink"
+                    role="button"
+                    data-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false">
+                        <div class="row">
+                            <label style="font-size: 15px; margin-left: 15px">{{ transaction.accountNameTransaction }} ¥ {{ transaction.previousAccountBalance }}</label>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <label>{{ transaction.descriptionTransaction }}</label>
+                            </div>
+                            <div class="col" style="text-align: center;">
+                                <label>
+                                    {% if transaction.transactionType == 'transfer' %}
+                                        {{ transaction.accountNameTransferFrom.accountName}} 
+                                        <i class="bi bi-arrow-left-right"></i>
+                                        {{ transaction.accountNameTransferTo.accountName}}
+                                    {% endif %}
+                                </label>
+                            </div>
+                            <div class="col" style="text-align: right;">
+                                <label>
+                                    {% if transaction.transactionType == 'credit' %}
+                                        <i class="bi bi-dash-circle" style="color: red"></i>
+                                    {% elif transaction.transactionType == 'debit' %}
+                                        <i class="bi bi-plus-circle" style="color: rgb(46, 180, 46)"></i>
+                                    {% endif %}
+                                    <i class="bi bi-currency-yen"></i>{{ transaction.amount }}
+                                </label>
+                            </div>
+                        </div>
+                        {% if transaction.readTransaction == False %}
+                          <span class="position-absolute top-0 start-100 translate-middle p-2 badge rounded-pill bg-danger" >
+                          </span>
                         {% endif %}
-                        ¥{{ transaction.amount }}</h3>
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <a class="dropdown-item" 
+                          ><i class="bi bi-pencil"></i> Edit
+                        </a>
+                        <a class="dropdown-item" href="#"><i class="bi bi-layers-fill"></i> Duplicate</a>
+                        <a class="dropdown-item" href="#"><i class="bi bi-pencil-square"></i> Note</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#"><i class="bi bi-trash3"></i> Delete</a>
+                    </div>
+            </div>
+        {% endfor %}
+        </div>
+    {% else %}
+        <div id="mainContainer">
+            <div class="row" id="main">
+                <div class="col-2">
+                </div>
+                <div class="col-8">
+                    <div class="center">
+                        <h3><i class="bi bi-bank"></i> {{ account.accountName }} Account</h3>
+                    </div>
+                    <div class="center">
+                        <h1><i class="bi bi-currency-yen"></i>{{ account.balance }}</h1>
+                    </div>
                 </div>
             </div>
+            <div class="col-1 fs-3" style="padding-left: 0px;">
+                <a class="nav-link" href="{% url 'transaction' %}" >
+                <i class="bi bi-plus-circle-fill"></i></a>
+            </div>
+        {% for transaction in transactions %}  
+            <div>
+                <a>{{ transaction.transactionDate }}</a>
+            </div>
+            <div class="dropright">
+                <a class="list-group-item list-group-item-action inbx-clck fs-2"
+                    href="#"
+                    id="dropdownMenuLink"
+                    role="button"
+                    data-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false">
+                        <div class="row">
+                            <label style="font-size: 15px; margin-left: 15px"><i class="bi bi-currency-yen"></i>{{ transaction.previousAccountBalance }}</label>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <label>{{ transaction.descriptionTransaction }}</label>
+                            </div>
+                            <div class="col" style="text-align: center;">
+                                <label>
+                                    {% if transaction.accountNameTransferFrom_id == account.id %}
+                                        <i class="bi bi-chevron-bar-up" style="color: red"></i>
+                                        {{ transaction.accountNameTransferTo.accountName}}
+                                    {% elif transaction.accountNameTransferTo_id == account.id %}
+                                    <i class="bi bi-chevron-bar-down" style="color: rgb(46, 180, 46)"></i>
+                                        {{ transaction.accountNameTransferFrom.accountName}}
+                                    {% endif %}
+                                </label>
+                            </div>
+                            <div class="col" style="text-align: right;">
+                                <label>
+                                    {% if transaction.transactionType == 'credit' %}
+                                        <i class="bi bi-dash-circle" style="color: red"></i>
+                                    {% elif transaction.transactionType == 'debit' %}
+                                        <i class="bi bi-plus-circle" style="color: rgb(46, 180, 46)"></i>
+                                    {% else %}
+                                        {% if transaction.accountNameTransferFrom_id == account.id %}
+                                            <i class="bi bi-dash-circle" style="color: red"></i>
+                                        {% elif transaction.accountNameTransferTo_id == account.id %}
+                                            <i class="bi bi-plus-circle" style="color: rgb(46, 180, 46)"></i>
+                                        {% endif %}
+                                    {% endif %}
+                                    <i class="bi bi-currency-yen"></i>{{ transaction.amount }}
+                                </label>
+                            </div>
+                        </div>
+                        {% if transaction.readTransaction == False %}
+                          <span class="position-absolute top-0 start-100 translate-middle p-2 badge rounded-pill bg-danger" >
+                          </span>
+                        {% endif %}
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <a class="dropdown-item" href="{% url 'editAccount' account.id %}"
+                          ><i class="bi bi-pencil"></i> Edit
+                        </a>
+                        <a class="dropdown-item" href="#"><i class="bi bi-layers-fill"></i> Duplicate</a>
+                        <a class="dropdown-item" href="#"><i class="bi bi-pencil-square"></i> Note</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#"><i class="bi bi-trash3"></i> Delete</a>
+                    </div>
+            </div>
+        {% endfor %}
         </div>
-    {% endfor %}
-    </div>
+    {% endif %}
 {% endblock %}

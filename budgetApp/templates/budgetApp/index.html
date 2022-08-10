@@ -6,21 +6,74 @@
             <div class="col-2"></div>
             <div class="col-8">
               <div style="margin-bottom: 37px;">
-                <h2>Accounts</h2>
+                <div class="row">
+                  <div class="col" style="padding-top: 15px">
+                    <h2>Accounts</h2>
+                  </div>
+                  <div class="col-2 fs-3" style="text-align: right;">
+                    <a class="nav-link" href="{% url 'transaction' %}" >
+                    <i class="bi bi-plus-circle-fill"></i></a>
+                  </div>
+                </div>
               </div>
+              {% if isManyAccount %}
+              <div>
+                <a
+                  class="list-group-item list-group-item-action inbx-clck fs-2 position-relative"
+                  href="{% url 'display' 0 %}"
+                  ><div class="row">
+                      <div class="col">
+                        <i class="bi bi-credit-card"></i>
+                        All Accounts
+                      </div>
+                      <div class="col" style="text-align: right;">
+                        <i class="bi bi-currency-yen"></i>{{ balance }}
+                      </div>  
+                    </div>
+                    {% if unread > 0 %}
+                      <span class="position-absolute top-0 start-100 translate-middle p-2 badge rounded-pill bg-danger">
+                      </span>
+                    {% endif %}
+                </a>
+              </div>
+              {% endif %}
               {% for account in accounts %}
               <div>
                 <a
-                  class="list-group-item list-group-item-action inbx-clck"
+                  class="list-group-item list-group-item-action inbx-clck fs-2"
                   href="{% url 'display' account.id %}"
-                  >{{ account.accountName }} : ¥{{ account.balance }}</a>
+                  ><div class="row">
+                      <div class="col">
+                        <i class="bi bi-credit-card"></i>
+                        {{ account.accountName }}
+                      </div>
+                      <div class="col" style="text-align: right;">
+                        <i class="bi bi-currency-yen"></i>{{ account.balance }}
+                      </div>  
+                    </div>
+                    {% if account.read == False %}
+                      <span class="position-absolute top-0 start-100 translate-middle p-2 badge rounded-pill bg-danger">
+                      </span>
+                    {% endif %}
+                </a>
               </div>
               {% endfor %}
               <div>
                 <a
-                  class="list-group-item list-group-item-action inbx-clck"
+                  class="list-group-item list-group-item-action inbx-clck fs-2"
+                  href="#"
+                  >
+                  <i class="bi bi-cash-coin"></i>
+                  Budgets</a
+                >
+              </div>
+              <div>
+                <a
+                  class="list-group-item list-group-item-action inbx-clck fs-2"
                   href="{% url 'settings' %}"
-                  >Settings</a
+                  >
+                  <i class="bi bi-gear-wide-connected"></i>
+                  Settings</a
                 >
               </div>
             </div>

@@ -11,28 +11,102 @@ from django.core.paginator import Paginator
 from django.utils import timezone
 from django import forms
 from django.shortcuts import redirect
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from .models import User, Categories, SubCategories, Account, Transaction
 
 def index(request):
 
-    accounts = Account.objects.filter(userAccount=request.user)
+    if request.user.is_authenticated:
+        accounts = Account.objects.filter(userAccount=request.user)
+        unread = Account.objects.filter(userAccount=request.user,read=False).count()
 
-    return render(request, "budgetApp/index.html",{
-        "accounts" : accounts
-    })
+        isManyAccount = False
+        balance = 0
+        if accounts.count() > 1 :
+            for account in accounts:
+                balance += account.balance
+                isManyAccount = True
+
+        for acc in accounts:
+            acc.balance = currencyFormatter(acc.balance)
+            acc.previousBalance = currencyFormatter(acc.previousBalance)
+
+        return render(request, "budgetApp/index.html",{
+            "accounts" : accounts,
+            "isManyAccount" :  isManyAccount,
+            "balance": currencyFormatter(balance),
+            "unread": unread
+        })
+    else: 
+        return render(request, "budgetApp/login.html")
+
+def unread(request, id):
+    if id == 0 :
+        unread = Transaction.objects.filter(userTransaction=request.user,readTransaction=False)
+
+        for read in unread:
+            read.readTransaction = True
+            read.save()
+    else: 
+        unread = Transaction.objects.filter(userTransaction=request.user,accountNameTransaction_id=id,readTransaction=False)
+
+        for read in unread:
+            read.readTransaction = True
+            read.save()
+
+    return JsonResponse({"unread": unread.count()}, status=201)
 
 def display(request, id):
 
-    account = Account.objects.get(userAccount=request.user,id=id)
-    transactions = Transaction.objects.filter(userTransaction=request.user,accountNameTransaction_id=id)
-    transactions = transactions.order_by("-transactionDate").all()
-    
+    allAccount = True
+    balance = 0
+    #if All Accounts button is click 
+    if id == 0:
+        account = Account.objects.filter(userAccount=request.user)
 
+        transactions = Transaction.objects.filter(userTransaction=request.user)
+        transactions = transactions.order_by("-transactionDate").all()
+        for tran in transactions:
+            tran.amount = currencyFormatter(tran.amount)
+            tran.previousAccountBalance = currencyFormatter(tran.previousAccountBalance)
+            tran.transactionDate = dateFormatter(tran.transactionDate)
+
+        accountRead = Account.objects.filter(userAccount=request.user)
+        for read in accountRead:
+            read.read = True
+            read.save()
+        
+        if account.count() > 1 :
+            for acc in account:
+                balance += acc.balance
+        
+        for acc in account:
+            acc.balance = currencyFormatter(acc.balance)
+            acc.previousBalance = currencyFormatter(acc.previousBalance)
+
+    #if one of the account is click
+    else:
+        allAccount = False
+        account = Account.objects.get(userAccount=request.user,id=id)
+        account.balance = currencyFormatter(account.balance)
+        account.previousBalance = currencyFormatter(account.previousBalance)
+        transactions = Transaction.objects.filter(userTransaction=request.user,accountNameTransaction_id=id)
+        transactions = transactions.order_by("-transactionDate").all()
+        for tran in transactions:
+            tran.amount = currencyFormatter(tran.amount)
+            tran.previousAccountBalance = currencyFormatter(tran.previousAccountBalance)
+            tran.transactionDate = dateFormatter(tran.transactionDate)
+
+        accountRead = Account.objects.get(userAccount=request.user,id=id)
+        accountRead.read = True
+        accountRead.save()
+    
     return render(request, "budgetApp/display.html",{
         "account": account,
-        "transactions": transactions
+        "transactions": transactions,
+        "allAccount": allAccount,
+        "balance": currencyFormatter(balance)
     })
 
 def transaction(request):
@@ -49,11 +123,14 @@ def transaction(request):
 
 def creditAdd(request):
     
+    account = Account.objects.get(userAccount=request.user,id=request.POST["accountName"])
+
     credit = Transaction()
     credit.userTransaction = request.user
     credit.accountNameTransaction_id = request.POST["accountName"]
     credit.transactionType = "credit"
     credit.amount = request.POST["amount"]
+    credit.previousAccountBalance = account.balance
     credit.descriptionTransaction = request.POST["descriptions"]
     if request.POST["subCategory"] != "":
         category = request.POST["subCategory"].split("-")
@@ -64,22 +141,26 @@ def creditAdd(request):
     date = request.POST["transactionDate"]
     time = request.POST["transactionTime"]
     credit.transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    credit.readTransaction = False
 
     credit.save()
 
-    account = Account.objects.get(userAccount=request.user,id=request.POST["accountName"])
     account.balance = account.balance - int(request.POST["amount"])
+    account.read = False
     account.save()
 
     return redirect('index')
 
 def debitAdd(request):
     
+    account = Account.objects.get(userAccount=request.user,id=request.POST["accountName"])
+
     debit = Transaction()
     debit.userTransaction = request.user
     debit.accountNameTransaction_id = request.POST["accountName"]
     debit.transactionType = "debit"
     debit.amount = request.POST["amount"]
+    debit.previousAccountBalance = account.balance
     debit.descriptionTransaction = request.POST["descriptions"]
     if request.POST["subCategory-debit"] != "":
         category = request.POST["subCategory-debit"].split("-")
@@ -90,17 +171,21 @@ def debitAdd(request):
     date = request.POST["transactionDate"]
     time = request.POST["transactionTime"]
     debit.transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    debit.readTransaction = False
 
     debit.save()
 
-    account = Account.objects.get(userAccount=request.user,id=request.POST["accountName"])
     account.balance = account.balance + int(request.POST["amount"])
+    account.read = False
     account.save()
 
     return redirect('index')
 
 def transferAdd(request):
     
+    accountFrom = Account.objects.get(userAccount=request.user,id=request.POST["accountNameFrom"])
+    accountTo = Account.objects.get(userAccount=request.user,id=request.POST["accountNameTo"])
+
     #account that will be deducted
     transfer = Transaction()
     transfer.userTransaction = request.user
@@ -109,10 +194,12 @@ def transferAdd(request):
     transfer.accountNameTransferTo_id = request.POST["accountNameTo"]
     transfer.transactionType = "transfer"
     transfer.amount = request.POST["amount"]
+    transfer.previousAccountBalance = accountFrom.balance
     transfer.descriptionTransaction = request.POST["descriptions"]
     date = request.POST["transactionDate"]
     time = request.POST["transactionTime"]
     transfer.transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    transfer.readTransaction = False
 
     transfer.save()
 
@@ -124,19 +211,21 @@ def transferAdd(request):
     transfer.accountNameTransferTo_id = request.POST["accountNameTo"]
     transfer.transactionType = "transfer"
     transfer.amount = request.POST["amount"]
+    transfer.previousAccountBalance = accountTo.balance
     transfer.descriptionTransaction = request.POST["descriptions"]
     date = request.POST["transactionDate"]
     time = request.POST["transactionTime"]
     transfer.transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    transfer.readTransaction = False
 
     transfer.save()
 
-    accountFrom = Account.objects.get(userAccount=request.user,id=request.POST["accountNameFrom"])
     accountFrom.balance = accountFrom.balance - int(request.POST["amount"])
+    account.read = False
     accountFrom.save()
 
-    accountTo = Account.objects.get(userAccount=request.user,id=request.POST["accountNameTo"])
     accountTo.balance = accountTo.balance + int(request.POST["amount"])
+    account.read = False
     accountTo.save()
 
     return redirect('index')
@@ -159,6 +248,9 @@ def editAccount(request, id ):
         accounts = Account.objects.get(id=id,userAccount=request.user)
         accounts.accountName = request.POST["accountName"]
         accounts.description = request.POST["description"]
+        accounts.previousBalance = accounts.balance
+        accounts.balance = request.POST["balance"]
+        accounts.read = False
         accounts.save()
         
         return redirect('accounts')
@@ -178,7 +270,12 @@ def addAccount(request):
         accounts.userAccount = request.user
         accounts.accountName = request.POST["accountName"]
         accounts.description = request.POST["description"]
-        accounts.balance = 0
+        if request.POST["balance"] != "":
+            accounts.balance = request.POST["balance"]
+        else:
+            accounts.balance = 0
+        accounts.read = False
+        accounts.previousBalance = 0
         accounts.save()
 
         return redirect('accounts')
@@ -317,3 +414,18 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "budgetApp/register.html")
+
+def currencyFormatter(amount):
+
+    return "{:,}".format(amount)
+
+def dateFormatter(dateTrans):
+    
+    if  dateTrans.strftime("%Y") < datetime.now().strftime("%Y") :
+        return dateTrans.strftime("%B %d, %Y")
+
+    date = datetime.now()  + timedelta(days=-7) 
+    if  dateTrans.strftime("%B %d, %Y") < date.strftime("%B %d, %Y") :
+        return dateTrans.strftime("%B %d")
+
+    return dateTrans.strftime("%A, %B %d")

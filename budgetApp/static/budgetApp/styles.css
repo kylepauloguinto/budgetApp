@@ -93,7 +93,7 @@ h4 {
 .list-group-item label:hover,
 .list-group-item:hover {
   cursor: pointer;
-  background-color: rgb(218, 243, 255);
+  background-color: #fcfafa;
 }
 
 .cstm-mrgn {
@@ -144,4 +144,23 @@ ul li{
 
 .center {
   text-align: center;
+}
+
+.fs-2 {
+  font-size: 1.5rem !important;
+}
+.fs-3 {
+  font-size: 2rem !important;
+}
+
+.fs-3 a {
+  color: black !important;
+}
+.fs-3 a:hover {
+  color: rgb(88, 86, 86) !important;
+}
+
+.badge{
+  top:-8px !important;
+  right: -8px !important;
 }

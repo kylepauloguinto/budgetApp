@@ -98,4 +98,15 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     });
+
+    let url = window.location.href
+    let path = url.split("/")[3]
+    if(path === "display"){
+        let id = url.split("/")[4]
+        fetch(`unread/${id}`)
+        .then(response => response.json())
+        .then(message =>{
+            console.log(message)
+        })
+    }
 });
