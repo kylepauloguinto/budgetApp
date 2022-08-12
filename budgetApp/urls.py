@@ -12,8 +12,11 @@ urlpatterns = [
     path("display/<int:id>", views.display, name="display"),
     path("display/unread/<int:id>", views.unread, name="unread"),
 
-    path("transaction", views.transaction, name="transaction"),
+    path("addTransaction", views.addTransaction, name="addTransaction"),
+    path("editTransaction/<int:id>", views.editTransaction, name="editTransaction"),
     
+    path("creditEdit/<int:id>", views.creditEdit, name="creditEdit"),
+    path("debitEdit/<int:id>", views.debitEdit, name="debitEdit"),
     path("creditAdd", views.creditAdd, name="creditAdd"),
     path("debitAdd", views.debitAdd, name="debitAdd"),
     path("transferAdd", views.transferAdd, name="transferAdd"),

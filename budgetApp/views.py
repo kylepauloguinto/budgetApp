@@ -109,16 +109,35 @@ def display(request, id):
         "balance": currencyFormatter(balance)
     })
 
-def transaction(request):
+def addTransaction(request):
 
     accounts = Account.objects.filter(userAccount=request.user).order_by("accountName")
     categories = Categories.objects.filter(userCategory=request.user).order_by("category")
     subCategories = SubCategories.objects.filter(userSubCategory=request.user).order_by("subCategory")
 
-    return render(request, "budgetApp/transaction.html",{
+    return render(request, "budgetApp/addTransaction.html",{
         "accounts" : accounts,
         "categories" : categories,
         "subCategories" : subCategories
+    })
+
+def editTransaction(request, id):
+
+    transaction = Transaction.objects.get(userTransaction=request.user,id=id)
+    transationDate = transaction.transactionDate.strftime("%Y/%m/%d")
+    transationTime = transaction.transactionDate.strftime("%H:%M")
+    accounts = Account.objects.filter(userAccount=request.user).order_by("accountName")
+    categories = Categories.objects.filter(userCategory=request.user).order_by("category")
+    subCategories = SubCategories.objects.filter(userSubCategory=request.user).order_by("subCategory")
+
+    return render(request, "budgetApp/editTransaction.html",{
+        "accounts" : accounts,
+        "categories" : categories,
+        "subCategories" : subCategories,
+        "transaction" : transaction,
+        "transationDate" : transationDate,
+        "transationTime" : transationTime,
+        "do": transaction.transactionType
     })
 
 def creditAdd(request):
@@ -151,11 +170,95 @@ def creditAdd(request):
 
     return redirect('index')
 
+def creditEdit(request, id):
+    
+    #undo the previous action
+    prevCredit = Transaction.objects.get(userTransaction=request.user,id=id)
+    prevAccount = Account.objects.get(userAccount=request.user,id=prevCredit.accountNameTransaction_id)
+    if prevCredit.transactionType == "credit":
+        prevAccount.balance = prevAccount.balance + prevCredit.amount
+    elif prevCredit.transactionType == "debit":
+        prevAccount.balance = prevAccount.balance - prevCredit.amount
+
+    prevAccount.read = False
+    prevAccount.save()
+
+    #update the data with current action
+    account = Account.objects.get(userAccount=request.user,id=request.POST["accountName"])
+
+    credit = Transaction.objects.get(userTransaction=request.user,id=id)
+    credit.userTransaction = request.user
+    credit.accountNameTransaction_id = request.POST["accountName"]
+    credit.transactionType = "credit"
+    credit.amount = request.POST["amount"]
+    credit.previousAccountBalance = account.balance
+    credit.descriptionTransaction = request.POST["descriptions"]
+    if request.POST["subCategory"] != "":
+        category = request.POST["subCategory"].split("-")
+        credit.categoryTransaction_id = category[0]
+        credit.subCategoryTransaction_id = category[1]
+    else:
+        credit.categoryTransaction_id = request.POST["classification"]
+    date = request.POST["transactionDate"]
+    time = request.POST["transactionTime"]
+    credit.transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    credit.readTransaction = False
+
+    credit.save()
+
+    account.balance = account.balance - int(request.POST["amount"])
+    account.read = False
+    account.save()
+
+    return redirect('index')
+
 def debitAdd(request):
     
     account = Account.objects.get(userAccount=request.user,id=request.POST["accountName"])
 
     debit = Transaction()
+    debit.userTransaction = request.user
+    debit.accountNameTransaction_id = request.POST["accountName"]
+    debit.transactionType = "debit"
+    debit.amount = request.POST["amount"]
+    debit.previousAccountBalance = account.balance
+    debit.descriptionTransaction = request.POST["descriptions"]
+    if request.POST["subCategory-debit"] != "":
+        category = request.POST["subCategory-debit"].split("-")
+        debit.categoryTransaction_id = category[0]
+        debit.subCategoryTransaction_id = category[1]
+    else:
+        debit.categoryTransaction_id = request.POST["classification-debit"]
+    date = request.POST["transactionDate"]
+    time = request.POST["transactionTime"]
+    debit.transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    debit.readTransaction = False
+
+    debit.save()
+
+    account.balance = account.balance + int(request.POST["amount"])
+    account.read = False
+    account.save()
+
+    return redirect('index')
+
+def debitEdit(request, id):
+    
+    #undo the previous action
+    prevDebit = Transaction.objects.get(userTransaction=request.user,id=id)
+    prevAccount = Account.objects.get(userAccount=request.user,id=prevDebit.accountNameTransaction_id)
+    if prevDebit.transactionType == "credit":
+        prevAccount.balance = prevAccount.balance + prevDebit.amount
+    elif prevDebit.transactionType == "debit":
+        prevAccount.balance = prevAccount.balance - prevDebit.amount
+
+    prevAccount.read = False
+    prevAccount.save()
+
+    #update the data with current action
+    account = Account.objects.get(userAccount=request.user,id=request.POST["accountName"])
+
+    debit = Transaction.objects.get(userTransaction=request.user,id=id)
     debit.userTransaction = request.user
     debit.accountNameTransaction_id = request.POST["accountName"]
     debit.transactionType = "debit"
@@ -255,10 +358,10 @@ def editAccount(request, id ):
         
         return redirect('accounts')
     else :
-        name = Account.objects.filter(id=id)
+        name = Account.objects.get(id=id)
 
         return render(request, "budgetApp/addEditAccount.html",{
-            "name" : name[0],
+            "name" : name,
             "id" : id,
             "do" : 'edit'
         })
@@ -304,11 +407,11 @@ def editCategory(request, id ):
 
         return redirect('categories')
     else :
-        name = Categories.objects.filter(id=id)
+        name = Categories.objects.get(id=id)
         categories = Categories.objects.all()
 
-        return render(request, "budgetApp/addEdit.html",{
-            "name" : name[0],
+        return render(request, "budgetApp/addEditCategory.html",{
+            "name" : name,
             "categories" : categories,
             "id" : id,
             "do" : 'edit',
@@ -325,11 +428,11 @@ def editSubCategory(request, id ):
 
         return redirect('categories')
     else :
-        name = SubCategories.objects.filter(id=id)
+        name = SubCategories.objects.get(id=id)
         categories = Categories.objects.all()
 
-        return render(request, "budgetApp/addEdit.html",{
-            "name" : name[0],
+        return render(request, "budgetApp/addEditCategory.html",{
+            "name" : name,
             "categories" : categories,
             "id" : id,
             "do" : 'edit',
@@ -354,7 +457,7 @@ def addCategory(request):
         return redirect('categories')
     else :
         categories = Categories.objects.all()
-        return render(request, "budgetApp/addEdit.html",{
+        return render(request, "budgetApp/addEditCategory.html",{
             "categories" : categories,
             "do" : 'add'
         })

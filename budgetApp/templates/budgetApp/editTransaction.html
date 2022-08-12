@@ -1,0 +1,301 @@
+{% extends "budgetApp/layout.html" %}
+
+{% block body %}
+    <div id="mainContainer">
+      <div class="row" id="main">
+        <div class="col-2">
+        </div>
+        <div class="col-8">
+          <div class="row">
+            <div class="col">
+              <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                {% if do == 'credit'%}
+                <li class="nav-item">
+                  <a class="nav-link active" id="pills-credit-tab" data-toggle="pill" href="#pills-credit" role="tab" aria-controls="pills-credit" aria-selected="true">Expenses</a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                  <a class="nav-link" id="pills-credit-tab" data-toggle="pill" href="#pills-credit" role="tab" aria-controls="pills-credit" aria-selected="false">Expenses</a>
+                </li>
+                {% endif %}
+                {% if do == 'debit'%}
+                <li class="nav-item">
+                  <a class="nav-link active" id="pills-debit-tab" data-toggle="pill" href="#pills-debit" role="tab" aria-controls="pills-debit" aria-selected="true">Income</a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                  <a class="nav-link" id="pills-debit-tab" data-toggle="pill" href="#pills-debit" role="tab" aria-controls="pills-debit" aria-selected="false">Income</a>
+                </li>
+                {% endif %}
+                {% if do == 'transfer'%}
+                <li class="nav-item">
+                  <a class="nav-link active" id="pills-transfer-tab" data-toggle="pill" href="#pills-transfer" role="tab" aria-controls="pills-transfer" aria-selected="true" >Transfer</a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                  <a class="nav-link" id="pills-transfer-tab" data-toggle="pill" href="#pills-transfer" role="tab" aria-controls="pills-transfer" aria-selected="false" >Transfer</a>
+                </li>
+                {% endif %}
+              </ul>
+            </div>
+          </div>
+          <div class="tab-content" id="pills-tabContent">
+            {% if do == 'credit'%}
+            <div class="tab-pane fade show active" id="pills-credit" role="tabpanel" aria-labelledby="pills-credit-tab">
+            {% else %}
+            <div class="tab-pane fade" id="pills-credit" role="tabpanel" aria-labelledby="pills-credit-tab">
+            {% endif %}
+              <form action="{% url 'creditEdit' transaction.id %}" method="post">
+                  {% csrf_token %}
+                  <div class="form-group row">
+                      <label for="amount" class="col-sm-3 col-form-label">Amount : </label>
+                      <div class="col-sm-9">
+                          <input autofocus class="form-control" type="number" name="amount" placeholder="¥" value="{{ transaction.amount }}">
+                      </div>
+                  </div>
+                  <div class="form-group row">
+                      <label for="descriptions" class="col-sm-3 col-form-label">Descriptions :</label>
+                      <div class="col-sm-9">
+                          <input autofocus class="form-control" type="text" name="descriptions" placeholder="" value="{{ transaction.descriptionTransaction }}">
+                      </div>
+                  </div>
+                  <div class="form-group row">
+                      <label for="classifications" class="col-sm-3 col-form-label">Classifications :</label>
+                      <div class="col-sm-9">
+                        <select name="classification" class="custom-select" id="classification" >
+                          <option value=""></option>
+                          {% for category in categories %}
+                            {% if category.id == transaction.categoryTransaction.id %}
+                              <option value="{{ category.id }}" selected>{{ category.category }}</option>
+                            {% else %}
+                              <option value="{{ category.id }}">{{ category.category }}</option>
+                            {% endif %}
+                          {% endfor %}
+                        </select>
+                        <div class="blank-space"></div>
+                        <select name="subCategory" class="custom-select" id="subCategory" hidden="hidden">
+                          <option value=""></option>
+                          {% for subCategory in subCategories %}
+                            {% if subCategory.id == transaction.subCategoryTransaction.id %}
+                              <option value="{{ subCategory.parentCategory.id }}-{{ subCategory.id }}" selected>{{ subCategory.subCategory }}</option>
+                            {% else %}
+                              <option value="{{ subCategory.parentCategory.id }}-{{ subCategory.id }}">{{ subCategory.subCategory }}</option>
+                            {% endif %}
+                          {% endfor %}
+                        </select>
+                      </div>
+                  </div>
+                  <div class="form-group row">
+                      <label for="date" class="col-sm-3 col-form-label">Date :</label>
+                      <div class="col-sm-9">
+                        <div class="row">
+                          <div class="col-sm-6">
+                            <div class="input-group date" id="datePicker" data-target-input="nearest">
+                              <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker" onkeydown="return false" value="{{ transationDate }}"/>
+                              <div class="input-group-append" data-target="#datePicker" data-toggle="datetimepicker">
+                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-sm-6">
+                            <div class="input-group date" id="timePicker" data-target-input="nearest">
+                              <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker" onkeydown="return false" value="{{ transationTime }}"/>
+                              <div class="input-group-append" data-target="#timePicker" data-toggle="datetimepicker">
+                                <div class="input-group-text"><i class="fa fa-clock"></i></div>
+                              </div>
+                          </div>
+                        </div>
+                      </div>
+                      </div>
+                  </div>
+                  <div class="form-group row">
+                      <label for="account" class="col-sm-3 col-form-label">Account :</label>
+                      <div class="col-sm-9">
+                        <select name="accountName" class="custom-select" id="accountName">
+                          {% for account in accounts %}
+                            {% if account.id == transaction.accountNameTransaction.id %}
+                              <option value="{{ account.id }}" selected>{{ account.accountName }}</option>
+                            {% else %}
+                              <option value="{{ account.id }}">{{ account.accountName }}</option>
+                            {% endif %}
+                          {% endfor %}
+                        </select>
+                      </div>
+                  </div>
+                  <input class="btn btn-primary" type="submit" value="Save">
+              </form>
+            </div>
+            {% if do == 'debit'%}
+            <div class="tab-pane fade show active" id="pills-debit" role="tabpanel" aria-labelledby="pills-debit-tab">
+            {% else %}
+            <div class="tab-pane fade" id="pills-debit" role="tabpanel" aria-labelledby="pills-debit-tab">
+            {% endif %}
+              <form action="{% url 'debitEdit' transaction.id %}" method="post">
+                {% csrf_token %}
+                <div class="form-group row">
+                    <label for="amount" class="col-sm-3 col-form-label">Amount : </label>
+                    <div class="col-sm-9">
+                        <input autofocus class="form-control" type="number" name="amount" placeholder="¥" value="{{ transaction.amount }}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="descriptions" class="col-sm-3 col-form-label">Descriptions :</label>
+                    <div class="col-sm-9">
+                        <input autofocus class="form-control" type="text" name="descriptions" placeholder="" value="{{ transaction.descriptionTransaction }}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="classifications" class="col-sm-3 col-form-label">Classifications :</label>
+                    <div class="col-sm-9">
+                      <select name="classification-debit" class="custom-select" id="classification-debit" >
+                        <option value=""></option>
+                        {% for category in categories %}
+                          {% if category.id == transaction.categoryTransaction.id %}
+                            <option value="{{ category.id }}" selected>{{ category.category }}</option>
+                          {% else %}
+                            <option value="{{ category.id }}">{{ category.category }}</option>
+                          {% endif %}
+                        {% endfor %}
+                      </select>
+                      <div class="blank-space"></div>
+                      <select name="subCategory-debit" class="custom-select" id="subCategory-debit" hidden="hidden">
+                        <option value=""></option>
+                        {% for subCategory in subCategories %}
+                          {% if subCategory.id == transaction.subCategoryTransaction.id %}
+                            <option value="{{ subCategory.parentCategory.id }}-{{ subCategory.id }}" selected>{{ subCategory.subCategory }}</option>
+                          {% else %}
+                            <option value="{{ subCategory.parentCategory.id }}-{{ subCategory.id }}">{{ subCategory.subCategory }}</option>
+                          {% endif %}
+                        {% endfor %}
+                      </select>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="date" class="col-sm-3 col-form-label">Date :</label>
+                    <div class="col-sm-9">
+                      <div class="row">
+                        <div class="col-sm-6">
+                          <div class="input-group date" id="datePicker-debit" data-target-input="nearest">
+                            <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker-debit" onkeydown="return false" value="{{ transationDate }}"/>
+                            <div class="input-group-append" data-target="#datePicker-debit" data-toggle="datetimepicker">
+                              <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-sm-6">
+                          <div class="input-group date" id="timePicker-debit" data-target-input="nearest">
+                            <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker-debit" onkeydown="return false"  value="{{ transationTime }}"/>
+                            <div class="input-group-append" data-target="#timePicker-debit" data-toggle="datetimepicker">
+                              <div class="input-group-text"><i class="fa fa-clock"></i></div>
+                            </div>
+                        </div>
+                      </div>
+                    </div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="account" class="col-sm-3 col-form-label">Account :</label>
+                    <div class="col-sm-9">
+                      <select name="accountName" class="custom-select" id="accountName">
+                        {% for account in accounts %}
+                          {% if account.id == transaction.accountNameTransaction.id %}
+                            <option value="{{ account.id }}" selected>{{ account.accountName }}</option>
+                          {% else %}
+                            <option value="{{ account.id }}">{{ account.accountName }}</option>
+                          {% endif %}
+                        {% endfor %}
+                      </select>
+                    </div>
+                </div>
+                <input class="btn btn-primary" type="submit" value="Save">
+              </form>
+            </div>
+            {% if do == 'transfer'%}
+            <div class="tab-pane fade show active" id="pills-transfer" role="tabpanel" aria-labelledby="pills-transfer-tab">
+            {% else %}
+            <div class="tab-pane fade" id="pills-transfer" role="tabpanel" aria-labelledby="pills-transfer-tab">
+            {% endif %}
+              <form action="{% url 'transferAdd' %}" method="post">
+                {% csrf_token %}
+                <div class="form-group row">
+                    <label for="amount" class="col-sm-3 col-form-label">Amount : </label>
+                    <div class="col-sm-9">
+                        <input autofocus class="form-control" type="number" name="amount" placeholder="¥" value="{{ transaction.amount }}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="descriptions" class="col-sm-3 col-form-label">Descriptions :</label>
+                    <div class="col-sm-9">
+                        <input autofocus class="form-control" type="text" name="descriptions" placeholder="" value="{{ transaction.descriptionTransaction }}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="date" class="col-sm-3 col-form-label">Date :</label>
+                    <div class="col-sm-9">
+                      <div class="row">
+                        <div class="col-sm-6">
+                          <div class="input-group date" id="datePicker-transfer" data-target-input="nearest">
+                            <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker-transfer" onkeydown="return false" value="{{ transationDate }}"/>
+                            <div class="input-group-append" data-target="#datePicker-transfer" data-toggle="datetimepicker">
+                              <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-sm-6">
+                          <div class="input-group date" id="timePicker-transfer" data-target-input="nearest">
+                            <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker-transfer" onkeydown="return false"  value="{{ transationTime }}"/>
+                            <div class="input-group-append" data-target="#timePicker-transfer" data-toggle="datetimepicker">
+                              <div class="input-group-text"><i class="fa fa-clock"></i></div>
+                            </div>
+                        </div>
+                      </div>
+                    </div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                  <label for="account" class="col-sm-3 col-form-label">From :</label>
+                  <div class="col-sm-9">
+                    <select name="accountNameFrom" class="custom-select" id="accountNameFrom">
+                      {% for account in accounts %}
+                        {% if account.id == transaction.accountNameTransferFrom.id %}
+                          <option value="{{ account.id }}" selected>{{ account.accountName }}</option>
+                        {% else %}
+                          <option value="{{ account.id }}">{{ account.accountName }}</option>
+                        {% endif %}
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="account" class="col-sm-3 col-form-label">To :</label>
+                  <div class="col-sm-9">
+                    <select name="accountNameTo" class="custom-select" id="accountNameTo">
+                      {% for account in accounts %}
+                        {% if account.id == transaction.accountNameTransferTo.id %}
+                          <option value="{{ account.id }}" selected>{{ account.accountName }}</option>
+                        {% else %}
+                          <option value=""></option>
+                          <option value="{{ account.id }}">{{ account.accountName }}</option>
+                        {% endif %}
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <input class="btn btn-primary" type="submit" value="Save">
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <script type="text/javascript">
+    $(function () {
+        $('#datePicker').datetimepicker({locale: 'ja', dayViewHeaderFormat: 'YYYY年M月' ,format: 'YYYY/MM/DD'});
+        $('#timePicker').datetimepicker({locale: 'ja', format: 'HH:mm'});
+        $('#datePicker-debit').datetimepicker({locale: 'ja', dayViewHeaderFormat: 'YYYY年M月' ,format: 'YYYY/MM/DD'});
+        $('#timePicker-debit').datetimepicker({locale: 'ja', format: 'HH:mm'});
+        $('#datePicker-transfer').datetimepicker({locale: 'ja', dayViewHeaderFormat: 'YYYY年M月' ,format: 'YYYY/MM/DD'});
+        $('#timePicker-transfer').datetimepicker({locale: 'ja', format: 'HH:mm'});
+    });
+</script>
+{% endblock %}

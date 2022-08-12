@@ -16,7 +16,7 @@
                 </div>
             </div>
             <div class="col-1 fs-3" style="padding-left: 0px;">
-                <a class="nav-link" href="{% url 'transaction' %}" >
+                <a class="nav-link" href="{% url 'addTransaction' %}" >
                 <i class="bi bi-plus-circle-fill"></i></a>
             </div>
         {% for transaction in transactions %}  
@@ -64,7 +64,7 @@
                         {% endif %}
                     </a>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                        <a class="dropdown-item" 
+                        <a class="dropdown-item" href="{% url 'editTransaction' transaction.id %}"
                           ><i class="bi bi-pencil"></i> Edit
                         </a>
                         <a class="dropdown-item" href="#"><i class="bi bi-layers-fill"></i> Duplicate</a>
@@ -90,7 +90,7 @@
                 </div>
             </div>
             <div class="col-1 fs-3" style="padding-left: 0px;">
-                <a class="nav-link" href="{% url 'transaction' %}" >
+                <a class="nav-link" href="{% url 'addTransaction' %}" >
                 <i class="bi bi-plus-circle-fill"></i></a>
             </div>
         {% for transaction in transactions %}  
@@ -146,7 +146,7 @@
                         {% endif %}
                     </a>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                        <a class="dropdown-item" href="{% url 'editAccount' account.id %}"
+                        <a class="dropdown-item" href="{% url 'editTransaction' transaction.id %}"
                           ><i class="bi bi-pencil"></i> Edit
                         </a>
                         <a class="dropdown-item" href="#"><i class="bi bi-layers-fill"></i> Duplicate</a>
