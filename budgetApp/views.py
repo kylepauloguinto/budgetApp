@@ -345,8 +345,20 @@ def transferAdd(request):
 def transferEdit(request, id):
     
     #undo changes in accounts
-    prevTransfer = Transaction.objects.get(userTransaction=request.user,id=id)
-    prevAccountFrom = Account.objects.get(userAccount=request.user,id=prevTransfer.accountNameTransaction_id)
+    try:
+        #when the origin account was about to edit
+        #destination account of money transfer
+        prevTransfer = Transaction.objects.get(userTransaction=request.user,transactionFromId=id)
+        accountFromId = id #origin account
+        accountToId = prevTransfer.id #destination account
+    except:
+        #when the destination account was about to edit
+        #origin account of money transfer
+        prevTransfer = Transaction.objects.get(userTransaction=request.user,id=id)
+        accountFromId = prevTransfer.transactionFromId #origin account
+        accountToId = id #destination account
+
+    prevAccountFrom = Account.objects.get(userAccount=request.user,id=prevTransfer.accountNameTransferFrom_id)
     prevAccountTo = Account.objects.get(userAccount=request.user,id=prevTransfer.accountNameTransferTo_id)
     prevAccountFrom.balance = prevAccountFrom.balance + prevTransfer.amount
     prevAccountTo.balance = prevAccountTo.balance - prevTransfer.amount
@@ -362,7 +374,7 @@ def transferEdit(request, id):
     accountTo = Account.objects.get(userAccount=request.user,id=request.POST["accountNameTo"])
 
     #account that will be deducted
-    transfer = Transaction.objects.get(userTransaction=request.user,id=id)
+    transfer = Transaction.objects.get(userTransaction=request.user,id=accountFromId)
     transfer.userTransaction = request.user
     transfer.accountNameTransaction_id = request.POST["accountNameFrom"]
     transfer.accountNameTransferFrom_id = request.POST["accountNameFrom"]
@@ -379,7 +391,7 @@ def transferEdit(request, id):
     transfer.save()
 
     #account that amount will be transfer
-    transfer = Transaction.objects.get(userTransaction=request.user,transactionFromId=id)
+    transfer = Transaction.objects.get(userTransaction=request.user,id=accountToId)
     transfer.userTransaction = request.user
     transfer.accountNameTransaction_id = request.POST["accountNameTo"]
     transfer.accountNameTransferFrom_id = request.POST["accountNameFrom"]
