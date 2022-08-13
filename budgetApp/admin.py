@@ -12,7 +12,7 @@ class SubCategoriesAdmin(admin.ModelAdmin):
     list_display = ("id","userSubCategory", "parentCategory", "subCategory" ,"ins_date" )
     
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ("id","userTransaction", "accountNameTransaction", "accountNameTransferFrom", "accountNameTransferTo", "transactionType", "amount","previousAccountBalance","descriptionTransaction","categoryTransaction", "subCategoryTransaction", "transactionDate", "readTransaction","ins_date")
+    list_display = ("id","userTransaction", "accountNameTransaction", "accountNameTransferFrom", "accountNameTransferTo", "transactionFromId", "transactionType", "amount","previousAccountBalance","descriptionTransaction","categoryTransaction", "subCategoryTransaction", "transactionDate", "readTransaction","ins_date")
 
 admin.site.register(User)
 admin.site.register(Account, AccountAdmin)

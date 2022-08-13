@@ -23,7 +23,8 @@ def index(request):
 
         isManyAccount = False
         balance = 0
-        if accounts.count() > 1 :
+        noOfAccounts = accounts.count()
+        if noOfAccounts > 1 :
             for account in accounts:
                 balance += account.balance
                 isManyAccount = True
@@ -34,6 +35,7 @@ def index(request):
 
         return render(request, "budgetApp/index.html",{
             "accounts" : accounts,
+            "noOfAccounts": noOfAccounts,
             "isManyAccount" :  isManyAccount,
             "balance": currencyFormatter(balance),
             "unread": unread
@@ -285,12 +287,82 @@ def debitEdit(request, id):
     return redirect('index')
 
 def transferAdd(request):
+
+    lastId = Transaction.objects.latest('id')
     
     accountFrom = Account.objects.get(userAccount=request.user,id=request.POST["accountNameFrom"])
     accountTo = Account.objects.get(userAccount=request.user,id=request.POST["accountNameTo"])
 
     #account that will be deducted
     transfer = Transaction()
+    transfer.id = lastId.id + 1
+    transfer.userTransaction = request.user
+    transfer.accountNameTransaction_id = request.POST["accountNameFrom"]
+    transfer.accountNameTransferFrom_id = request.POST["accountNameFrom"]
+    transfer.accountNameTransferTo_id = request.POST["accountNameTo"]
+    transfer.transactionType = "transfer"
+    transfer.amount = request.POST["amount"]
+    transfer.previousAccountBalance = accountFrom.balance
+    transfer.descriptionTransaction = request.POST["descriptions"]
+    date = request.POST["transactionDate"]
+    time = request.POST["transactionTime"]
+    transfer.transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    transfer.readTransaction = False
+    transfer.ins_date = datetime.now()
+
+    transfer.save()
+
+    #account that amount will be transfer
+    transfer = Transaction()
+    transfer.id = lastId.id + 2
+    transfer.userTransaction = request.user
+    transfer.accountNameTransaction_id = request.POST["accountNameTo"]
+    transfer.accountNameTransferFrom_id = request.POST["accountNameFrom"]
+    transfer.accountNameTransferTo_id = request.POST["accountNameTo"]
+    transfer.transactionFromId = lastId.id + 1
+    transfer.transactionType = "transfer"
+    transfer.amount = request.POST["amount"]
+    transfer.previousAccountBalance = accountTo.balance
+    transfer.descriptionTransaction = request.POST["descriptions"]
+    date = request.POST["transactionDate"]
+    time = request.POST["transactionTime"]
+    transfer.transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    transfer.readTransaction = False
+    transfer.ins_date = datetime.now()
+
+    transfer.save()
+
+    accountFrom.balance = accountFrom.balance - int(request.POST["amount"])
+    accountFrom.read = False
+    accountFrom.save()
+
+    accountTo.balance = accountTo.balance + int(request.POST["amount"])
+    accountTo.read = False
+    accountTo.save()
+
+    return redirect('index')
+
+def transferEdit(request, id):
+    
+    #undo changes in accounts
+    prevTransfer = Transaction.objects.get(userTransaction=request.user,id=id)
+    prevAccountFrom = Account.objects.get(userAccount=request.user,id=prevTransfer.accountNameTransaction_id)
+    prevAccountTo = Account.objects.get(userAccount=request.user,id=prevTransfer.accountNameTransferTo_id)
+    prevAccountFrom.balance = prevAccountFrom.balance + prevTransfer.amount
+    prevAccountTo.balance = prevAccountTo.balance - prevTransfer.amount
+
+    prevAccountTo.read = False
+    prevAccountTo.save()
+    prevAccountFrom.read = False
+    prevAccountFrom.save()
+
+
+    #update the data with current action
+    accountFrom = Account.objects.get(userAccount=request.user,id=request.POST["accountNameFrom"])
+    accountTo = Account.objects.get(userAccount=request.user,id=request.POST["accountNameTo"])
+
+    #account that will be deducted
+    transfer = Transaction.objects.get(userTransaction=request.user,id=id)
     transfer.userTransaction = request.user
     transfer.accountNameTransaction_id = request.POST["accountNameFrom"]
     transfer.accountNameTransferFrom_id = request.POST["accountNameFrom"]
@@ -307,7 +379,7 @@ def transferAdd(request):
     transfer.save()
 
     #account that amount will be transfer
-    transfer = Transaction()
+    transfer = Transaction.objects.get(userTransaction=request.user,transactionFromId=id)
     transfer.userTransaction = request.user
     transfer.accountNameTransaction_id = request.POST["accountNameTo"]
     transfer.accountNameTransferFrom_id = request.POST["accountNameFrom"]
@@ -324,11 +396,11 @@ def transferAdd(request):
     transfer.save()
 
     accountFrom.balance = accountFrom.balance - int(request.POST["amount"])
-    account.read = False
+    accountFrom.read = False
     accountFrom.save()
 
     accountTo.balance = accountTo.balance + int(request.POST["amount"])
-    account.read = False
+    accountTo.read = False
     accountTo.save()
 
     return redirect('index')

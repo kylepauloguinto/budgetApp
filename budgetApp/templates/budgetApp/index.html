@@ -16,6 +16,20 @@
                   </div>
                 </div>
               </div>
+              {% if noOfAccounts == 0 %}
+              <div>
+                <a
+                  class="list-group-item list-group-item-action inbx-clck fs-2 position-relative"
+                  href="{% url 'addAccount' %}"
+                  ><div class="row">
+                      <div class="col" style="position: center">
+                        <i class="bi bi-bank"></i>
+                        Create an Account
+                      </div>
+                    </div>
+                </a>
+              </div>
+              {% endif %}
               {% if isManyAccount %}
               <div>
                 <a

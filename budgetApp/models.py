@@ -68,6 +68,7 @@ class Transaction(models.Model):
     accountNameTransaction = models.ForeignKey(Account, on_delete=models.PROTECT, related_name="accountNameTransaction")
     accountNameTransferFrom = models.ForeignKey(Account, on_delete=models.PROTECT, blank=True, null=True, related_name="accountNameTransferFrom")
     accountNameTransferTo = models.ForeignKey(Account, on_delete=models.PROTECT, blank=True, null=True, related_name="accountNameTransferTo")
+    transactionFromId = models.IntegerField(blank=True, null=True)
     transactionType = models.TextField(blank=True)
     amount = models.IntegerField()
     previousAccountBalance = models.IntegerField()
@@ -83,9 +84,12 @@ class Transaction(models.Model):
             "id": self.id,
             "userTransaction": self.userTransaction,
             "accountNameTransaction": self.accountNameTransaction,
+            "accountNameTransferFrom": self.accountNameTransferFrom,
+            "accountNameTransferTo": self.accountNameTransferTo,
+            "transactionFromId": self.transactionFromId,
             "transactionType": self.transactionType,
             "amount": self.amount,
-            "previousBalance": self.previousBalance,
+            "previousAccountBalance": self.previousAccountBalance,
             "descriptionTransaction": self.descriptionTransaction,
             "categoryTransaction": self.categoryTransaction,
             "subCategoryTransaction": self.subCategoryTransaction,
