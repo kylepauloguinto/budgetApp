@@ -9,11 +9,13 @@ urlpatterns = [
     path("logout", views.logout_view, name="logout"),
     path("register", views.register, name="register"),
 
+
     path("display/<int:id>", views.display, name="display"),
     path("display/unread/<int:id>", views.unread, name="unread"),
+    path("display/transaction/<int:id>", views.transaction, name="transaction"),
 
     path("addTransaction", views.addTransaction, name="addTransaction"),
-    path("editTransaction/<int:id>", views.editTransaction, name="editTransaction"),
+    path("display/editTransaction/<int:id>", views.editTransaction, name="editTransaction"),
     
     path("creditEdit/<int:id>", views.creditEdit, name="creditEdit"),
     path("debitEdit/<int:id>", views.debitEdit, name="debitEdit"),

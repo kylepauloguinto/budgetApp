@@ -82,18 +82,16 @@ class Transaction(models.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "userTransaction": self.userTransaction,
-            "accountNameTransaction": self.accountNameTransaction,
-            "accountNameTransferFrom": self.accountNameTransferFrom,
-            "accountNameTransferTo": self.accountNameTransferTo,
+            "accountNameTransaction": self.accountNameTransaction.accountName,
+            "accountNameTransferFrom": "" if self.accountNameTransferFrom == None else self.accountNameTransferFrom.accountName,
+            "accountNameTransferFromId": "" if self.accountNameTransferFrom == None else self.accountNameTransferFrom.id,
+            "accountNameTransferTo": "" if self.accountNameTransferTo == None else self.accountNameTransferTo.accountName,
+            "accountNameTransferToId": "" if self.accountNameTransferTo == None else self.accountNameTransferTo.id,
             "transactionFromId": self.transactionFromId,
             "transactionType": self.transactionType,
             "amount": self.amount,
             "previousAccountBalance": self.previousAccountBalance,
             "descriptionTransaction": self.descriptionTransaction,
-            "categoryTransaction": self.categoryTransaction,
-            "subCategoryTransaction": self.subCategoryTransaction,
-            "transactionDate": self.transactionDate.strftime("%Y-%m-%d %H:%M:%S"),
-            "readTransaction": self.readTransaction,
-            "ins_date": self.date.strftime("%Y-%m-%d %H:%M:%S")
+            "transactionDate": self.transactionDate,
+            "readTransaction": self.readTransaction
         }

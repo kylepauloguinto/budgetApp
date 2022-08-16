@@ -43,6 +43,25 @@ def index(request):
     else: 
         return render(request, "budgetApp/login.html")
 
+def transaction(request, id):
+    
+    if id == 0:
+        transactions = Transaction.objects.filter(userTransaction=request.user)
+        transactions = transactions.order_by("-transactionDate").all()
+        for tran in transactions:
+            tran.amount = currencyFormatter(tran.amount)
+            tran.previousAccountBalance = currencyFormatter(tran.previousAccountBalance)
+            tran.transactionDate = dateFormatter(tran.transactionDate)
+    else:
+        transactions = Transaction.objects.filter(userTransaction=request.user,accountNameTransaction_id=id)
+        transactions = transactions.order_by("-transactionDate").all()
+        for tran in transactions:
+            tran.amount = currencyFormatter(tran.amount)
+            tran.previousAccountBalance = currencyFormatter(tran.previousAccountBalance)
+            tran.transactionDate = dateFormatter(tran.transactionDate)
+
+    return JsonResponse([transaction.serialize() for transaction in transactions], safe=False)
+
 def unread(request, id):
     if id == 0 :
         unread = Transaction.objects.filter(userTransaction=request.user,readTransaction=False)
