@@ -3,7 +3,8 @@ document.addEventListener("DOMContentLoaded", function () {
     let url = window.location.href
     let path = url.split("/")[3]
 
-    $( "#classification" ).change(function() {
+    // 
+    $( "#category" ).change(function() {
         let parentValue = this.value;
 
         if( parentValue != ""){
@@ -33,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    $( "#classification-debit" ).change(function() {
+    $( "#category-debit" ).change(function() {
         let parentValue = this.value;
 
         if( parentValue != ""){
@@ -103,7 +104,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }else if( path == 'editTransaction' ){
         //credit subCategory function
-        let category =  document.getElementById("classification").value ;
+        let category =  document.getElementById("category").value ;
         document.getElementById("subCategory").removeAttribute("hidden");
 
         let option = document.getElementById("subCategory").options.length;
@@ -125,7 +126,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         //debit subCategory function
-        category =  document.getElementById("classification-debit").value ;
+        category =  document.getElementById("category-debit").value ;
         document.getElementById("subCategory-debit").removeAttribute("hidden");
 
         option = document.getElementById("subCategory-debit").options.length;

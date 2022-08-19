@@ -42,7 +42,7 @@
                   <div class="form-group row">
                       <label for="classifications" class="col-sm-3 col-form-label">Classifications :</label>
                       <div class="col-sm-9">
-                        <select name="classification" class="custom-select" id="classification" >
+                        <select name="category" class="custom-select" id="category" >
                           <option value=""></option>
                           {% for category in categories %}
                             <option value="{{ category.id }}">{{ category.category }}</option>
@@ -111,7 +111,7 @@
                 <div class="form-group row">
                     <label for="classifications" class="col-sm-3 col-form-label">Classifications :</label>
                     <div class="col-sm-9">
-                      <select name="classification-debit" class="custom-select" id="classification-debit" >
+                      <select name="category-debit" class="custom-select" id="category-debit" >
                         <option value=""></option>
                         {% for category in categories %}
                           <option value="{{ category.id }}">{{ category.category }}</option>
