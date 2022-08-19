@@ -180,7 +180,7 @@ def creditAdd(request):
         credit.categoryTransaction_id = category[0]
         credit.subCategoryTransaction_id = category[1]
     else:
-        credit.categoryTransaction_id = request.POST["classification"]
+        credit.categoryTransaction_id = request.POST["category"]
 
     date = request.POST["transactionDate"]
     time = request.POST["transactionTime"]
@@ -225,7 +225,7 @@ def creditEdit(request, id):
         credit.categoryTransaction_id = category[0]
         credit.subCategoryTransaction_id = category[1]
     else:
-        credit.categoryTransaction_id = request.POST["classification"]
+        credit.categoryTransaction_id = request.POST["category"]
 
     date = request.POST["transactionDate"]
     time = request.POST["transactionTime"]
@@ -257,7 +257,7 @@ def debitAdd(request):
         debit.categoryTransaction_id = category[0]
         debit.subCategoryTransaction_id = category[1]
     else:
-        debit.categoryTransaction_id = request.POST["classification-debit"]
+        debit.categoryTransaction_id = request.POST["category-debit"]
 
     date = request.POST["transactionDate"]
     time = request.POST["transactionTime"]
@@ -302,7 +302,7 @@ def debitEdit(request, id):
         debit.categoryTransaction_id = category[0]
         debit.subCategoryTransaction_id = category[1]
     else:
-        debit.categoryTransaction_id = request.POST["classification-debit"]
+        debit.categoryTransaction_id = request.POST["category-debit"]
 
     date = request.POST["transactionDate"]
     time = request.POST["transactionTime"]
