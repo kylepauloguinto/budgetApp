@@ -139,7 +139,9 @@ def addTransaction(request):
     return render(request, "budgetApp/addTransaction.html",{
         "accounts" : accounts,
         "categories" : categories,
-        "subCategories" : subCategories
+        "subCategories" : subCategories,
+        "date": datetime.now().strftime("%Y/%m/%d"),
+        "time": datetime.now().strftime("%H:%M")
     })
 
 def editTransaction(request, id):
@@ -166,6 +168,44 @@ def editTransaction(request, id):
 def creditAdd(request):
     
     account = Account.objects.get(userAccount=request.user,id=request.POST["accountName"])
+
+    messageList = validation(request, "credit") 
+    if messageList != "":
+        # Dropdown account, categories and subcategories data
+        accounts = Account.objects.filter(userAccount=request.user).order_by("accountName")
+        categories = Categories.objects.filter(userCategory=request.user).order_by("category")
+        subCategories = SubCategories.objects.filter(userSubCategory=request.user).order_by("subCategory")
+
+        cat = request.POST["category"]
+        subCat = request.POST["subCategory"]
+        subcategoryValueParent = ""
+        subcategoryValueChild = ""
+        subcategoryValue = False
+        if subCat != "":
+            category = request.POST["subCategory"].split("-")
+            subcategoryValueParent = category[0]
+            subcategoryValueChild = category[1]
+            subcategoryValue = True
+        elif cat != "" :
+            for sub in subCategories:
+                if sub.parentCategory.id == int(cat) :
+                    subcategoryValue = True
+
+        return render(request, "budgetApp/addTransaction.html",{
+            "accountName": int(request.POST["accountName"]) if request.POST["accountName"] != "" else "",
+            "amount": request.POST["amount"],
+            "description": request.POST["descriptions"],
+            "categoryValue": int(cat) if request.POST["category"] != "" else "",
+            "subcategoryValue": subcategoryValue, 
+            "subcategoryValueParent":  int(subcategoryValueParent) if subcategoryValueParent != "" else "", 
+            "subcategoryValueChild":  int(subcategoryValueChild) if subcategoryValueChild != "" else "", 
+            "message": messageList,
+            "accounts" : accounts,
+            "categories" : categories,
+            "subCategories" : subCategories,
+            "date": request.POST["transactionDate"],
+            "time": request.POST["transactionTime"]
+        })
 
     credit = Transaction()
     credit.userTransaction = request.user
@@ -684,3 +724,19 @@ def dateFormatter(dateTrans):
 
     # Days of the week, Month day
     return dateTrans.strftime("%A, %B %d")
+
+# Validations
+def validation(request, action):
+    messageList = []
+    if request.POST["amount"] == "":
+        messageList.append("Please input amount.")
+    if action != "transfer":
+        if request.POST["accountName"] == "":
+            messageList.append("Please input account name.")
+        try:
+            account = Account.objects.get(userAccount=request.user,id=request.POST["accountName"])
+        except:
+            messageList.append("Account is not exists.")
+    
+
+    return messageList

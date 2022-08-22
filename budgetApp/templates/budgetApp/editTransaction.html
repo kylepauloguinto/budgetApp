@@ -45,18 +45,19 @@
             {% else %}
             <div class="tab-pane fade" id="pills-credit" role="tabpanel" aria-labelledby="pills-credit-tab">
             {% endif %}
+            <!-- Credit section -->
               <form action="{% url 'creditEdit' transaction.id %}" method="post">
                   {% csrf_token %}
                   <div class="form-group row">
                       <label for="amount" class="col-sm-3 col-form-label">Amount : </label>
                       <div class="col-sm-9">
-                          <input autofocus class="form-control" type="number" name="amount" placeholder="¥" value="{{ transaction.amount }}">
+                          <input autofocus class="form-control" type="number" name="amount" placeholder="¥" value="{{ transaction.amount }}" id="amount-credit">
                       </div>
                   </div>
                   <div class="form-group row">
                       <label for="descriptions" class="col-sm-3 col-form-label">Descriptions :</label>
                       <div class="col-sm-9">
-                          <input autofocus class="form-control" type="text" name="descriptions" placeholder="" value="{{ transaction.descriptionTransaction }}">
+                          <input autofocus class="form-control" type="text" name="descriptions" placeholder="" value="{{ transaction.descriptionTransaction }}" id="des-credit">
                       </div>
                   </div>
                   <div class="form-group row">
@@ -91,7 +92,7 @@
                         <div class="row">
                           <div class="col-sm-6">
                             <div class="input-group date" id="datePicker" data-target-input="nearest">
-                              <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker" onkeydown="return false" value="{{ transationDate }}"/>
+                              <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker" onkeydown="return false" value="{{ transationDate }}" id="date-credit"/>
                               <div class="input-group-append" data-target="#datePicker" data-toggle="datetimepicker">
                                 <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                               </div>
@@ -99,7 +100,7 @@
                           </div>
                           <div class="col-sm-6">
                             <div class="input-group date" id="timePicker" data-target-input="nearest">
-                              <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker" onkeydown="return false" value="{{ transationTime }}"/>
+                              <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker" onkeydown="return false" value="{{ transationTime }}" id="time-credit"/>
                               <div class="input-group-append" data-target="#timePicker" data-toggle="datetimepicker">
                                 <div class="input-group-text"><i class="fa fa-clock"></i></div>
                               </div>
@@ -111,7 +112,7 @@
                   <div class="form-group row">
                       <label for="account" class="col-sm-3 col-form-label">Account :</label>
                       <div class="col-sm-9">
-                        <select name="accountName" class="custom-select" id="accountName">
+                        <select name="accountName" class="custom-select" id="accountName-credit">
                           {% for account in accounts %}
                             {% if account.id == transaction.accountNameTransaction.id %}
                               <option value="{{ account.id }}" selected>{{ account.accountName }}</option>
@@ -130,18 +131,19 @@
             {% else %}
             <div class="tab-pane fade" id="pills-debit" role="tabpanel" aria-labelledby="pills-debit-tab">
             {% endif %}
+            <!-- Debit section -->
               <form action="{% url 'debitEdit' transaction.id %}" method="post">
                 {% csrf_token %}
                 <div class="form-group row">
                     <label for="amount" class="col-sm-3 col-form-label">Amount : </label>
                     <div class="col-sm-9">
-                        <input autofocus class="form-control" type="number" name="amount" placeholder="¥" value="{{ transaction.amount }}">
+                        <input autofocus class="form-control" type="number" name="amount" placeholder="¥" value="{{ transaction.amount }}" id="amount-debit">
                     </div>
                 </div>
                 <div class="form-group row">
                     <label for="descriptions" class="col-sm-3 col-form-label">Descriptions :</label>
                     <div class="col-sm-9">
-                        <input autofocus class="form-control" type="text" name="descriptions" placeholder="" value="{{ transaction.descriptionTransaction }}">
+                        <input autofocus class="form-control" type="text" name="descriptions" placeholder="" value="{{ transaction.descriptionTransaction }}" id="des-debit">
                     </div>
                 </div>
                 <div class="form-group row">
@@ -176,7 +178,7 @@
                       <div class="row">
                         <div class="col-sm-6">
                           <div class="input-group date" id="datePicker-debit" data-target-input="nearest">
-                            <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker-debit" onkeydown="return false" value="{{ transationDate }}"/>
+                            <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker-debit" onkeydown="return false" value="{{ transationDate }}" id="date-debit"/>
                             <div class="input-group-append" data-target="#datePicker-debit" data-toggle="datetimepicker">
                               <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                             </div>
@@ -184,7 +186,7 @@
                         </div>
                         <div class="col-sm-6">
                           <div class="input-group date" id="timePicker-debit" data-target-input="nearest">
-                            <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker-debit" onkeydown="return false"  value="{{ transationTime }}"/>
+                            <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker-debit" onkeydown="return false"  value="{{ transationTime }}" id="time-debit"/>
                             <div class="input-group-append" data-target="#timePicker-debit" data-toggle="datetimepicker">
                               <div class="input-group-text"><i class="fa fa-clock"></i></div>
                             </div>
@@ -196,7 +198,7 @@
                 <div class="form-group row">
                     <label for="account" class="col-sm-3 col-form-label">Account :</label>
                     <div class="col-sm-9">
-                      <select name="accountName" class="custom-select" id="accountName">
+                      <select name="accountName" class="custom-select" id="accountName-debit">
                         {% for account in accounts %}
                           {% if account.id == transaction.accountNameTransaction.id %}
                             <option value="{{ account.id }}" selected>{{ account.accountName }}</option>
@@ -215,18 +217,19 @@
             {% else %}
             <div class="tab-pane fade" id="pills-transfer" role="tabpanel" aria-labelledby="pills-transfer-tab">
             {% endif %}
+            <!-- Transfer section -->
               <form action="{% url 'transferEdit' transaction.id %}" method="post">
                 {% csrf_token %}
                 <div class="form-group row">
                     <label for="amount" class="col-sm-3 col-form-label">Amount : </label>
                     <div class="col-sm-9">
-                        <input autofocus class="form-control" type="number" name="amount" placeholder="¥" value="{{ transaction.amount }}">
+                        <input autofocus class="form-control" type="number" name="amount" placeholder="¥" value="{{ transaction.amount }}" id="amount-transfer">
                     </div>
                 </div>
                 <div class="form-group row">
                     <label for="descriptions" class="col-sm-3 col-form-label">Descriptions :</label>
                     <div class="col-sm-9">
-                        <input autofocus class="form-control" type="text" name="descriptions" placeholder="" value="{{ transaction.descriptionTransaction }}">
+                        <input autofocus class="form-control" type="text" name="descriptions" placeholder="" value="{{ transaction.descriptionTransaction }}" id="des-transfer">
                     </div>
                 </div>
                 <div class="form-group row">
@@ -235,7 +238,7 @@
                       <div class="row">
                         <div class="col-sm-6">
                           <div class="input-group date" id="datePicker-transfer" data-target-input="nearest">
-                            <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker-transfer" onkeydown="return false" value="{{ transationDate }}"/>
+                            <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker-transfer" onkeydown="return false" value="{{ transationDate }}" id="date-transfer"/>
                             <div class="input-group-append" data-target="#datePicker-transfer" data-toggle="datetimepicker">
                               <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                             </div>
@@ -243,7 +246,7 @@
                         </div>
                         <div class="col-sm-6">
                           <div class="input-group date" id="timePicker-transfer" data-target-input="nearest">
-                            <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker-transfer" onkeydown="return false"  value="{{ transationTime }}"/>
+                            <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker-transfer" onkeydown="return false"  value="{{ transationTime }}" id="time-transfer"/>
                             <div class="input-group-append" data-target="#timePicker-transfer" data-toggle="datetimepicker">
                               <div class="input-group-text"><i class="fa fa-clock"></i></div>
                             </div>

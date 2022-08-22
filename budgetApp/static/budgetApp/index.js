@@ -8,7 +8,10 @@ document.addEventListener("DOMContentLoaded", function () {
     $( "#category" ).change(function() {
         let parentValue = this.value;
 
+        $( "#category-debit" ).val(parentValue);
+
         if( parentValue != ""){
+            // credit section
             $("#subCategory").val('').trigger('change');
             document.getElementById("subCategory").removeAttribute("hidden");
 
@@ -29,9 +32,34 @@ document.addEventListener("DOMContentLoaded", function () {
             if(option == hiddentCount){
                 document.getElementById("subCategory").setAttribute("hidden", "hidden");
             }
+            
+            // debit section
+            $("#subCategory-debit").val('').trigger('change');
+            document.getElementById("subCategory-debit").removeAttribute("hidden");
+
+            option = document.getElementById("subCategory-debit").options.length;
+            subCategory =  document.getElementById("subCategory-debit");
+            hiddentCount = 0;
+
+            for(let i = 0 ; i < option ; i++){
+                let value = subCategory.options[i].value ;
+                value = value.split("-")
+                if(parentValue != value[0]){
+                    hiddentCount++;
+                    subCategory.options[i].setAttribute("hidden", "hidden");
+                }else{
+                    subCategory.options[i].removeAttribute("hidden");
+                }
+            }
+            if(option == hiddentCount){
+                document.getElementById("subCategory-debit").setAttribute("hidden", "hidden");
+            }
         }else{
             $("#subCategory").val('').trigger('change');
             document.getElementById("subCategory").setAttribute("hidden", "hidden");
+            
+            $("#subCategory-debit").val('').trigger('change');
+            document.getElementById("subCategory-debit").setAttribute("hidden", "hidden");
         }
     });
 
@@ -39,7 +67,10 @@ document.addEventListener("DOMContentLoaded", function () {
     $( "#category-debit" ).change(function() {
         let parentValue = this.value;
 
+        $( "#category" ).val(parentValue);
+
         if( parentValue != ""){
+            // debit section
             $("#subCategory-debit").val('').trigger('change');
             document.getElementById("subCategory-debit").removeAttribute("hidden");
 
@@ -60,7 +91,32 @@ document.addEventListener("DOMContentLoaded", function () {
             if(option == hiddentCount){
                 document.getElementById("subCategory-debit").setAttribute("hidden", "hidden");
             }
+
+            // credit section
+            $("#subCategory").val('').trigger('change');
+            document.getElementById("subCategory").removeAttribute("hidden");
+ 
+            option = document.getElementById("subCategory").options.length;
+            subCategory =  document.getElementById("subCategory");
+            hiddentCount = 0;
+ 
+            for(let i = 0 ; i < option ; i++){
+                let value = subCategory.options[i].value ;
+                value = value.split("-")
+                if(parentValue != value[0]){
+                    hiddentCount++;
+                    subCategory.options[i].setAttribute("hidden", "hidden");
+                }else{
+                    subCategory.options[i].removeAttribute("hidden");
+                }
+            }
+            if(option == hiddentCount){
+                document.getElementById("subCategory").setAttribute("hidden", "hidden");
+            }
         }else{
+            $("#subCategory").val('').trigger('change');
+            document.getElementById("subCategory").setAttribute("hidden", "hidden");
+
             $("#subCategory-debit").val('').trigger('change');
             document.getElementById("subCategory-debit").setAttribute("hidden", "hidden");
         }
@@ -83,6 +139,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 accountNameTo.options[i].removeAttribute("hidden");
             }
         }
+
+        $("#accountName-credit").val(this.value);
+        $("#accountName-debit").val(this.value);
     });
 
     // add transaction section
@@ -345,4 +404,89 @@ document.addEventListener("DOMContentLoaded", function () {
             })
         }
     }
+
+    // Add transaction section event 
+    // amount value
+    $( "#amount-credit" ).focusout(function() {
+        $("#amount-debit").val(this.value);
+        $("#amount-transfer").val(this.value);
+    });
+    
+    $( "#amount-debit" ).focusout(function() {
+        $("#amount-credit").val(this.value);
+        $("#amount-transfer").val(this.value);
+    });
+    
+    $( "#amount-transfer" ).focusout(function() {
+        $("#amount-credit").val(this.value);
+        $("#amount-debit").val(this.value);
+    });
+    
+    // description value
+    $( "#des-credit" ).focusout(function() {
+        $("#des-debit").val(this.value);
+        $("#des-transfer").val(this.value);
+    });
+    
+    $( "#des-debit" ).focusout(function() {
+        $("#des-credit").val(this.value);
+        $("#des-transfer").val(this.value);
+    });
+    
+    $( "#des-transfer" ).focusout(function() {
+        $("#des-credit").val(this.value);
+        $("#des-debit").val(this.value);
+    });
+
+    // date value
+    $( "#date-credit" ).focusout(function() {
+        $("#date-debit").val(this.value);
+        $("#date-transfer").val(this.value);
+    });
+    
+    $( "#date-debit" ).focusout(function() {
+        $("#date-credit").val(this.value);
+        $("#date-transfer").val(this.value);
+    });
+    
+    $( "#date-transfer" ).focusout(function() {
+        $("#date-credit").val(this.value);
+        $("#date-debit").val(this.value);
+    });
+
+    // time value
+    $( "#time-credit" ).focusout(function() {
+        $("#time-debit").val(this.value);
+        $("#time-transfer").val(this.value);
+    });
+    
+    $( "#time-debit" ).focusout(function() {
+        $("#time-credit").val(this.value);
+        $("#time-transfer").val(this.value);
+    });
+    
+    $( "#time-transfer" ).focusout(function() {
+        $("#time-credit").val(this.value);
+        $("#time-debit").val(this.value);
+    });
+
+    // account name value
+    $( "#accountName-credit" ).focusout(function() {
+        $("#accountName-debit").val(this.value);
+        $("#accountNameFrom").val(this.value);
+    });
+    
+    $( "#accountName-debit" ).focusout(function() {
+        $("#accountName-credit").val(this.value);
+        $("#accountNameFrom").val(this.value);
+    });
+
+    // subcategory value
+    $("#subCategory").focusout(function() {
+        $("#subCategory-debit").val(this.value);
+    })
+
+    $("#subCategory-debit").focusout(function() {
+        $("#subCategory").val(this.value);
+    })
 });
