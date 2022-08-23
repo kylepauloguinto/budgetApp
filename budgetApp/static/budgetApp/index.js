@@ -145,7 +145,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // add transaction section
-    if( path == 'addTransaction' ){
+    if( path == 'addTransaction' ||  path == 'creditAdd' || path == 'debitAdd' ){
         $( "#pills-transfer-tab" ).click(function() {
             let accountNameFrom =  document.getElementById("accountNameFrom").value ;
 
@@ -165,14 +165,39 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
+
+    // add transaction section when some error in transfer section
+    if( path == 'transferAdd' ){
+        let accountNameFrom = document.getElementById("accountNameFrom").value ;
+
+        $("#accountNameTo").val('').trigger('change');
+
+        let option = document.getElementById("accountNameTo").options.length;
+        let accountNameTo = document.getElementById("accountNameTo");
+        let hiddenAccountNameTo = document.getElementById("hiddenAccountNameTo").value;
+
+        for(let i = 0 ; i < option ; i++){
+            let value = accountNameTo.options[i].value ;
+            value = value.split("-")
+            if(accountNameFrom == value[0]){
+                accountNameTo.options[i].setAttribute("hidden", "hidden");
+            }else{
+                accountNameTo.options[i].removeAttribute("hidden");
+            }
+            
+            if(hiddenAccountNameTo == value[0]){
+                $("#accountNameTo").val(hiddenAccountNameTo).trigger('change');
+            }
+        }
+    }
     
     if( id == 'editTransaction' ){
         // credit subCategory function
-        let category =  document.getElementById("category").value ;
+        let category = document.getElementById("category").value ;
         document.getElementById("subCategory").removeAttribute("hidden");
 
         let option = document.getElementById("subCategory").options.length;
-        let subCategory =  document.getElementById("subCategory");
+        let subCategory = document.getElementById("subCategory");
         let hiddentCount = 0;
 
         for(let i = 0 ; i < option ; i++){
@@ -190,11 +215,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // debit subCategory function
-        category =  document.getElementById("category-debit").value ;
+        category = document.getElementById("category-debit").value ;
         document.getElementById("subCategory-debit").removeAttribute("hidden");
 
         option = document.getElementById("subCategory-debit").options.length;
-        subCategory =  document.getElementById("subCategory-debit");
+        subCategory = document.getElementById("subCategory-debit");
         hiddentCount = 0;
 
         for(let i = 0 ; i < option ; i++){

@@ -6,26 +6,59 @@
         <div class="col-2">
         </div>
         <div class="col-8">
+          {% if messageList|length > 0 %}
+          <div class="row">
+            <div class="col">
+              <div class="alert alert-danger" role="alert">
+                {% for message in messageList %}
+                  <p>※ {{ message }}</p>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          {% endif %}
           <div class="row">
             <div class="col">
               <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                {% if do == 'credit'%}
                 <li class="nav-item">
                   <a class="nav-link active" id="pills-credit-tab" data-toggle="pill" href="#pills-credit" role="tab" aria-controls="pills-credit" aria-selected="true">Expenses</a>
                 </li>
+                {% else %}
+                <li class="nav-item">
+                  <a class="nav-link" id="pills-credit-tab" data-toggle="pill" href="#pills-credit" role="tab" aria-controls="pills-credit" aria-selected="true">Expenses</a>
+                </li>
+                {% endif %}
+                {% if do == 'debit'%}
+                <li class="nav-item">
+                  <a class="nav-link active" id="pills-debit-tab" data-toggle="pill" href="#pills-debit" role="tab" aria-controls="pills-debit" aria-selected="false">Income</a>
+                </li>
+                {% else %}
                 <li class="nav-item">
                   <a class="nav-link" id="pills-debit-tab" data-toggle="pill" href="#pills-debit" role="tab" aria-controls="pills-debit" aria-selected="false">Income</a>
                 </li>
+                {% endif %}
                 {% if accounts.count > 1 %}
-                <li class="nav-item">
-                  <a class="nav-link" id="pills-transfer-tab" data-toggle="pill" href="#pills-transfer" role="tab" aria-controls="pills-transfer" aria-selected="false" >Transfer</a>
-                </li>
+                  {% if do == 'transfer'%}
+                  <li class="nav-item">
+                    <a class="nav-link active" id="pills-transfer-tab" data-toggle="pill" href="#pills-transfer" role="tab" aria-controls="pills-transfer" aria-selected="false" >Transfer</a>
+                  </li>
+                  {% else %}
+                  <li class="nav-item">
+                    <a class="nav-link" id="pills-transfer-tab" data-toggle="pill" href="#pills-transfer" role="tab" aria-controls="pills-transfer" aria-selected="false" >Transfer</a>
+                  </li>
+                  {% endif %}
                 {% endif %}
               </ul>
             </div>
           </div>
           <!-- Credit section -->
           <div class="tab-content" id="pills-tabContent">
+            {% if do == 'credit'%}
             <div class="tab-pane fade show active" id="pills-credit" role="tabpanel" aria-labelledby="pills-credit-tab">
+            {% else %}
+            <div class="tab-pane fade" id="pills-credit" role="tabpanel" aria-labelledby="pills-credit-tab">
+            {% endif %}
               <form action="{% url 'creditAdd' %}" method="post">
                   {% csrf_token %}
                   <div class="form-group row">
@@ -111,19 +144,23 @@
               </form>
             </div>
             <!-- Debit section -->
+            {% if do == 'debit'%}
+            <div class="tab-pane fade show active" id="pills-debit" role="tabpanel" aria-labelledby="pills-debit-tab">
+            {% else %}
             <div class="tab-pane fade" id="pills-debit" role="tabpanel" aria-labelledby="pills-debit-tab">
+            {% endif %}
               <form action="{% url 'debitAdd' %}" method="post">
                 {% csrf_token %}
                 <div class="form-group row">
                     <label for="amount" class="col-sm-3 col-form-label">Amount : </label>
                     <div class="col-sm-9">
-                        <input autofocus class="form-control" type="number" name="amount" placeholder="¥" id="amount-debit">
+                        <input autofocus class="form-control" type="number" name="amount" placeholder="¥" id="amount-debit" value="{{ amount }}">
                     </div>
                 </div>
                 <div class="form-group row">
                     <label for="descriptions" class="col-sm-3 col-form-label">Descriptions :</label>
                     <div class="col-sm-9">
-                        <input autofocus class="form-control" type="text" name="descriptions" placeholder="" id="des-debit">
+                        <input autofocus class="form-control" type="text" name="descriptions" placeholder="" id="des-debit" value="{{ description }}">
                     </div>
                 </div>
                 <div class="form-group row">
@@ -132,14 +169,26 @@
                       <select name="category-debit" class="custom-select" id="category-debit" >
                         <option value=""></option>
                         {% for category in categories %}
-                          <option value="{{ category.id }}">{{ category.category }}</option>
+                          {% if category.id == categoryValue %}
+                            <option value="{{ category.id }}" selected>{{ category.category }}</option>
+                          {% else %}
+                            <option value="{{ category.id }}">{{ category.category }}</option>
+                          {% endif %}
                         {% endfor %}
                       </select>
                       <div class="blank-space"></div>
+                      {% if subcategoryValue %}
+                      <select name="subCategory-debit" class="custom-select" id="subCategory-debit">
+                      {% else %}
                       <select name="subCategory-debit" class="custom-select" id="subCategory-debit" hidden="hidden">
+                      {% endif %}
                         <option value=""></option>
                         {% for subCategory in subCategories %}
-                          <option value="{{ subCategory.parentCategory.id }}-{{ subCategory.id }}">{{ subCategory.subCategory }}</option>
+                          {% if subCategory.parentCategory.id == subcategoryValueParent and subCategory.id == subcategoryValueChild %}
+                            <option value="{{ subCategory.parentCategory.id }}-{{ subCategory.id }}" selected>{{ subCategory.subCategory }}</option>
+                            {% else %}
+                            <option value="{{ subCategory.parentCategory.id }}-{{ subCategory.id }}">{{ subCategory.subCategory }}</option>
+                            {% endif %}
                         {% endfor %}
                       </select>
                     </div>
@@ -172,7 +221,11 @@
                     <div class="col-sm-9">
                       <select name="accountName" class="custom-select" id="accountName-debit">
                         {% for account in accounts %}
+                          {% if account.id == accountName %}
+                          <option value="{{ account.id }}" selected>{{ account.accountName }}</option>
+                          {% else %}
                           <option value="{{ account.id }}">{{ account.accountName }}</option>
+                          {% endif %}
                         {% endfor %}
                       </select>
                     </div>
@@ -181,19 +234,23 @@
               </form>
             </div>
             <!-- Transfer section -->
+            {% if do == 'transfer'%}
+            <div class="tab-pane fade show active" id="pills-transfer" role="tabpanel" aria-labelledby="pills-transfer-tab">
+            {% else %}
             <div class="tab-pane fade" id="pills-transfer" role="tabpanel" aria-labelledby="pills-transfer-tab">
+            {% endif %}
               <form action="{% url 'transferAdd' %}" method="post">
                 {% csrf_token %}
                 <div class="form-group row">
                     <label for="amount" class="col-sm-3 col-form-label">Amount : </label>
                     <div class="col-sm-9">
-                        <input autofocus class="form-control" type="number" name="amount" placeholder="¥" id="amount-transfer">
+                        <input autofocus class="form-control" type="number" name="amount" placeholder="¥" id="amount-transfer" value="{{ amount }}">
                     </div>
                 </div>
                 <div class="form-group row">
                     <label for="descriptions" class="col-sm-3 col-form-label">Descriptions :</label>
                     <div class="col-sm-9">
-                        <input autofocus class="form-control" type="text" name="descriptions" placeholder="" id="des-transfer">
+                        <input autofocus class="form-control" type="text" name="descriptions" placeholder="" id="des-transfer" value="{{ description }}">
                     </div>
                 </div>
                 <div class="form-group row">
@@ -224,7 +281,11 @@
                   <div class="col-sm-9">
                     <select name="accountNameFrom" class="custom-select" id="accountNameFrom">
                       {% for account in accounts %}
+                        {% if account.id == accountNameFrom %}
+                        <option value="{{ account.id }}" selected>{{ account.accountName }}</option>
+                        {% else %}
                         <option value="{{ account.id }}">{{ account.accountName }}</option>
+                        {% endif %}
                       {% endfor %}
                     </select>
                   </div>
@@ -239,6 +300,7 @@
                     </select>
                   </div>
                 </div>
+                <input type="text" value="{{ accountNameTo }}" id="hiddenAccountNameTo" hidden>
                 <input class="btn btn-primary" type="submit" value="Save">
               </form>
             </div>
