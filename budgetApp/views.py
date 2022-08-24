@@ -165,108 +165,45 @@ def editTransaction(request, id):
         "do": transaction.transactionType
     })
 
-def displayError(request, messageList, addOrEdit, action):
-
-    if action == "credit" or action == "debit":
-        # Dropdown account, categories and subcategories data
-        accounts = Account.objects.filter(userAccount=request.user).order_by("accountName")
-        categories = Categories.objects.filter(userCategory=request.user).order_by("category")
-        subCategories = SubCategories.objects.filter(userSubCategory=request.user).order_by("subCategory")
-
-        cat = ""
-        subCat =""
-        if action == "credit":
-            cat = request.POST["category"]
-            subCat = request.POST["subCategory"]
-        elif action == "debit":
-            cat = request.POST["category-debit"]
-            subCat = request.POST["subCategory-debit"]
-
-        subcategoryValueParent = ""
-        subcategoryValueChild = ""
-        subcategoryValue = False
-        if subCat != "":
-            category = subCat.split("-")
-            subcategoryValueParent = category[0]
-            subcategoryValueChild = category[1]
-            subcategoryValue = True
-        elif cat != "" :
-            for sub in subCategories:
-                if sub.parentCategory.id == int(cat) :
-                    subcategoryValue = True
-
-        return render(request, "budgetApp/addTransaction.html",{
-            "accountName": int(request.POST["accountName"]) if request.POST["accountName"] != "" else "",
-            "amount": request.POST["amount"],
-            "description": request.POST["descriptions"],
-            "categoryValue": int(cat) if cat != "" else "",
-            "subcategoryValue": subcategoryValue, 
-            "subcategoryValueParent":  int(subcategoryValueParent) if subcategoryValueParent != "" else "", 
-            "subcategoryValueChild":  int(subcategoryValueChild) if subcategoryValueChild != "" else "", 
-            "messageList": messageList,
-            "accounts" : accounts,
-            "categories" : categories,
-            "subCategories" : subCategories,
-            "date": request.POST["transactionDate"],
-            "time": request.POST["transactionTime"],
-            "do": action
-        })
-
-    elif action == "transfer":
-        # Dropdown account
-        accounts = Account.objects.filter(userAccount=request.user).order_by("accountName")
-        categories = Categories.objects.filter(userCategory=request.user).order_by("category")
-        subCategories = SubCategories.objects.filter(userSubCategory=request.user).order_by("subCategory")
-
-        return render(request, "budgetApp/addTransaction.html",{
-            "accountNameFrom": int(request.POST["accountNameFrom"]) if request.POST["accountNameFrom"] != "" else "",
-            "accountNameTo": int(request.POST["accountNameTo"]) if request.POST.get("accountNameTo",False) else "",
-            "amount": request.POST["amount"],
-            "description": request.POST["descriptions"],
-            "messageList": messageList,
-            "accounts" : accounts,
-            "categories" : categories,
-            "subCategories" : subCategories,
-            "date": request.POST["transactionDate"],
-            "time": request.POST["transactionTime"],
-            "do": action
-        })
-
-# Add credit transaction 
+# Add credit transaction
+@csrf_exempt
+@login_required
 def creditAdd(request):
     
     messageList = validation(request, "credit")
     if len(messageList) > 0:
-        return displayError(request,messageList,"add","credit")
+        return JsonResponse({"message":"error","error": messageList}, status=400)
 
-    account = Account.objects.get(userAccount=request.user,id=request.POST["accountName"])
+    data = json.loads(request.body)
+
+    account = Account.objects.get(userAccount=request.user,id=data["accountName"])
 
     credit = Transaction()
     credit.userTransaction = request.user
-    credit.accountNameTransaction_id = request.POST["accountName"]
+    credit.accountNameTransaction_id = data["accountName"]
     credit.transactionType = "credit"
-    credit.amount = request.POST["amount"]
+    credit.amount = data["amount"]
     credit.previousAccountBalance = account.balance
-    credit.descriptionTransaction = request.POST["descriptions"]
+    credit.descriptionTransaction = data["description"]
 
-    if request.POST["subCategory"] != "":
-        category = request.POST["subCategory"].split("-")
+    if data["subcategory"] != "":
+        category = data["subcategory"].split("-")
         credit.categoryTransaction_id = category[0]
         credit.subCategoryTransaction_id = category[1]
     else:
-        credit.categoryTransaction_id = request.POST["category"]
+        credit.categoryTransaction_id = data["category"]
 
-    date = request.POST["transactionDate"]
-    time = request.POST["transactionTime"]
+    date = data["date"]
+    time = data["time"]
     credit.transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
     credit.readTransaction = False
     credit.save()
 
-    account.balance = account.balance - int(request.POST["amount"])
+    account.balance = account.balance - int(data["amount"])
     account.read = False
     account.save()
 
-    return redirect('index')
+    return JsonResponse({"message": "success"}, status=200)
 
 # Edit credit transaction
 def creditEdit(request, id):
@@ -769,29 +706,30 @@ def dateFormatter(dateTrans):
 
 # Validations
 def validation(request, action):
+    data = json.loads(request.body)
     messageList = []
-    amount = request.POST["amount"]
-    descriptions = request.POST["descriptions"]
+    amount = data.get("amount")
+    description = data.get("description")
 
     if amount == "":
-        messageList.append("Please input amount.")
+        messageList.append({"id":"amount", "message":"Please input amount."})
     
-    if len(amount) > 15:
-        messageList.append("Please input amount within 15 numbers.")
+    if amount is not None and len(amount) > 15:
+        messageList.append({"id":"amount", "message":"Please input amount within 15 numbers."})
 
-    if len(descriptions) > 25:
-        messageList.append("Please input description within 25 letters.")
+    if description is not None and len(description) > 25:
+        messageList.append({"id":"description", "message":"Please input description within 25 letters."})
 
     if action != "transfer":
-        accountName = request.POST["accountName"]
+        accountName = data.get("accountName")
         if accountName == "":
-            messageList.append("Please input account.")
+            messageList.append({"id":"accountName", "message":"Please input account."})
         
         if accountName != "" and not Account.objects.filter(userAccount=request.user,id=accountName).exists():
-            messageList.append("Account is not exists.")
+            messageList.append({"id":"accountName", "message":"Account is not exists."})
     else:
-        accountFrom = request.POST["accountNameFrom"]
-        accountTo = request.POST.get("accountNameTo", False)
+        accountFrom = data.get("accountNameFrom")
+        accountTo = data.get("accountNameTo")
         
         if accountFrom == "":
             messageList.append("Please input account from.")

@@ -118,9 +118,6 @@ h4 {
   margin-left: 100px;
 }
 
-.input-group-append{
-  height: 31px !important;
-}
 .blank-space{
   height: 15px;
 }
@@ -163,4 +160,10 @@ ul li{
 .badge{
   top:-8px !important;
   right: -8px !important;
+}
+.invalid-feedback-amount{
+  font-size: 13px;
+  margin-top: 2px;
+  margin-bottom: 1rem;
+  color:#dc3545
 }

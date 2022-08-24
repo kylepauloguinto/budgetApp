@@ -20,7 +20,7 @@ urlpatterns = [
     path("creditEdit/<int:id>", views.creditEdit, name="creditEdit"),
     path("debitEdit/<int:id>", views.debitEdit, name="debitEdit"),
     path("transferEdit/<int:id>", views.transferEdit, name="transferEdit"),
-    path("creditAdd", views.creditAdd, name="creditAdd"),
+    path("addTransaction/creditAdd", views.creditAdd, name="creditAdd"),
     path("debitAdd", views.debitAdd, name="debitAdd"),
     path("transferAdd", views.transferAdd, name="transferAdd"),
 

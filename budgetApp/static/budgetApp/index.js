@@ -1,3 +1,5 @@
+let TRANSACTION_CODE = "";
+
 document.addEventListener("DOMContentLoaded", function () {
     
     let url = window.location.href
@@ -14,6 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // credit section
             $("#subCategory").val('').trigger('change');
             document.getElementById("subCategory").removeAttribute("hidden");
+            document.getElementById("label-sub").removeAttribute("hidden");
 
             let option = document.getElementById("subCategory").options.length;
             let subCategory =  document.getElementById("subCategory");
@@ -25,17 +28,21 @@ document.addEventListener("DOMContentLoaded", function () {
                 if(parentValue != value[0]){
                     hiddentCount++;
                     subCategory.options[i].setAttribute("hidden", "hidden");
+                    document.getElementById("label-sub").setAttribute("hidden", "hidden");
                 }else{
                     subCategory.options[i].removeAttribute("hidden");
+                    document.getElementById("label-sub").removeAttribute("hidden");
                 }
             }
             if(option == hiddentCount){
                 document.getElementById("subCategory").setAttribute("hidden", "hidden");
+                document.getElementById("label-sub").setAttribute("hidden", "hidden");
             }
             
             // debit section
             $("#subCategory-debit").val('').trigger('change');
             document.getElementById("subCategory-debit").removeAttribute("hidden");
+            document.getElementById("label-sub-debit").removeAttribute("hidden");
 
             option = document.getElementById("subCategory-debit").options.length;
             subCategory =  document.getElementById("subCategory-debit");
@@ -47,19 +54,24 @@ document.addEventListener("DOMContentLoaded", function () {
                 if(parentValue != value[0]){
                     hiddentCount++;
                     subCategory.options[i].setAttribute("hidden", "hidden");
+                    document.getElementById("label-sub-debit").setAttribute("hidden", "hidden");
                 }else{
                     subCategory.options[i].removeAttribute("hidden");
+                    document.getElementById("label-sub-debit").removeAttribute("hidden");
                 }
             }
             if(option == hiddentCount){
                 document.getElementById("subCategory-debit").setAttribute("hidden", "hidden");
+                document.getElementById("label-sub-debit").setAttribute("hidden", "hidden");
             }
         }else{
             $("#subCategory").val('').trigger('change');
             document.getElementById("subCategory").setAttribute("hidden", "hidden");
+            document.getElementById("label-sub").setAttribute("hidden", "hidden");
             
             $("#subCategory-debit").val('').trigger('change');
             document.getElementById("subCategory-debit").setAttribute("hidden", "hidden");
+            document.getElementById("label-sub-debit").setAttribute("hidden", "hidden");
         }
     });
 
@@ -73,6 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // debit section
             $("#subCategory-debit").val('').trigger('change');
             document.getElementById("subCategory-debit").removeAttribute("hidden");
+            document.getElementById("label-sub-debit").removeAttribute("hidden");
 
             let option = document.getElementById("subCategory-debit").options.length;
             let subCategory =  document.getElementById("subCategory-debit");
@@ -84,17 +97,21 @@ document.addEventListener("DOMContentLoaded", function () {
                 if(parentValue != value[0]){
                     hiddentCount++;
                     subCategory.options[i].setAttribute("hidden", "hidden");
+                    document.getElementById("label-sub-debit").setAttribute("hidden", "hidden");
                 }else{
                     subCategory.options[i].removeAttribute("hidden");
+                    document.getElementById("label-sub-debit").removeAttribute("hidden");
                 }
             }
             if(option == hiddentCount){
                 document.getElementById("subCategory-debit").setAttribute("hidden", "hidden");
+                document.getElementById("label-sub-debit").setAttribute("hidden", "hidden");
             }
 
             // credit section
             $("#subCategory").val('').trigger('change');
             document.getElementById("subCategory").removeAttribute("hidden");
+            document.getElementById("label-sub").removeAttribute("hidden");
  
             option = document.getElementById("subCategory").options.length;
             subCategory =  document.getElementById("subCategory");
@@ -106,19 +123,24 @@ document.addEventListener("DOMContentLoaded", function () {
                 if(parentValue != value[0]){
                     hiddentCount++;
                     subCategory.options[i].setAttribute("hidden", "hidden");
+                    document.getElementById("label-sub").setAttribute("hidden", "hidden");
                 }else{
                     subCategory.options[i].removeAttribute("hidden");
+                    document.getElementById("label-sub").removeAttribute("hidden");
                 }
             }
             if(option == hiddentCount){
                 document.getElementById("subCategory").setAttribute("hidden", "hidden");
+                document.getElementById("label-sub").setAttribute("hidden", "hidden");
             }
         }else{
             $("#subCategory").val('').trigger('change');
             document.getElementById("subCategory").setAttribute("hidden", "hidden");
+            document.getElementById("label-sub").setAttribute("hidden", "hidden");
 
             $("#subCategory-debit").val('').trigger('change');
             document.getElementById("subCategory-debit").setAttribute("hidden", "hidden");
+            document.getElementById("label-sub-debit").setAttribute("hidden", "hidden");
         }
     });
 
@@ -145,7 +167,10 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // add transaction section
-    if( path == 'addTransaction' ||  path == 'creditAdd' || path == 'debitAdd' ){
+    if( path == 'addTransaction'){
+        // when page of add transaction loads, set transaction code as credit
+        TRANSACTION_CODE = "credit";
+
         $( "#pills-transfer-tab" ).click(function() {
             let accountNameFrom =  document.getElementById("accountNameFrom").value ;
 
@@ -167,29 +192,29 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // add transaction section when some error in transfer section
-    if( path == 'transferAdd' ){
-        let accountNameFrom = document.getElementById("accountNameFrom").value ;
+    // if( path == 'transferAdd' ){
+    //     let accountNameFrom = document.getElementById("accountNameFrom").value ;
 
-        $("#accountNameTo").val('').trigger('change');
+    //     $("#accountNameTo").val('').trigger('change');
 
-        let option = document.getElementById("accountNameTo").options.length;
-        let accountNameTo = document.getElementById("accountNameTo");
-        let hiddenAccountNameTo = document.getElementById("hiddenAccountNameTo").value;
+    //     let option = document.getElementById("accountNameTo").options.length;
+    //     let accountNameTo = document.getElementById("accountNameTo");
+    //     let hiddenAccountNameTo = document.getElementById("hiddenAccountNameTo").value;
 
-        for(let i = 0 ; i < option ; i++){
-            let value = accountNameTo.options[i].value ;
-            value = value.split("-")
-            if(accountNameFrom == value[0]){
-                accountNameTo.options[i].setAttribute("hidden", "hidden");
-            }else{
-                accountNameTo.options[i].removeAttribute("hidden");
-            }
+    //     for(let i = 0 ; i < option ; i++){
+    //         let value = accountNameTo.options[i].value ;
+    //         value = value.split("-")
+    //         if(accountNameFrom == value[0]){
+    //             accountNameTo.options[i].setAttribute("hidden", "hidden");
+    //         }else{
+    //             accountNameTo.options[i].removeAttribute("hidden");
+    //         }
             
-            if(hiddenAccountNameTo == value[0]){
-                $("#accountNameTo").val(hiddenAccountNameTo).trigger('change');
-            }
-        }
-    }
+    //         if(hiddenAccountNameTo == value[0]){
+    //             $("#accountNameTo").val(hiddenAccountNameTo).trigger('change');
+    //         }
+    //     }
+    // }
     
     if( id == 'editTransaction' ){
         // credit subCategory function
@@ -515,3 +540,52 @@ document.addEventListener("DOMContentLoaded", function () {
         $("#subCategory").val(this.value);
     })
 });
+
+function addSubmit(){
+
+    if(TRANSACTION_CODE == "credit"){
+        let data = {
+            amount: $("#amount-credit").val(),
+            description: $("#des-credit").val(),
+            category: $("#category").val(),
+            subcategory: $("#subCategory").val(),
+            date: $("#date-credit").val(),
+            time: $("#time-credit").val(),
+            accountName: $("#accountName-credit").val()
+        }
+
+        fetch('/addTransaction/creditAdd',{
+            method: 'POST',
+            body: JSON.stringify( data )
+        })
+        .then(response => response.json())
+        .then( result => {
+
+            $("#amount-credit").removeClass("is-invalid")
+            $("#invalid-amount").html("")
+            $("#des-credit").removeClass("is-invalid")
+            $("#invalid-des").html("")
+            $("#accountName-credit").removeClass("is-invalid")
+            $("#invalid-account").html("")
+            
+            if(result.message == "error" ){
+                result.error.forEach(error =>{
+                    if( error.id == "amount"){
+                        $("#amount-credit").addClass("is-invalid")
+                        $("#invalid-amount").html(error.message)
+                    }
+                    if( error.id == "description"){
+                        $("#des-credit").addClass("is-invalid")
+                        $("#invalid-des").html(error.message)
+                    }
+                    if( error.id == "accountName"){
+                        $("#accountName-credit").addClass("is-invalid")
+                        $("#invalid-account").html(error.message)
+                    }
+                })
+            } else {
+                window.location.href = "/";
+            }
+        })
+    }
+};
