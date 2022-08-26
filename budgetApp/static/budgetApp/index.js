@@ -171,7 +171,14 @@ document.addEventListener("DOMContentLoaded", function () {
         // when page of add transaction loads, set transaction code as credit
         TRANSACTION_CODE = "credit";
 
+        $("#pills-credit-tab").click(function() {
+            TRANSACTION_CODE = "credit";
+        })
+        $("#pills-debit-tab").click(function() {
+            TRANSACTION_CODE = "debit";
+        })        
         $( "#pills-transfer-tab" ).click(function() {
+            TRANSACTION_CODE = "transfer";
             let accountNameFrom =  document.getElementById("accountNameFrom").value ;
 
             $("#accountNameTo").val('').trigger('change');
@@ -581,6 +588,99 @@ function addSubmit(){
                     if( error.id == "accountName"){
                         $("#accountName-credit").addClass("is-invalid")
                         $("#invalid-account").html(error.message)
+                    }
+                })
+            } else {
+                window.location.href = "/";
+            }
+        })
+    }else if(TRANSACTION_CODE == "debit"){
+        let data = {
+            amount: $("#amount-debit").val(),
+            description: $("#des-debit").val(),
+            category: $("#category-debit").val(),
+            subcategory: $("#subCategory-debit").val(),
+            date: $("#date-debit").val(),
+            time: $("#time-debit").val(),
+            accountName: $("#accountName-debit").val()
+        }
+
+        fetch('/addTransaction/debitAdd',{
+            method: 'POST',
+            body: JSON.stringify( data )
+        })
+        .then(response => response.json())
+        .then( result => {
+
+            $("#amount-debit").removeClass("is-invalid")
+            $("#invalid-amount-debit").html("")
+            $("#des-debit").removeClass("is-invalid")
+            $("#invalid-des-debit").html("")
+            $("#accountName-debit").removeClass("is-invalid")
+            $("#invalid-account-debit").html("")
+            
+            if(result.message == "error" ){
+                result.error.forEach(error =>{
+                    if( error.id == "amount"){
+                        $("#amount-debit").addClass("is-invalid")
+                        $("#invalid-amount-debit").html(error.message)
+                    }
+                    if( error.id == "description"){
+                        $("#des-debit").addClass("is-invalid")
+                        $("#invalid-des-debit").html(error.message)
+                    }
+                    if( error.id == "accountName"){
+                        $("#accountName-debit").addClass("is-invalid")
+                        $("#invalid-account-debit").html(error.message)
+                    }
+                })
+            } else {
+                window.location.href = "/";
+            }
+        })
+    }else if(TRANSACTION_CODE == "transfer"){
+        let data = {
+            amount: $("#amount-transfer").val(),
+            description: $("#des-transfer").val(),
+            date: $("#date-debit").val(),
+            time: $("#time-debit").val(),
+            accountNameFrom: $("#accountNameFrom").val(),
+            accountNameTo: $("#accountNameTo").val()
+        }
+
+        fetch('/addTransaction/transferAdd',{
+            method: 'POST',
+            body: JSON.stringify( data )
+        })
+        .then(response => response.json())
+        .then( result => {
+
+            $("#amount-transfer").removeClass("is-invalid")
+            $("#invalid-amount-transfer").html("")
+            $("#des-transfer").removeClass("is-invalid")
+            $("#invalid-des-transfer").html("")
+            $("#accountNameFrom").removeClass("is-invalid")
+            $("#invalid-account-transfer-from").html("")
+            $("#accountNameTo").removeClass("is-invalid")
+            $("#invalid-account-transfer-to").html("")
+            
+            if(result.message == "error" ){
+                result.error.forEach(error =>{
+                    if( error.id == "amount"){
+                        $("#amount-transfer").addClass("is-invalid")
+                        $("#invalid-amount-transfer").html(error.message)
+                    }
+                    if( error.id == "description"){
+                        $("#des-transfer").addClass("is-invalid")
+                        $("#invalid-des-transfer").html(error.message)
+                    }
+                    if( error.id == "accountNameFrom"){
+                        $("#accountNameFrom").addClass("is-invalid")
+                        $("#invalid-account-transfer-from").html(error.message)
+                    }
+                    if( error.id == "accountNameTo"){
+                        $("#accountNameTo").addClass("is-invalid")
+                        $("#invalid-account-transfer-to").html(error.message)
                     }
                 })
             } else {

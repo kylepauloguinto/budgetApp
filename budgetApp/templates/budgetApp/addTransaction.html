@@ -23,7 +23,7 @@
           </div>
           <!-- Credit section -->
           <div class="tab-content" id="pills-tabContent">
-            <div class="tab-pane fade show active" id="pills-credit" role="tabpanel" aria-labelledby="pills-credit-tab">
+            <div class="tab-pane show active" id="pills-credit" role="tabpanel" aria-labelledby="pills-credit-tab">
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-currency-yen"></i></span>
                     <div class="form-floating">
@@ -95,23 +95,24 @@
                       </div>
                     </div>
                 </div>
-                <input class="btn btn-primary" type="submit" value="Save" onclick="addSubmit()">
             </div>
             <!-- Debit section -->
-            <div class="tab-pane fade" id="pills-debit" role="tabpanel" aria-labelledby="pills-debit-tab">
-              <form action="{% url 'debitAdd' %}" method="post">
-                {% csrf_token %}
-                <div class="input-group mb-3">
+            <div class="tab-pane" id="pills-debit" role="tabpanel" aria-labelledby="pills-debit-tab">
+                <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-currency-yen"></i></span>
                     <div class="form-floating">
                         <input autofocus class="form-control" type="number" name="amount" placeholder="¥" id="amount-debit" value="{{ amount }}">
                         <label for="floatingInput">Amount</label>
                     </div>
                 </div>
+                <div class="invalid-feedback-amount" id="invalid-amount-debit">
+                </div>
                 <div class="form-group mb-3">
                     <div class="form-floating">
                         <input autofocus class="form-control" type="text" name="descriptions" placeholder="Description" id="des-debit" value="{{ description }}">
                         <label for="floatingInput">Description</label>
+                        <div class="invalid-feedback" id="invalid-des-debit">
+                        </div>
                     </div>
                 </div>
                 <div class="form-group mb-3">
@@ -164,26 +165,28 @@
                         {% endfor %}
                       </select>
                       <label for="floatingSelect">Account</label>
+                      <div class="invalid-feedback" id="invalid-account-debit">
+                      </div>
                   </div>
                 </div>
-                <input class="btn btn-primary" type="submit" value="Save">
-              </form>
             </div>
             <!-- Transfer section -->
-            <div class="tab-pane fade" id="pills-transfer" role="tabpanel" aria-labelledby="pills-transfer-tab">
-              <form action="{% url 'transferAdd' %}" method="post">
-                {% csrf_token %}
-                <div class="input-group mb-3">
+            <div class="tab-pane" id="pills-transfer" role="tabpanel" aria-labelledby="pills-transfer-tab">
+                <div class="input-group">
                   <span class="input-group-text"><i class="bi bi-currency-yen"></i></span>
                   <div class="form-floating">
                     <input autofocus class="form-control" type="number" name="amount" placeholder="¥" id="amount-transfer" value="{{ amount }}">
-                    <label for="floatingInput">Amount : </label>
+                    <label for="floatingInput">Amount</label>
                   </div>
+                </div>
+                <div class="invalid-feedback-amount" id="invalid-amount-transfer">
                 </div>
                 <div class="input-group mb-3">
                   <div class="form-floating">
                     <input autofocus class="form-control" type="text" name="descriptions" placeholder="Description" id="des-transfer" value="{{ description }}">
                     <label for="floatingInput">Description</label>
+                    <div class="invalid-feedback" id="invalid-des-transfer">
+                    </div>
                   </div>
                 </div>
                 <div class="form-group row">
@@ -214,6 +217,8 @@
                       {% endfor %}
                     </select>
                     <label for="floatingSelect">From</label>
+                    <div class="invalid-feedback" id="invalid-account-transfer-from">
+                    </div>
                   </div>
                 </div>
                 <div class="form-group mb-3">
@@ -224,11 +229,12 @@
                       {% endfor %}
                     </select>
                     <label for="floatingSelect">To</label>
+                    <div class="invalid-feedback" id="invalid-account-transfer-to">
+                    </div>
                   </div>
                 </div>
-                <input class="btn btn-primary" type="submit" value="Save">
-              </form>
             </div>
+            <input class="btn btn-primary" type="submit" value="Save" onclick="addSubmit()">
           </div>
         </div>
       </div>

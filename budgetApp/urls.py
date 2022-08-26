@@ -21,8 +21,8 @@ urlpatterns = [
     path("debitEdit/<int:id>", views.debitEdit, name="debitEdit"),
     path("transferEdit/<int:id>", views.transferEdit, name="transferEdit"),
     path("addTransaction/creditAdd", views.creditAdd, name="creditAdd"),
-    path("debitAdd", views.debitAdd, name="debitAdd"),
-    path("transferAdd", views.transferAdd, name="transferAdd"),
+    path("addTransaction/debitAdd", views.debitAdd, name="debitAdd"),
+    path("addTransaction/transferAdd", views.transferAdd, name="transferAdd"),
 
     path("settings", views.settings, name="settings"),
 
