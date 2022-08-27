@@ -9,61 +9,60 @@
           <div class="row">
             <div class="col">
               <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-                {% if do == 'credit'%}
-                <li class="nav-item">
-                  <a class="nav-link active" id="pills-credit-tab" data-toggle="pill" href="#pills-credit" role="tab" aria-controls="pills-credit" aria-selected="true">Expenses</a>
-                </li>
+                {% if do != 'transfer' %}
+                  {% if do == 'credit'%}
+                  <li class="nav-item">
+                    <a class="nav-link active" id="pills-credit-tab" data-toggle="pill" href="#pills-credit" role="tab" aria-controls="pills-credit" aria-selected="true">Expenses</a>
+                  </li>
+                  {% else %}
+                  <li class="nav-item">
+                    <a class="nav-link" id="pills-credit-tab" data-toggle="pill" href="#pills-credit" role="tab" aria-controls="pills-credit" aria-selected="false">Expenses</a>
+                  </li>
+                  {% endif %}
+                  {% if do == 'debit'%}
+                  <li class="nav-item">
+                    <a class="nav-link active" id="pills-debit-tab" data-toggle="pill" href="#pills-debit" role="tab" aria-controls="pills-debit" aria-selected="true">Income</a>
+                  </li>
+                  {% else %}
+                  <li class="nav-item">
+                    <a class="nav-link" id="pills-debit-tab" data-toggle="pill" href="#pills-debit" role="tab" aria-controls="pills-debit" aria-selected="false">Income</a>
+                  </li>
+                  {% endif %}
                 {% else %}
-                <li class="nav-item">
-                  <a class="nav-link" id="pills-credit-tab" data-toggle="pill" href="#pills-credit" role="tab" aria-controls="pills-credit" aria-selected="false">Expenses</a>
-                </li>
-                {% endif %}
-                {% if do == 'debit'%}
-                <li class="nav-item">
-                  <a class="nav-link active" id="pills-debit-tab" data-toggle="pill" href="#pills-debit" role="tab" aria-controls="pills-debit" aria-selected="true">Income</a>
-                </li>
-                {% else %}
-                <li class="nav-item">
-                  <a class="nav-link" id="pills-debit-tab" data-toggle="pill" href="#pills-debit" role="tab" aria-controls="pills-debit" aria-selected="false">Income</a>
-                </li>
-                {% endif %}
-                {% if do == 'transfer'%}
-                <li class="nav-item">
-                  <a class="nav-link active" id="pills-transfer-tab" data-toggle="pill" href="#pills-transfer" role="tab" aria-controls="pills-transfer" aria-selected="true" >Transfer</a>
-                </li>
-                {% else %}
-                <li class="nav-item">
-                  <a class="nav-link" id="pills-transfer-tab" data-toggle="pill" href="#pills-transfer" role="tab" aria-controls="pills-transfer" aria-selected="false" >Transfer</a>
-                </li>
+                  <li class="nav-item">
+                    <a class="nav-link active" id="pills-transfer-tab" data-toggle="pill" href="#pills-transfer" role="tab" aria-controls="pills-transfer" aria-selected="true" >Transfer</a>
+                  </li>
                 {% endif %}
               </ul>
             </div>
           </div>
           <div class="tab-content" id="pills-tabContent">
             {% if do == 'credit'%}
-            <div class="tab-pane fade show active" id="pills-credit" role="tabpanel" aria-labelledby="pills-credit-tab">
+            <div class="tab-pane show active" id="pills-credit" role="tabpanel" aria-labelledby="pills-credit-tab">
             {% else %}
-            <div class="tab-pane fade" id="pills-credit" role="tabpanel" aria-labelledby="pills-credit-tab">
+            <div class="tab-pane" id="pills-credit" role="tabpanel" aria-labelledby="pills-credit-tab">
             {% endif %}
             <!-- Credit section -->
-              <form action="{% url 'creditEdit' transaction.id %}" method="post">
-                  {% csrf_token %}
-                  <div class="form-group row">
-                      <label for="amount" class="col-sm-3 col-form-label">Amount : </label>
-                      <div class="col-sm-9">
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-currency-yen"></i></span>
+                      <div class="form-floating">
                           <input autofocus class="form-control" type="number" name="amount" placeholder="¥" value="{{ transaction.amount }}" id="amount-credit">
+                          <label for="floatingInput">Amount</label>
                       </div>
                   </div>
-                  <div class="form-group row">
-                      <label for="descriptions" class="col-sm-3 col-form-label">Descriptions :</label>
-                      <div class="col-sm-9">
+                  <div class="invalid-feedback-amount" id="invalid-amount">
+                  </div>
+                  <div class="form-group mb-3">
+                      <div class="form-floating">
                           <input autofocus class="form-control" type="text" name="descriptions" placeholder="" value="{{ transaction.descriptionTransaction }}" id="des-credit">
+                          <label for="floatingInput">Description</label>
+                          <div class="invalid-feedback" id="invalid-des">
+                          </div>
                       </div>
                   </div>
-                  <div class="form-group row">
-                      <label for="classifications" class="col-sm-3 col-form-label">Classifications :</label>
-                      <div class="col-sm-9">
-                        <select name="category" class="custom-select" id="category" >
+                  <div class="form-group mb-3">
+                      <div class="form-floating">
+                        <select name="category" class="form-select" id="category" >
                           <option value=""></option>
                           {% for category in categories %}
                             {% if category.id == transaction.categoryTransaction.id %}
@@ -73,8 +72,12 @@
                             {% endif %}
                           {% endfor %}
                         </select>
-                        <div class="blank-space"></div>
-                        <select name="subCategory" class="custom-select" id="subCategory" hidden="hidden">
+                        <label for="floatingSelect">Category</label>
+                      </div>
+                  </div>
+                  <div class="form-group mb-3">
+                      <div class="form-floating">
+                        <select name="subCategory" class="form-select" id="subCategory" hidden="hidden">
                           <option value=""></option>
                           {% for subCategory in subCategories %}
                             {% if subCategory.id == transaction.subCategoryTransaction.id %}
@@ -84,35 +87,32 @@
                             {% endif %}
                           {% endfor %}
                         </select>
+                        <label for="floatingSelect" id="label-sub" hidden>Subcategory</label>
                       </div>
                   </div>
                   <div class="form-group row">
-                      <label for="date" class="col-sm-3 col-form-label">Date :</label>
-                      <div class="col-sm-9">
-                        <div class="row">
-                          <div class="col-sm-6">
-                            <div class="input-group date" id="datePicker" data-target-input="nearest">
-                              <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker" onkeydown="return false" value="{{ transationDate }}" id="date-credit"/>
-                              <div class="input-group-append" data-target="#datePicker" data-toggle="datetimepicker">
-                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
-                              </div>
-                            </div>
-                          </div>
-                          <div class="col-sm-6">
-                            <div class="input-group date" id="timePicker" data-target-input="nearest">
-                              <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker" onkeydown="return false" value="{{ transationTime }}" id="time-credit"/>
-                              <div class="input-group-append" data-target="#timePicker" data-toggle="datetimepicker">
-                                <div class="input-group-text"><i class="fa fa-clock"></i></div>
-                              </div>
-                          </div>
-                        </div>
+                    <div class="col-sm-6 input-group">
+                      <div class="form-floating" id="datePicker" data-target-input="nearest">
+                        <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker" onkeydown="return false" value="{{ transationDate }}" id="date-credit"/>
+                        <label for="floatingInput">Date</label>
                       </div>
+                      <div class="input-group-append" data-target="#datePicker" data-toggle="datetimepicker">
+                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                       </div>
+                    </div>
+                    <div class="col-sm-6  input-group">
+                      <div class="form-floating" id="timePicker" data-target-input="nearest">
+                        <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker" onkeydown="return false" value="{{ transationTime }}" id="time-credit"/>
+                        <label for="floatingInput">Time</label>
+                      </div>
+                      <div class="input-group-append" data-target="#timePicker" data-toggle="datetimepicker">
+                        <div class="input-group-text"><i class="fa fa-clock"></i></div>
+                      </div>
+                    </div>
                   </div>
-                  <div class="form-group row">
-                      <label for="account" class="col-sm-3 col-form-label">Account :</label>
-                      <div class="col-sm-9">
-                        <select name="accountName" class="custom-select" id="accountName-credit">
+                  <div class="form-group mb-3">
+                      <div class="form-floating">
+                        <select name="accountName" class="form-select" id="accountName-credit">
                           {% for account in accounts %}
                             {% if account.id == transaction.accountNameTransaction.id %}
                               <option value="{{ account.id }}" selected>{{ account.accountName }}</option>
@@ -121,35 +121,38 @@
                             {% endif %}
                           {% endfor %}
                         </select>
+                        <label for="floatingSelect" >Account</label>
+                        <div class="invalid-feedback" id="invalid-account">
+                        </div>
                       </div>
                   </div>
-                  <input class="btn btn-primary" type="submit" value="Save">
-              </form>
-            </div>
+              </div>
             {% if do == 'debit'%}
-            <div class="tab-pane fade show active" id="pills-debit" role="tabpanel" aria-labelledby="pills-debit-tab">
+            <div class="tab-pane show active" id="pills-debit" role="tabpanel" aria-labelledby="pills-debit-tab">
             {% else %}
-            <div class="tab-pane fade" id="pills-debit" role="tabpanel" aria-labelledby="pills-debit-tab">
+            <div class="tab-pane" id="pills-debit" role="tabpanel" aria-labelledby="pills-debit-tab">
             {% endif %}
             <!-- Debit section -->
-              <form action="{% url 'debitEdit' transaction.id %}" method="post">
-                {% csrf_token %}
-                <div class="form-group row">
-                    <label for="amount" class="col-sm-3 col-form-label">Amount : </label>
-                    <div class="col-sm-9">
-                        <input autofocus class="form-control" type="number" name="amount" placeholder="¥" value="{{ transaction.amount }}" id="amount-debit">
-                    </div>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-currency-yen"></i></span>
+                  <div class="form-floating">
+                      <input autofocus class="form-control" type="number" name="amount" placeholder="¥" value="{{ transaction.amount }}" id="amount-debit">
+                      <label for="floatingInput">Amount</label>
+                  </div>
                 </div>
-                <div class="form-group row">
-                    <label for="descriptions" class="col-sm-3 col-form-label">Descriptions :</label>
-                    <div class="col-sm-9">
+                <div class="invalid-feedback-amount" id="invalid-amount-debit">
+                </div>
+                <div class="form-group mb-3">
+                    <div class="form-floating">
                         <input autofocus class="form-control" type="text" name="descriptions" placeholder="" value="{{ transaction.descriptionTransaction }}" id="des-debit">
+                        <label for="floatingInput">Description</label>
+                        <div class="invalid-feedback" id="invalid-des-debit">
+                        </div>
                     </div>
                 </div>
-                <div class="form-group row">
-                    <label for="classifications" class="col-sm-3 col-form-label">Classifications :</label>
-                    <div class="col-sm-9">
-                      <select name="category-debit" class="custom-select" id="category-debit" >
+                <div class="form-group mb-3">
+                  <div class="form-floating">
+                      <select name="category-debit" class="form-select" id="category-debit" >
                         <option value=""></option>
                         {% for category in categories %}
                           {% if category.id == transaction.categoryTransaction.id %}
@@ -159,8 +162,12 @@
                           {% endif %}
                         {% endfor %}
                       </select>
-                      <div class="blank-space"></div>
-                      <select name="subCategory-debit" class="custom-select" id="subCategory-debit" hidden="hidden">
+                      <label for="floatingSelect">Category</label>
+                    </div>
+                  </div>
+                  <div class="form-group mb-3">
+                    <div class="form-floating">
+                      <select name="subCategory-debit" class="form-select" id="subCategory-debit" hidden="hidden">
                         <option value=""></option>
                         {% for subCategory in subCategories %}
                           {% if subCategory.id == transaction.subCategoryTransaction.id %}
@@ -170,35 +177,32 @@
                           {% endif %}
                         {% endfor %}
                       </select>
+                      <label for="floatingSelect" id="label-sub-debit" hidden>Subcategory</label>
                     </div>
-                </div>
-                <div class="form-group row">
-                    <label for="date" class="col-sm-3 col-form-label">Date :</label>
-                    <div class="col-sm-9">
-                      <div class="row">
-                        <div class="col-sm-6">
-                          <div class="input-group date" id="datePicker-debit" data-target-input="nearest">
-                            <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker-debit" onkeydown="return false" value="{{ transationDate }}" id="date-debit"/>
-                            <div class="input-group-append" data-target="#datePicker-debit" data-toggle="datetimepicker">
-                              <div class="input-group-text"><i class="fa fa-calendar"></i></div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="col-sm-6">
-                          <div class="input-group date" id="timePicker-debit" data-target-input="nearest">
-                            <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker-debit" onkeydown="return false"  value="{{ transationTime }}" id="time-debit"/>
-                            <div class="input-group-append" data-target="#timePicker-debit" data-toggle="datetimepicker">
-                              <div class="input-group-text"><i class="fa fa-clock"></i></div>
-                            </div>
-                        </div>
+                  </div>
+                  <div class="form-group row">
+                    <div class="col-sm-6 input-group">
+                      <div class="form-floating" id="datePicker-debit" data-target-input="nearest">
+                        <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker-debit" onkeydown="return false" value="{{ transationDate }}" id="date-debit"/>
+                        <label for="floatingInput">Date</label>    
+                      </div>                        
+                      <div class="input-group-append" data-target="#datePicker-debit" data-toggle="datetimepicker">
+                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                       </div>
                     </div>
+                    <div class="col-sm-6 input-group">
+                        <div class="form-floating" id="timePicker-debit" data-target-input="nearest">
+                          <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker-debit" onkeydown="return false"  value="{{ transationTime }}" id="time-debit"/>
+                          <label for="floatingInput">Time</label>    
+                        </div>
+                        <div class="input-group-append" data-target="#timePicker-debit" data-toggle="datetimepicker">
+                          <div class="input-group-text"><i class="fa fa-clock"></i></div>
+                        </div>
                     </div>
-                </div>
-                <div class="form-group row">
-                    <label for="account" class="col-sm-3 col-form-label">Account :</label>
-                    <div class="col-sm-9">
-                      <select name="accountName" class="custom-select" id="accountName-debit">
+                  </div>
+                  <div class="form-group mb-3">
+                    <div class="form-floating">
+                        <select name="accountName" class="form-select" id="accountName-debit">
                         {% for account in accounts %}
                           {% if account.id == transaction.accountNameTransaction.id %}
                             <option value="{{ account.id }}" selected>{{ account.accountName }}</option>
@@ -207,58 +211,58 @@
                           {% endif %}
                         {% endfor %}
                       </select>
-                    </div>
+                      <label for="floatingSelect">Account</label>
+                      <div class="invalid-feedback" id="invalid-account-debit">
+                      </div>
+                  </div>
                 </div>
-                <input class="btn btn-primary" type="submit" value="Save">
-              </form>
             </div>
             {% if do == 'transfer'%}
-            <div class="tab-pane fade show active" id="pills-transfer" role="tabpanel" aria-labelledby="pills-transfer-tab">
+            <div class="tab-pane show active" id="pills-transfer" role="tabpanel" aria-labelledby="pills-transfer-tab">
             {% else %}
-            <div class="tab-pane fade" id="pills-transfer" role="tabpanel" aria-labelledby="pills-transfer-tab">
+            <div class="tab-pane" id="pills-transfer" role="tabpanel" aria-labelledby="pills-transfer-tab">
             {% endif %}
             <!-- Transfer section -->
-              <form action="{% url 'transferEdit' transaction.id %}" method="post">
-                {% csrf_token %}
-                <div class="form-group row">
-                    <label for="amount" class="col-sm-3 col-form-label">Amount : </label>
-                    <div class="col-sm-9">
-                        <input autofocus class="form-control" type="number" name="amount" placeholder="¥" value="{{ transaction.amount }}" id="amount-transfer">
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-currency-yen"></i></span>
+                  <div class="form-floating">
+                    <input autofocus class="form-control" type="number" name="amount" placeholder="¥" value="{{ transaction.amount }}" id="amount-transfer">
+                    <label for="floatingInput">Amount</label>
+                  </div>
+                </div>
+                <div class="invalid-feedback-amount" id="invalid-amount-transfer">
+                </div>
+                <div class="input-group mb-3">
+                  <div class="form-floating">
+                    <input autofocus class="form-control" type="text" name="descriptions" placeholder="" value="{{ transaction.descriptionTransaction }}" id="des-transfer">
+                    <label for="floatingInput">Description</label>
+                    <div class="invalid-feedback" id="invalid-des-transfer">
                     </div>
+                  </div>
                 </div>
                 <div class="form-group row">
-                    <label for="descriptions" class="col-sm-3 col-form-label">Descriptions :</label>
-                    <div class="col-sm-9">
-                        <input autofocus class="form-control" type="text" name="descriptions" placeholder="" value="{{ transaction.descriptionTransaction }}" id="des-transfer">
+                  <div class="col-sm-6 input-group">
+                    <div class="form-floating" id="datePicker-transfer" data-target-input="nearest">
+                      <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker-transfer" onkeydown="return false" value="{{ transationDate }}" id="date-transfer"/>
+                      <label for="floatingInput">Date</label>
                     </div>
-                </div>
-                <div class="form-group row">
-                    <label for="date" class="col-sm-3 col-form-label">Date :</label>
-                    <div class="col-sm-9">
-                      <div class="row">
-                        <div class="col-sm-6">
-                          <div class="input-group date" id="datePicker-transfer" data-target-input="nearest">
-                            <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker-transfer" onkeydown="return false" value="{{ transationDate }}" id="date-transfer"/>
-                            <div class="input-group-append" data-target="#datePicker-transfer" data-toggle="datetimepicker">
-                              <div class="input-group-text"><i class="fa fa-calendar"></i></div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="col-sm-6">
-                          <div class="input-group date" id="timePicker-transfer" data-target-input="nearest">
-                            <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker-transfer" onkeydown="return false"  value="{{ transationTime }}" id="time-transfer"/>
-                            <div class="input-group-append" data-target="#timePicker-transfer" data-toggle="datetimepicker">
-                              <div class="input-group-text"><i class="fa fa-clock"></i></div>
-                            </div>
-                        </div>
+                      <div class="input-group-append" data-target="#datePicker-transfer" data-toggle="datetimepicker">
+                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                       </div>
+                  </div>
+                  <div class="col-sm-6 input-group">
+                    <div class="form-floating" id="timePicker-transfer" data-target-input="nearest">
+                      <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker-transfer" onkeydown="return false"  value="{{ transationTime }}" id="time-transfer"/>
+                      <label for="floatingInput">Time</label>
                     </div>
+                    <div class="input-group-append" data-target="#timePicker-transfer" data-toggle="datetimepicker">
+                      <div class="input-group-text"><i class="fa fa-clock"></i></div>
                     </div>
+                  </div>
                 </div>
-                <div class="form-group row">
-                  <label for="account" class="col-sm-3 col-form-label">From :</label>
-                  <div class="col-sm-9">
-                    <select name="accountNameFrom" class="custom-select" id="accountNameFrom">
+                <div class="form-group mb-3">
+                  <div class="form-floating">
+                    <select name="accountNameFrom" class="form-select" id="accountNameFrom">
                       {% for account in accounts %}
                         {% if account.id == transaction.accountNameTransferFrom.id %}
                           <option value="{{ account.id }}" selected>{{ account.accountName }}</option>
@@ -267,12 +271,14 @@
                         {% endif %}
                       {% endfor %}
                     </select>
+                    <label for="floatingSelect">From</label>
+                    <div class="invalid-feedback" id="invalid-account-transfer-from">
+                    </div>
                   </div>
                 </div>
-                <div class="form-group row">
-                  <label for="account" class="col-sm-3 col-form-label">To :</label>
-                  <div class="col-sm-9">
-                    <select name="accountNameTo" class="custom-select" id="accountNameTo">
+                <div class="form-group mb-3">
+                  <div class="form-floating">
+                    <select name="accountNameTo" class="form-select" id="accountNameTo">
                       {% for account in accounts %}
                         {% if account.id == transaction.accountNameTransferTo.id %}
                           <option value="{{ account.id }}" selected>{{ account.accountName }}</option>
@@ -282,11 +288,13 @@
                         {% endif %}
                       {% endfor %}
                     </select>
+                    <label for="floatingSelect">To</label>
+                    <div class="invalid-feedback" id="invalid-account-transfer-to">
+                    </div>
                   </div>
                 </div>
-                <input class="btn btn-primary" type="submit" value="Save">
-              </form>
             </div>
+            <input class="btn btn-primary" type="submit" value="Save" onclick="editSubmit()">
           </div>
         </div>
       </div>

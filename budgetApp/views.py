@@ -206,8 +206,16 @@ def creditAdd(request):
     return JsonResponse({"message": "success"}, status=200)
 
 # Edit credit transaction
+@csrf_exempt
+@login_required
 def creditEdit(request, id):
     
+    messageList = validation(request, "credit")
+    if len(messageList) > 0:
+        return JsonResponse({"message":"error","error": messageList}, status=400)
+
+    data = json.loads(request.body)
+
     # Undo the previous data
     prevCredit = Transaction.objects.get(userTransaction=request.user,id=id)
     prevAccount = Account.objects.get(userAccount=request.user,id=prevCredit.accountNameTransaction_id)
@@ -221,34 +229,34 @@ def creditEdit(request, id):
     prevAccount.save()
 
     # Update the data with input data
-    account = Account.objects.get(userAccount=request.user,id=request.POST["accountName"])
+    account = Account.objects.get(userAccount=request.user,id=data["accountName"])
 
     credit = Transaction.objects.get(userTransaction=request.user,id=id)
     credit.userTransaction = request.user
-    credit.accountNameTransaction_id = request.POST["accountName"]
+    credit.accountNameTransaction_id = data["accountName"]
     credit.transactionType = "credit"
-    credit.amount = request.POST["amount"]
+    credit.amount = data["amount"]
     credit.previousAccountBalance = account.balance
-    credit.descriptionTransaction = request.POST["descriptions"]
+    credit.descriptionTransaction = data["description"]
 
-    if request.POST["subCategory"] != "":
-        category = request.POST["subCategory"].split("-")
+    if data["subcategory"] != "":
+        category = data["subcategory"].split("-")
         credit.categoryTransaction_id = category[0]
         credit.subCategoryTransaction_id = category[1]
     else:
-        credit.categoryTransaction_id = request.POST["category"]
+        credit.categoryTransaction_id = data["category"]
 
-    date = request.POST["transactionDate"]
-    time = request.POST["transactionTime"]
+    date = data["date"]
+    time = data["time"]
     credit.transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
     credit.readTransaction = False
     credit.save()
 
-    account.balance = account.balance - int(request.POST["amount"])
+    account.balance = account.balance - int(data["amount"])
     account.read = False
     account.save()
 
-    return redirect('index')
+    return JsonResponse({"message": "success"}, status=200)
 
 # Add debit transaction
 @csrf_exempt
@@ -291,8 +299,16 @@ def debitAdd(request):
     return JsonResponse({"message": "success"}, status=200)
 
 # Edit debit transaction
+@csrf_exempt
+@login_required
 def debitEdit(request, id):
     
+    messageList = validation(request, "debit")
+    if len(messageList) > 0:
+        return JsonResponse({"message":"error","error": messageList}, status=400)
+
+    data = json.loads(request.body)
+
     # Undo the previous action
     prevDebit = Transaction.objects.get(userTransaction=request.user,id=id)
     prevAccount = Account.objects.get(userAccount=request.user,id=prevDebit.accountNameTransaction_id)
@@ -306,34 +322,34 @@ def debitEdit(request, id):
     prevAccount.save()
 
     # Update the data with current action
-    account = Account.objects.get(userAccount=request.user,id=request.POST["accountName"])
+    account = Account.objects.get(userAccount=request.user,id=data["accountName"])
 
     debit = Transaction.objects.get(userTransaction=request.user,id=id)
     debit.userTransaction = request.user
-    debit.accountNameTransaction_id = request.POST["accountName"]
+    debit.accountNameTransaction_id = data["accountName"]
     debit.transactionType = "debit"
-    debit.amount = request.POST["amount"]
+    debit.amount = data["amount"]
     debit.previousAccountBalance = account.balance
-    debit.descriptionTransaction = request.POST["descriptions"]
+    debit.descriptionTransaction = data["description"]
 
-    if request.POST["subCategory-debit"] != "":
-        category = request.POST["subCategory-debit"].split("-")
+    if data["subcategory"] != "":
+        category = data["subcategory"].split("-")
         debit.categoryTransaction_id = category[0]
         debit.subCategoryTransaction_id = category[1]
     else:
-        debit.categoryTransaction_id = request.POST["category-debit"]
+        debit.categoryTransaction_id = data["category"]
 
-    date = request.POST["transactionDate"]
-    time = request.POST["transactionTime"]
+    date = data["date"]
+    time = data["time"]
     debit.transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
     debit.readTransaction = False
     debit.save()
 
-    account.balance = account.balance + int(request.POST["amount"])
+    account.balance = account.balance + int(data["amount"])
     account.read = False
     account.save()
 
-    return redirect('index')
+    return JsonResponse({"message": "success"}, status=200)
 
 # Add transfering money to another account
 @csrf_exempt
@@ -399,8 +415,16 @@ def transferAdd(request):
     return JsonResponse({"message": "success"}, status=200)
 
 # Edit the added transfer transaction
+@csrf_exempt
+@login_required
 def transferEdit(request, id):
     
+    messageList = validation(request, "transfer")
+    if len(messageList) > 0:
+        return JsonResponse({"message":"error","error": messageList}, status=400)
+
+    data = json.loads(request.body)
+
     # Undo changes in accounts
     try:
         # When the origin account was about to edit
@@ -428,21 +452,21 @@ def transferEdit(request, id):
 
 
     # Update the data with current action
-    accountFrom = Account.objects.get(userAccount=request.user,id=request.POST["accountNameFrom"])
-    accountTo = Account.objects.get(userAccount=request.user,id=request.POST["accountNameTo"])
+    accountFrom = Account.objects.get(userAccount=request.user,id=data["accountNameFrom"])
+    accountTo = Account.objects.get(userAccount=request.user,id=data["accountNameTo"])
 
     # Account that will be deducted
     transfer = Transaction.objects.get(userTransaction=request.user,id=accountFromId)
     transfer.userTransaction = request.user
-    transfer.accountNameTransaction_id = request.POST["accountNameFrom"]
-    transfer.accountNameTransferFrom_id = request.POST["accountNameFrom"]
-    transfer.accountNameTransferTo_id = request.POST["accountNameTo"]
+    transfer.accountNameTransaction_id = data["accountNameFrom"]
+    transfer.accountNameTransferFrom_id = data["accountNameFrom"]
+    transfer.accountNameTransferTo_id = data["accountNameTo"]
     transfer.transactionType = "transfer"
-    transfer.amount = request.POST["amount"]
+    transfer.amount = data["amount"]
     transfer.previousAccountBalance = accountFrom.balance
-    transfer.descriptionTransaction = request.POST["descriptions"]
-    date = request.POST["transactionDate"]
-    time = request.POST["transactionTime"]
+    transfer.descriptionTransaction = data["description"]
+    date = data["date"]
+    time = data["time"]
     transfer.transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
     transfer.readTransaction = False
     transfer.save()
@@ -450,28 +474,28 @@ def transferEdit(request, id):
     # Destination account of transfer
     transfer = Transaction.objects.get(userTransaction=request.user,id=accountToId)
     transfer.userTransaction = request.user
-    transfer.accountNameTransaction_id = request.POST["accountNameTo"]
-    transfer.accountNameTransferFrom_id = request.POST["accountNameFrom"]
-    transfer.accountNameTransferTo_id = request.POST["accountNameTo"]
+    transfer.accountNameTransaction_id = data["accountNameTo"]
+    transfer.accountNameTransferFrom_id = data["accountNameFrom"]
+    transfer.accountNameTransferTo_id = data["accountNameTo"]
     transfer.transactionType = "transfer"
-    transfer.amount = request.POST["amount"]
+    transfer.amount = data["amount"]
     transfer.previousAccountBalance = accountTo.balance
-    transfer.descriptionTransaction = request.POST["descriptions"]
-    date = request.POST["transactionDate"]
-    time = request.POST["transactionTime"]
+    transfer.descriptionTransaction = data["description"]
+    date = data["date"]
+    time = data["time"]
     transfer.transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
     transfer.readTransaction = False
     transfer.save()
 
-    accountFrom.balance = accountFrom.balance - int(request.POST["amount"])
+    accountFrom.balance = accountFrom.balance - int(data["amount"])
     accountFrom.read = False
     accountFrom.save()
 
-    accountTo.balance = accountTo.balance + int(request.POST["amount"])
+    accountTo.balance = accountTo.balance + int(data["amount"])
     accountTo.read = False
     accountTo.save()
 
-    return redirect('index')
+    return JsonResponse({"message": "success"}, status=200)
 
 # Settings
 def settings(request):

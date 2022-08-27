@@ -1,10 +1,14 @@
 let TRANSACTION_CODE = "";
+let url = "";
+let path = "";
+let id = "";
+let transaction_edit_id = ""
 
 document.addEventListener("DOMContentLoaded", function () {
     
-    let url = window.location.href
-    let path = url.split("/")[3]
-    let id = url.split("/")[4]
+    url = window.location.href
+    path = url.split("/")[3]
+    id = url.split("/")[4]
 
     // category credit pulldown changed in add and edit transaction
     $( "#category" ).change(function() {
@@ -224,13 +228,28 @@ document.addEventListener("DOMContentLoaded", function () {
     // }
     
     if( id == 'editTransaction' ){
+
+        $("#pills-credit-tab").click(function() {
+            TRANSACTION_CODE = "credit";
+        })
+        $("#pills-debit-tab").click(function() {
+            TRANSACTION_CODE = "debit";
+        })         
+        $( "#pills-transfer-tab" ).click(function() {
+            TRANSACTION_CODE = "transfer";
+        })
+        
+        var active_tab = $(".active");
+        TRANSACTION_CODE = active_tab.attr('id').split("-")[1]
+        transaction_edit_id = url.split("/")[5]
+
         // credit subCategory function
         let category = document.getElementById("category").value ;
         document.getElementById("subCategory").removeAttribute("hidden");
 
         let option = document.getElementById("subCategory").options.length;
         let subCategory = document.getElementById("subCategory");
-        let hiddentCount = 0;
+        let hiddentCount = TRANSACTION_CODE == "transfer" ? 1 : 0;
 
         for(let i = 0 ; i < option ; i++){
             let value = subCategory.options[i].value ;
@@ -252,7 +271,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         option = document.getElementById("subCategory-debit").options.length;
         subCategory = document.getElementById("subCategory-debit");
-        hiddentCount = 0;
+        hiddentCount = TRANSACTION_CODE == "transfer" ? 1 : 0;
 
         for(let i = 0 ; i < option ; i++){
             let value = subCategory.options[i].value ;
@@ -267,7 +286,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if(option == hiddentCount){
             document.getElementById("subCategory-debit").setAttribute("hidden", "hidden");
         }
-        
+
         // transfer function accountFrom and accountTo 
         let accountNameFrom =  document.getElementById("accountNameFrom").value ;
         option = document.getElementById("accountNameTo").options.length;
@@ -416,34 +435,27 @@ document.addEventListener("DOMContentLoaded", function () {
                     divMenu.setAttribute('aria-labelledby','dropdownMenuLink');
                     const aEdit = document.createElement('a');
                     const aDuplicate = document.createElement('a');
-                    const aNote = document.createElement('a');
                     const aDelete = document.createElement('a');
                     aEdit.setAttribute('class','dropdown-item');
                     aDuplicate.setAttribute('class','dropdown-item');
-                    aNote.setAttribute('class','dropdown-item');
                     aDelete.setAttribute('class','dropdown-item');
                     aEdit.setAttribute('href',`editTransaction/${data.id}`);
                     const iEdit = document.createElement('i');
                     const iDuplicate = document.createElement('i');
-                    const iNote = document.createElement('i');
                     const iDelete = document.createElement('i');
                     iEdit.setAttribute('class','bi bi-pencil');
                     iDuplicate.setAttribute('class','bi bi-layers-fill');
-                    iNote.setAttribute('class','bi bi-pencil-square');
                     iDelete.setAttribute('class','bi bi-trash3');
                     aEdit.append(iEdit);
-                    aEdit.append('Edit');
+                    aEdit.append(' Edit');
                     aDuplicate.append(iDuplicate);
-                    aDuplicate.append('Duplicate');
-                    aNote.append(iNote);
-                    aNote.append('Note');
+                    aDuplicate.append(' Duplicate');
                     aDelete.append(iDelete);
-                    aDelete.append('Delete');
+                    aDelete.append(' Delete');
                     const divDivider = document.createElement('div');
                     divDivider.setAttribute('class','dropdown-divider');
                     divMenu.append(aEdit);
                     divMenu.append(aDuplicate);
-                    divMenu.append(aNote);
                     divMenu.append(divDivider);
                     divMenu.append(aDelete);
 
@@ -642,13 +654,155 @@ function addSubmit(){
         let data = {
             amount: $("#amount-transfer").val(),
             description: $("#des-transfer").val(),
-            date: $("#date-debit").val(),
-            time: $("#time-debit").val(),
+            date: $("#date-transfer").val(),
+            time: $("#time-transfer").val(),
             accountNameFrom: $("#accountNameFrom").val(),
             accountNameTo: $("#accountNameTo").val()
         }
 
         fetch('/addTransaction/transferAdd',{
+            method: 'POST',
+            body: JSON.stringify( data )
+        })
+        .then(response => response.json())
+        .then( result => {
+
+            $("#amount-transfer").removeClass("is-invalid")
+            $("#invalid-amount-transfer").html("")
+            $("#des-transfer").removeClass("is-invalid")
+            $("#invalid-des-transfer").html("")
+            $("#accountNameFrom").removeClass("is-invalid")
+            $("#invalid-account-transfer-from").html("")
+            $("#accountNameTo").removeClass("is-invalid")
+            $("#invalid-account-transfer-to").html("")
+            
+            if(result.message == "error" ){
+                result.error.forEach(error =>{
+                    if( error.id == "amount"){
+                        $("#amount-transfer").addClass("is-invalid")
+                        $("#invalid-amount-transfer").html(error.message)
+                    }
+                    if( error.id == "description"){
+                        $("#des-transfer").addClass("is-invalid")
+                        $("#invalid-des-transfer").html(error.message)
+                    }
+                    if( error.id == "accountNameFrom"){
+                        $("#accountNameFrom").addClass("is-invalid")
+                        $("#invalid-account-transfer-from").html(error.message)
+                    }
+                    if( error.id == "accountNameTo"){
+                        $("#accountNameTo").addClass("is-invalid")
+                        $("#invalid-account-transfer-to").html(error.message)
+                    }
+                })
+            } else {
+                window.location.href = "/";
+            }
+        })
+    }
+};
+
+function editSubmit(){
+
+    if(TRANSACTION_CODE == "credit"){
+        let data = {
+            amount: $("#amount-credit").val(),
+            description: $("#des-credit").val(),
+            category: $("#category").val(),
+            subcategory: $("#subCategory").val(),
+            date: $("#date-credit").val(),
+            time: $("#time-credit").val(),
+            accountName: $("#accountName-credit").val()
+        }
+
+        fetch(`/editTransaction/creditEdit/${transaction_edit_id}`,{
+            method: 'POST',
+            body: JSON.stringify( data )
+        })
+        .then(response => response.json())
+        .then( result => {
+
+            $("#amount-credit").removeClass("is-invalid")
+            $("#invalid-amount").html("")
+            $("#des-credit").removeClass("is-invalid")
+            $("#invalid-des").html("")
+            $("#accountName-credit").removeClass("is-invalid")
+            $("#invalid-account").html("")
+            
+            if(result.message == "error" ){
+                result.error.forEach(error =>{
+                    if( error.id == "amount"){
+                        $("#amount-credit").addClass("is-invalid")
+                        $("#invalid-amount").html(error.message)
+                    }
+                    if( error.id == "description"){
+                        $("#des-credit").addClass("is-invalid")
+                        $("#invalid-des").html(error.message)
+                    }
+                    if( error.id == "accountName"){
+                        $("#accountName-credit").addClass("is-invalid")
+                        $("#invalid-account").html(error.message)
+                    }
+                })
+            } else {
+                window.location.href = "/";
+            }
+        })
+    }else if(TRANSACTION_CODE == "debit"){
+        let data = {
+            amount: $("#amount-debit").val(),
+            description: $("#des-debit").val(),
+            category: $("#category-debit").val(),
+            subcategory: $("#subCategory-debit").val(),
+            date: $("#date-debit").val(),
+            time: $("#time-debit").val(),
+            accountName: $("#accountName-debit").val()
+        }
+
+        fetch(`/editTransaction/debitEdit/${transaction_edit_id}`,{
+            method: 'POST',
+            body: JSON.stringify( data )
+        })
+        .then(response => response.json())
+        .then( result => {
+
+            $("#amount-debit").removeClass("is-invalid")
+            $("#invalid-amount-debit").html("")
+            $("#des-debit").removeClass("is-invalid")
+            $("#invalid-des-debit").html("")
+            $("#accountName-debit").removeClass("is-invalid")
+            $("#invalid-account-debit").html("")
+            
+            if(result.message == "error" ){
+                result.error.forEach(error =>{
+                    if( error.id == "amount"){
+                        $("#amount-debit").addClass("is-invalid")
+                        $("#invalid-amount-debit").html(error.message)
+                    }
+                    if( error.id == "description"){
+                        $("#des-debit").addClass("is-invalid")
+                        $("#invalid-des-debit").html(error.message)
+                    }
+                    if( error.id == "accountName"){
+                        $("#accountName-debit").addClass("is-invalid")
+                        $("#invalid-account-debit").html(error.message)
+                    }
+                })
+            } else {
+                window.location.href = "/";
+            }
+        })
+    }else if(TRANSACTION_CODE == "transfer"){
+        let data = {
+            amount: $("#amount-transfer").val(),
+            description: $("#des-transfer").val(),
+            date: $("#date-transfer").val(),
+            time: $("#time-transfer").val(),
+            accountNameFrom: $("#accountNameFrom").val(),
+            accountNameTo: $("#accountNameTo").val()
+        }
+
+        fetch(`/editTransaction/transferEdit/${transaction_edit_id}`,{
             method: 'POST',
             body: JSON.stringify( data )
         })
