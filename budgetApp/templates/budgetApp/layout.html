@@ -81,7 +81,7 @@
       type="text/javascript"
       src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0/js/tempusdominus-bootstrap-4.min.js"
     ></script>
-    <!-- datetimepicker実装 -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
     <script src="{% static 'budgetApp/index.js' %}"></script>
   </head>
@@ -108,5 +108,30 @@
     </nav>
 
     <div class="body">{% block body %} {% endblock %}</div>
+    <!-- The Modal -->
+    <div class="modal" id="myModal">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+      
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h4 class="modal-title">Delete Item</h4>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+      
+            <!-- Modal body -->
+            <div class="modal-body">
+                Do you really want to delete this item?
+            </div>
+      
+            <!-- Modal footer -->
+            <div class="button-container" style="margin-bottom: 20px;">
+              <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-danger" id="submitDelete">Yes</button>
+            </div>
+      
+          </div>
+        </div>
+      </div>
   </body>
 </html>

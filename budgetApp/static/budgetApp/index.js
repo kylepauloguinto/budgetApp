@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
     url = window.location.href
     path = url.split("/")[3]
     id = url.split("/")[4]
-
+    
     // category credit pulldown changed in add and edit transaction
     $( "#category" ).change(function() {
         let parentValue = this.value;
@@ -201,32 +201,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-
-    // add transaction section when some error in transfer section
-    // if( path == 'transferAdd' ){
-    //     let accountNameFrom = document.getElementById("accountNameFrom").value ;
-
-    //     $("#accountNameTo").val('').trigger('change');
-
-    //     let option = document.getElementById("accountNameTo").options.length;
-    //     let accountNameTo = document.getElementById("accountNameTo");
-    //     let hiddenAccountNameTo = document.getElementById("hiddenAccountNameTo").value;
-
-    //     for(let i = 0 ; i < option ; i++){
-    //         let value = accountNameTo.options[i].value ;
-    //         value = value.split("-")
-    //         if(accountNameFrom == value[0]){
-    //             accountNameTo.options[i].setAttribute("hidden", "hidden");
-    //         }else{
-    //             accountNameTo.options[i].removeAttribute("hidden");
-    //         }
-            
-    //         if(hiddenAccountNameTo == value[0]){
-    //             $("#accountNameTo").val(hiddenAccountNameTo).trigger('change');
-    //         }
-    //     }
-    // }
-    
+   
     if( id == 'editTransaction' ){
 
         $("#pills-credit-tab").click(function() {
@@ -245,12 +220,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // credit subCategory function
         let category = document.getElementById("category").value ;
-        document.getElementById("subCategory").removeAttribute("hidden");
+        if (category != "") document.getElementById("subCategory").removeAttribute("hidden");
 
         let option = document.getElementById("subCategory").options.length;
         let subCategory = document.getElementById("subCategory");
         let hiddentCount = TRANSACTION_CODE == "transfer" ? 1 : 0;
-
         for(let i = 0 ; i < option ; i++){
             let value = subCategory.options[i].value ;
             value = value.split("-")
@@ -267,7 +241,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // debit subCategory function
         category = document.getElementById("category-debit").value ;
-        document.getElementById("subCategory-debit").removeAttribute("hidden");
+        if (category != "") document.getElementById("subCategory-debit").removeAttribute("hidden");
 
         option = document.getElementById("subCategory-debit").options.length;
         subCategory = document.getElementById("subCategory-debit");
@@ -314,14 +288,13 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(transaction =>{
                 let mainDiv = document.getElementById("mainContainer");
 
-                console.log(transaction)
                 transaction.forEach(data => {
 
                     // transaction information
                     const main = document.createElement('div');
                     main.setAttribute('class','dropright');
                     const a = document.createElement('a');
-                    a.setAttribute('class','list-group-item list-group-item-action inbx-clck fs-2');
+                    a.setAttribute('class',`list-group-item list-group-item-action inbx-clck fs-2 ${data.id}`);
                     a.setAttribute('href',"#");
                     a.setAttribute('id','dropdownMenuLink');
                     a.setAttribute('role','button');
@@ -452,6 +425,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     aDuplicate.append(' Duplicate');
                     aDelete.append(iDelete);
                     aDelete.append(' Delete');
+                    aDelete.setAttribute('data-bs-toggle','modal');
+                    aDelete.setAttribute('data-bs-target','#myModal');
+                    aDelete.setAttribute('onClick',`deleteItem(${data.id})`);
+                    aDelete.setAttribute('href','#');
                     const divDivider = document.createElement('div');
                     divDivider.setAttribute('class','dropdown-divider');
                     divMenu.append(aEdit);
@@ -558,6 +535,49 @@ document.addEventListener("DOMContentLoaded", function () {
     $("#subCategory-debit").focusout(function() {
         $("#subCategory").val(this.value);
     })
+
+    // Delete Item
+    $("#submitDelete").click(function (){
+        let item = $(this).attr("data-id") ;
+        let action = $(this).attr("data-action")
+
+        if( action === "transaction") {
+            fetch(`/display/${id}/delete`,{
+                method: 'POST',
+                body: JSON.stringify({item: item })
+            })
+            .then(response => response.json())
+            .then( result => {
+
+                if(result.message == "success" ){
+                    // Process for all accounts display
+                    if(result.data[0].transactionType === "transfer" && id === "0"){
+                        $(`.${result.data[0].id}`).slideUp( "slow", function(){ this.remove(); });
+                        $(`.${result.data[0].transactionFromId}`).slideUp( "slow", function(){ this.remove(); });
+                    }else{
+                        $(`.${item}`).slideUp( "slow", function(){ this.remove(); });
+                    }
+                    $("#myModal .btn-close").click()
+                    let balance = $('.balance').text().replace(',','')
+                    let newBalance = result.balance
+
+                    $({ Counter: balance }).animate({
+                        Counter: newBalance
+                      }, {
+                        duration: 1000,
+                        easing: 'swing',
+                        step: function() {
+                          $('.balance').text(Math.ceil(this.Counter));
+                        },complete: function(){
+                            $('.balance').text(new Intl.NumberFormat('ja-JP').format(newBalance));
+                        }
+                      });
+                }
+            })
+        }
+
+    })
+
 });
 
 function addSubmit(){
@@ -842,4 +862,11 @@ function editSubmit(){
             }
         })
     }
+};
+
+function deleteItem(id){
+    
+    $("#submitDelete").attr('data-id',id);
+    $("#submitDelete").attr('data-action',"transaction");
+    
 };

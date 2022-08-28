@@ -56,8 +56,8 @@ h4 {
 .content {
   font-size: 30px;
 }
-.btn {
-  width: 100%;
+.button-container {
+  text-align: center ;
 }
 .page-item,
 .like {

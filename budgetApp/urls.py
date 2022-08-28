@@ -11,6 +11,7 @@ urlpatterns = [
 
 
     path("display/<int:id>", views.display, name="display"),
+    path("display/<int:id>/delete", views.deleteTransaction, name="deleteTransaction"),
     path("display/unread/<int:id>", views.unread, name="unread"),
     path("display/transaction/<int:id>", views.transaction, name="transaction"),
 

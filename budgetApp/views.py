@@ -497,6 +497,119 @@ def transferEdit(request, id):
 
     return JsonResponse({"message": "success"}, status=200)
 
+# Delete Transaction
+@csrf_exempt
+@login_required
+def deleteTransaction(request, id):
+
+    data = json.loads(request.body)
+    item = data["item"]
+    balance = 0
+    trans = ""
+
+    if Transaction.objects.filter(userTransaction=request.user,transactionFromId=item).exists():
+        transferTo = Transaction.objects.get(userTransaction=request.user,transactionFromId=item)
+        transferFrom = Transaction.objects.get(userTransaction=request.user,id=item)
+
+        # To return data
+        transaction = Transaction.objects.filter(userTransaction=request.user,transactionFromId=item)
+        trans = [trans.serialize() for trans in transaction]
+
+        accountFrom = Account.objects.get(userAccount=request.user,id=transferTo.accountNameTransferFrom_id)
+        accountTo = Account.objects.get(userAccount=request.user,id=transferTo.accountNameTransferTo_id)
+
+        accountFrom.balance = accountFrom.balance + transferTo.amount
+        accountFrom.read = False
+        accountFrom.save()
+        
+        accountTo.balance = accountTo.balance - transferTo.amount
+        accountTo.read = False
+        accountTo.save()
+
+        transferFrom.delete()
+        transferTo.delete()
+        
+        # For all accounts process
+        if id == 0:
+            accounts = Account.objects.filter(userAccount=request.user).all()
+            for account in accounts:
+                balance += account.balance
+        else:
+            account = Account.objects.get(userAccount=request.user,id=id)
+            balance = account.balance
+    else:
+        transaction = Transaction.objects.get(userTransaction=request.user,id=item)
+        transactionType = transaction.transactionType
+        
+        # To return data
+        getData = Transaction.objects.filter(userTransaction=request.user,id=item)
+        trans = [trans.serialize() for trans in getData]
+
+        if transactionType == "transfer":
+            transferTo = Transaction.objects.get(userTransaction=request.user,id=item)
+            transferFrom = Transaction.objects.get(userTransaction=request.user,id=transferTo.transactionFromId)
+
+            accountFrom = Account.objects.get(userAccount=request.user,id=transferTo.accountNameTransferFrom_id)
+            accountTo = Account.objects.get(userAccount=request.user,id=transferTo.accountNameTransferTo_id)
+
+            accountFrom.balance = accountFrom.balance + transferTo.amount
+            accountFrom.read = False
+            accountFrom.save()
+
+            accountTo.balance = accountTo.balance - transferTo.amount
+            accountTo.read = False
+            accountTo.save()
+
+            transferFrom.delete()
+            transferTo.delete()
+            
+            # For all accounts process
+            if id == 0:
+                accounts = Account.objects.filter(userAccount=request.user).all()
+                for account in accounts:
+                    balance += account.balance
+            else:
+                account = Account.objects.get(userAccount=request.user,id=id)
+                balance = account.balance
+
+        elif transactionType == "credit":
+            credit = Transaction.objects.get(userTransaction=request.user,id=item)
+            
+            account = Account.objects.get(userAccount=request.user,id=credit.accountNameTransaction_id)
+            account.balance = account.balance + credit.amount
+            account.read = False
+            account.save()
+
+            credit.delete()
+            
+            # For all accounts process
+            if id == 0:
+                accounts = Account.objects.filter(userAccount=request.user).all()
+                for account in accounts:
+                    balance += account.balance
+            else:
+                balance = account.balance
+
+        elif transactionType == "debit":
+            debit = Transaction.objects.get(userTransaction=request.user,id=item)
+            
+            account = Account.objects.get(userAccount=request.user,id=debit.accountNameTransaction_id)
+            account.balance = account.balance - debit.amount
+            account.read = False
+            account.save()
+
+            debit.delete()
+            
+            # For all accounts process
+            if id == 0:
+                accounts = Account.objects.filter(userAccount=request.user).all()
+                for account in accounts:
+                    balance += account.balance
+            else:
+                balance = account.balance
+
+    return JsonResponse({"message": "success", "balance": balance , "data": trans}, status=200)
+
 # Settings
 def settings(request):
 
@@ -743,16 +856,21 @@ def validation(request, action):
     amount = data.get("amount")
     description = data.get("description")
 
-
+    # Amount
     if amount == "":
         messageList.append({"id":"amount", "message":"Please input amount."})
+
+    if amount.find(".") > 0 :
+        messageList.append({"id":"amount", "message":"Please input integer number."})
     
     if amount is not None and len(amount) > 15:
         messageList.append({"id":"amount", "message":"Please input amount within 15 numbers."})
 
+    # Description
     if description is not None and len(description) > 25:
         messageList.append({"id":"description", "message":"Please input description within 25 letters."})
 
+    # Account
     if action != "transfer":
         accountName = data.get("accountName")
         if accountName == "":
