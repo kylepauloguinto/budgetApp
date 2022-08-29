@@ -129,7 +129,7 @@ def display(request, id):
         "balance": currencyFormatter(balance)
     })
 
-def addTransaction(request):
+def addTransaction(request,id):
 
     # Dropdown account, categories and subcategories data
     accounts = Account.objects.filter(userAccount=request.user).order_by("accountName")
@@ -142,7 +142,8 @@ def addTransaction(request):
         "subCategories" : subCategories,
         "date": datetime.now().strftime("%Y/%m/%d"),
         "time": datetime.now().strftime("%H:%M"),
-        "do": "credit"
+        "do": "credit",
+        "accountId": id
     })
 
 def editTransaction(request, id):
@@ -624,16 +625,88 @@ def accounts(request):
             "accounts" : accounts
         })
 
+# Delete account
+@csrf_exempt
+@login_required
+def deleteAccount(request):
+    
+    data = json.loads(request.body)
+    try:
+        accounts = Account.objects.get(userAccount=request.user,id=data["item"])
+        accounts.delete()
+    except:
+        return JsonResponse({"message": "error"}, status=500)
+
+    return JsonResponse({"message": "success"}, status=200)
+        
 # Edit accounts 
 def editAccount(request, id ):
     
     # Saving an edited data
     if request.method == "POST":
+        
+        # Validation
+        message = False
+        accountNameError = False
+        balanceError = False
+        descriptionError = False
+        accountNameErrMes = ""
+        balanceErrMes = ""
+        descriptionErrMes = ""
+        accountName = request.POST["accountName"]
+        description = request.POST["description"]
+        balance = request.POST["balance"]
+
+        if accountName == "":
+            accountNameErrMes = "Please input an account name."
+            accountNameError = True
+            message = True
+        
+        if accountName is not None and len(accountName) > 10:
+            accountNameErrMes = "Please input an account name within 10 letters."
+            accountNameError = True
+            message = True
+                
+        if description == "":
+            descriptionErrMes = "Please input a description."
+            descriptionError = True
+            message = True
+        
+        if description is not None and len(description) > 15:
+            descriptionErrMes = "Please input a description within 15 letters."
+            descriptionError = True
+            message = True
+        
+        if balance.find(".") > 0 :
+            balanceErrMes = "Please input integer number."
+            balanceError = True
+            message = True
+
+        if message :
+            return render(request, "budgetApp/editAccount.html",{
+                "id" : id,
+                "message": message,
+                "accountName" : accountName,
+                "description" : description,
+                "balance" : balance,
+                "accountNameError": accountNameError,
+                "accountNameErrMes": accountNameErrMes,
+                "balanceError": balanceError,
+                "balanceErrMes": balanceErrMes,
+                "descriptionError": descriptionError,
+                "descriptionErrMes": descriptionErrMes
+            })
+
+        # Validation success
         accounts = Account.objects.get(id=id,userAccount=request.user)
         accounts.accountName = request.POST["accountName"]
         accounts.description = request.POST["description"]
         accounts.previousBalance = accounts.balance
-        accounts.balance = request.POST["balance"]
+        
+        if balance == "":
+            balance = accounts.balance
+
+        accounts.balance = balance
         accounts.read = False
         accounts.save()
         
@@ -641,12 +714,16 @@ def editAccount(request, id ):
     
     # Display account information
     else :
-        name = Account.objects.get(id=id)
+        account = Account.objects.get(id=id)
+        accountName = account.accountName
+        description = account.description
+        balance = account.balance
 
-        return render(request, "budgetApp/addEditAccount.html",{
-            "name" : name,
-            "id" : id,
-            "do" : 'edit'
+        return render(request, "budgetApp/editAccount.html",{
+            "accountName" : accountName,
+            "description" : description,
+            "balance" : balance,
+            "id" : id
         })
 
 # Adding an account
@@ -654,13 +731,66 @@ def addAccount(request):
     
     # Saving an added data
     if request.method == "POST":
+
+        # Validation
+        message = False
+        accountNameError = False
+        balanceError = False
+        descriptionError = False
+        accountNameErrMes = ""
+        balanceErrMes = ""
+        descriptionErrMes = ""
+        accountName = request.POST["accountName"]
+        description = request.POST["description"]
+        balance = request.POST["balance"]
+
+        if accountName == "":
+            accountNameErrMes = "Please input an account name."
+            accountNameError = True
+            message = True
+        
+        if accountName is not None and len(accountName) > 10:
+            accountNameErrMes = "Please input an account name within 10 letters."
+            accountNameError = True
+            message = True
+                
+        if description == "":
+            descriptionErrMes = "Please input a description."
+            descriptionError = True
+            message = True
+        
+        if description is not None and len(description) > 15:
+            descriptionErrMes = "Please input a description within 15 letters."
+            descriptionError = True
+            message = True
+        
+        if balance.find(".") > 0 :
+            balanceErrMes = "Please input integer number."
+            balanceError = True
+            message = True
+
+        if message :
+            return render(request, "budgetApp/addAccount.html",{
+                "message": message,
+                "accountName" : accountName,
+                "description" : description,
+                "balance" : balance,
+                "accountNameError": accountNameError,
+                "accountNameErrMes": accountNameErrMes,
+                "balanceError": balanceError,
+                "balanceErrMes": balanceErrMes,
+                "descriptionError": descriptionError,
+                "descriptionErrMes": descriptionErrMes
+            })
+
+        # Validation success
         accounts = Account()
         accounts.userAccount = request.user
-        accounts.accountName = request.POST["accountName"]
-        accounts.description = request.POST["description"]
+        accounts.accountName = accountName
+        accounts.description = description
 
-        if request.POST["balance"] != "":
-            accounts.balance = request.POST["balance"]
+        if balance != "":
+            accounts.balance = balance
         else:
             accounts.balance = 0
 
@@ -672,9 +802,21 @@ def addAccount(request):
     
     # Display add account html
     else :
-        return render(request, "budgetApp/addEditAccount.html",{
-            "do" : 'add'
-        })
+        return render(request, "budgetApp/addAccount.html")
+
+# Delete categories
+@csrf_exempt
+@login_required
+def deleteCategory(request):
+    
+    data = json.loads(request.body)
+    try:
+        categories = Categories.objects.get(userCategory=request.user,id=data["item"])
+        categories.delete()
+    except:
+        return JsonResponse({"message": "error"}, status=500)
+
+    return JsonResponse({"message": "success"}, status=200)
 
 # Displays categories in settings
 def categories(request):
@@ -692,47 +834,144 @@ def editCategory(request, id ):
     
     # Saving an edited data
     if request.method == "POST":
+
+        # Validation
+        message = False
+        nameError = False
+        nameErrMes = ""
+        name = request.POST["name"]
+
+        if name == "":
+            nameErrMes = "Please input an account name."
+            nameError = True
+            message = True
+        
+        if name is not None and len(name) > 15:
+            nameErrMes = "Please input an account name within 15 letters."
+            nameError = True
+            message = True
+
+        if message :
+            categories = Categories.objects.filter(userCategory=request.user).all()
+
+            return render(request, "budgetApp/editCategory.html",{
+                "id" : id,
+                "class" : "category",
+                "categories" : categories,
+                "name": name,
+                "nameError": nameError,
+                "nameErrMes": nameErrMes
+            })
+
+        # Validation success
         category = Categories.objects.get(id=id,userCategory=request.user)
-        category.category = request.POST["name"]
+        category.category = name
         category.save()
 
         return redirect('categories')
 
     # Displays the category html with data
     else :
-        name = Categories.objects.get(id=id)
-        categories = Categories.objects.all()
+        name = Categories.objects.get(userCategory=request.user,id=id)
+        categories = Categories.objects.filter(userCategory=request.user).all()
 
-        return render(request, "budgetApp/addEditCategory.html",{
+        return render(request, "budgetApp/editCategory.html",{
             "name" : name,
             "categories" : categories,
             "id" : id,
-            "do" : 'edit',
             "class" : "category"
         })
+
+# Delete subcategories
+@csrf_exempt
+@login_required
+def deleteSubcategory(request):
+    
+    data = json.loads(request.body)
+    try:
+        subcategories = SubCategories.objects.get(userSubCategory=request.user,id=data["item"])
+        subcategories.delete()
+    except:
+        return JsonResponse({"message": "error"}, status=500)
+
+    return JsonResponse({"message": "success"}, status=200)
 
 # Edit a subcategory
 def editSubCategory(request, id ):
     
     # Saving an edited data
     if request.method == "POST":
-        subCategory = SubCategories.objects.get(id=id,userSubCategory=request.user)
-        subCategory.parentCategory_id = request.POST["categoryList"]
-        subCategory.subCategory = request.POST["name"]
-        subCategory.save()
+        
+        # Validation
+        message = False
+        nameError = False
+        nameErrMes = ""
+        categoryError = False
+        categoryErrMes = ""
+        name = request.POST["name"]
+        category = request.POST["categoryList"]
+
+        if name == "":
+            nameErrMes = "Please input an account name."
+            nameError = True
+            message = True
+        
+        if name is not None and len(name) > 15:
+            nameErrMes = "Please input an account name within 15 letters."
+            nameError = True
+            message = True
+        
+        if category != "" and not Categories.objects.filter(userCategory=request.user,id=category).exists():
+            categoryErrMes = "Selected category is not exists."
+            categoryError = True
+            message = True
+
+        if message :
+            categories = Categories.objects.filter(userCategory=request.user).all()
+
+            return render(request, "budgetApp/editCategory.html",{
+                "id" : id,
+                "class" : "subCategory",
+                "categories" : categories,
+                "name": name,
+                "nameError": nameError,
+                "nameErrMes": nameErrMes,
+                "parentCategory": int(category) if category != "" else "",
+                "categoryError": categoryError,
+                "categoryErrMes": categoryErrMes
+            })
+
+        # If category list is not selected, it is an parent category 
+        if request.POST["categoryList"] == "":
+            category = Categories()
+            category.userCategory = request.user
+            category.category = request.POST["name"]
+            category.save()
+
+            subCategory = SubCategories.objects.get(id=id,userSubCategory=request.user)
+            subCategory.delete()
+
+        # if category is selected, it is a subcategory
+        else :
+            # Validation success
+            subCategory = SubCategories.objects.get(id=id,userSubCategory=request.user)
+            subCategory.parentCategory_id = request.POST["categoryList"]
+            subCategory.subCategory = request.POST["name"]
+            subCategory.save()
+            
 
         return redirect('categories')
 
     # Displays the subcategory html with data
     else :
-        name = SubCategories.objects.get(id=id)
-        categories = Categories.objects.all()
+        name = SubCategories.objects.get(userSubCategory=request.user,id=id)
+        categories = Categories.objects.filter(userCategory=request.user).all()
 
-        return render(request, "budgetApp/addEditCategory.html",{
-            "name" : name,
+        return render(request, "budgetApp/editCategory.html",{
+            "name" : name.subCategory,
+            "parentCategory": int(name.parentCategory.id),
             "categories" : categories,
             "id" : id,
-            "do" : 'edit',
             "class" : "subCategory"
         })
 
@@ -742,6 +981,43 @@ def addCategory(request):
     # Saving an added data
     if request.method == "POST":
         
+        # Validation
+        message = False
+        nameError = False
+        nameErrMes = ""
+        categoryError = False
+        categoryErrMes = ""
+        name = request.POST["name"]
+        category = request.POST["categoryList"]
+
+        if name == "":
+            nameErrMes = "Please input an account name."
+            nameError = True
+            message = True
+        
+        if name is not None and len(name) > 15:
+            nameErrMes = "Please input an account name within 15 letters."
+            nameError = True
+            message = True
+        
+        if category != "" and not Categories.objects.filter(userCategory=request.user,id=category).exists():
+            categoryErrMes = "Selected category is not exists."
+            categoryError = True
+            message = True
+
+        if message :
+            categories = Categories.objects.filter(userCategory=request.user).all()
+
+            return render(request, "budgetApp/addCategory.html",{
+                "categories" : categories,
+                "name": name,
+                "nameError": nameError,
+                "nameErrMes": nameErrMes,
+                "categoryVal": int(category) if category != "" else "",
+                "categoryError": categoryError,
+                "categoryErrMes": categoryErrMes
+            })
+
         # If category list is not selected, it is an parent category 
         if request.POST["categoryList"] == "":
             category = Categories()
@@ -761,11 +1037,10 @@ def addCategory(request):
 
     # Displays category html with data 
     else :
-        categories = Categories.objects.all()
+        categories = Categories.objects.filter(userCategory=request.user).all()
 
-        return render(request, "budgetApp/addEditCategory.html",{
-            "categories" : categories,
-            "do" : 'add'
+        return render(request, "budgetApp/addCategory.html",{
+            "categories" : categories
         })
 
 def login_view(request):

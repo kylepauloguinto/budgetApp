@@ -574,6 +574,51 @@ document.addEventListener("DOMContentLoaded", function () {
                       });
                 }
             })
+        }else if(action === "account"){
+
+            fetch("/accounts/delete",{
+                method: 'POST',
+                body: JSON.stringify({item: item })
+            })
+            .then(response => response.json())
+            .then( result => {
+
+                if(result.message == "success" ){
+                    // Process for all accounts display
+                    $(`.${item}`).slideUp( "slow", function(){ this.remove(); });
+                    $("#myModal .btn-close").click()
+                }
+            })
+        }else if(action === "category"){
+
+            fetch("/categories/deleteCategory",{
+                method: 'POST',
+                body: JSON.stringify({item: item })
+            })
+            .then(response => response.json())
+            .then( result => {
+
+                if(result.message == "success" ){
+                    // Process for all accounts display
+                    $(`.${action}-${item}`).slideUp( "slow", function(){ this.remove(); });
+                    $("#myModal .btn-close").click()
+                }
+            })
+        }else if(action === "subcategory"){
+
+            fetch("/categories/deleteSubcategory",{
+                method: 'POST',
+                body: JSON.stringify({item: item })
+            })
+            .then(response => response.json())
+            .then( result => {
+
+                if(result.message == "success" ){
+                    // Process for all accounts display
+                    $(`.${action}-${item}`).slideUp( "slow", function(){ this.remove(); });
+                    $("#myModal .btn-close").click()
+                }
+            })
         }
 
     })
@@ -611,6 +656,7 @@ function addSubmit(){
                 result.error.forEach(error =>{
                     if( error.id == "amount"){
                         $("#amount-credit").addClass("is-invalid")
+                        $("#amount-div").addClass("is-invalid")
                         $("#invalid-amount").html(error.message)
                     }
                     if( error.id == "description"){
@@ -655,6 +701,7 @@ function addSubmit(){
                 result.error.forEach(error =>{
                     if( error.id == "amount"){
                         $("#amount-debit").addClass("is-invalid")
+                        $("#amount-div-debit").addClass("is-invalid")
                         $("#invalid-amount-debit").html(error.message)
                     }
                     if( error.id == "description"){
@@ -700,6 +747,7 @@ function addSubmit(){
                 result.error.forEach(error =>{
                     if( error.id == "amount"){
                         $("#amount-transfer").addClass("is-invalid")
+                        $("#amount-div-transfer").addClass("is-invalid")
                         $("#invalid-amount-transfer").html(error.message)
                     }
                     if( error.id == "description"){
@@ -753,6 +801,7 @@ function editSubmit(){
                 result.error.forEach(error =>{
                     if( error.id == "amount"){
                         $("#amount-credit").addClass("is-invalid")
+                        $("#amount-div").addClass("is-invalid")
                         $("#invalid-amount").html(error.message)
                     }
                     if( error.id == "description"){
@@ -797,6 +846,7 @@ function editSubmit(){
                 result.error.forEach(error =>{
                     if( error.id == "amount"){
                         $("#amount-debit").addClass("is-invalid")
+                        $("#amount-div-debit").addClass("is-invalid")
                         $("#invalid-amount-debit").html(error.message)
                     }
                     if( error.id == "description"){
@@ -842,6 +892,7 @@ function editSubmit(){
                 result.error.forEach(error =>{
                     if( error.id == "amount"){
                         $("#amount-transfer").addClass("is-invalid")
+                        $("#amount-div-transfer").addClass("is-invalid")
                         $("#invalid-amount-transfer").html(error.message)
                     }
                     if( error.id == "description"){
@@ -868,5 +919,26 @@ function deleteItem(id){
     
     $("#submitDelete").attr('data-id',id);
     $("#submitDelete").attr('data-action',"transaction");
+    
+};
+
+function deleteAccount(id){
+    
+    $("#submitDelete").attr('data-id',id);
+    $("#submitDelete").attr('data-action',"account");
+    
+};
+
+function deleteCategory(id){
+    
+    $("#submitDelete").attr('data-id',id);
+    $("#submitDelete").attr('data-action',"category");
+    
+};
+
+function deleteSubcategory(id){
+    
+    $("#submitDelete").attr('data-id',id);
+    $("#submitDelete").attr('data-action',"subcategory");
     
 };

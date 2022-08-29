@@ -24,14 +24,14 @@
           <!-- Credit section -->
           <div class="tab-content" id="pills-tabContent">
             <div class="tab-pane show active" id="pills-credit" role="tabpanel" aria-labelledby="pills-credit-tab">
-                <div class="input-group">
+                <div class="input-group mb-3">
                     <span class="input-group-text"><i class="bi bi-currency-yen"></i></span>
-                    <div class="form-floating">
+                    <div class="form-floating" id="amount-div">
                       <input autofocus class="form-control" type="number" name="amount" placeholder="¥" id="amount-credit">
                       <label for="floatingInput">Amount</label>
                     </div>
-                </div>
-                <div class="invalid-feedback-amount" id="invalid-amount">
+                    <div class="invalid-feedback" id="invalid-amount">
+                    </div>
                 </div>
                 <div class="form-group mb-3">
                     <div class="form-floating">
@@ -87,7 +87,11 @@
                     <div class="form-floating">
                       <select name="accountName" class="form-select" id="accountName-credit">
                         {% for account in accounts %}
+                          {% if account.id == accountId %}
+                          <option value="{{ account.id }}" selected>{{ account.accountName }}</option>
+                          {% else %}
                           <option value="{{ account.id }}">{{ account.accountName }}</option>
+                          {% endif %}
                         {% endfor %}
                       </select>
                       <label for="floatingSelect" >Account</label>
@@ -98,14 +102,14 @@
             </div>
             <!-- Debit section -->
             <div class="tab-pane" id="pills-debit" role="tabpanel" aria-labelledby="pills-debit-tab">
-                <div class="input-group">
+                <div class="input-group mb-3">
                     <span class="input-group-text"><i class="bi bi-currency-yen"></i></span>
-                    <div class="form-floating">
+                    <div class="form-floating" id="amount-div-debit">
                         <input autofocus class="form-control" type="number" name="amount" placeholder="¥" id="amount-debit" value="{{ amount }}">
                         <label for="floatingInput">Amount</label>
                     </div>
-                </div>
-                <div class="invalid-feedback-amount" id="invalid-amount-debit">
+                    <div class="invalid-feedback" id="invalid-amount-debit">
+                    </div>
                 </div>
                 <div class="form-group mb-3">
                     <div class="form-floating">
@@ -172,14 +176,14 @@
             </div>
             <!-- Transfer section -->
             <div class="tab-pane" id="pills-transfer" role="tabpanel" aria-labelledby="pills-transfer-tab">
-                <div class="input-group">
+                <div class="input-group mb-3">
                   <span class="input-group-text"><i class="bi bi-currency-yen"></i></span>
-                  <div class="form-floating">
+                  <div class="form-floating" id="amount-div-transfer">
                     <input autofocus class="form-control" type="number" name="amount" placeholder="¥" id="amount-transfer" value="{{ amount }}">
                     <label for="floatingInput">Amount</label>
                   </div>
-                </div>
-                <div class="invalid-feedback-amount" id="invalid-amount-transfer">
+                  <div class="invalid-feedback" id="invalid-amount-transfer">
+                  </div>
                 </div>
                 <div class="input-group mb-3">
                   <div class="form-floating">

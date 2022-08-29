@@ -15,7 +15,7 @@ urlpatterns = [
     path("display/unread/<int:id>", views.unread, name="unread"),
     path("display/transaction/<int:id>", views.transaction, name="transaction"),
 
-    path("addTransaction", views.addTransaction, name="addTransaction"),
+    path("addTransaction/<int:id>", views.addTransaction, name="addTransaction"),
     path("display/editTransaction/<int:id>", views.editTransaction, name="editTransaction"),
     
     path("editTransaction/creditEdit/<int:id>", views.creditEdit, name="creditEdit"),
@@ -28,10 +28,13 @@ urlpatterns = [
     path("settings", views.settings, name="settings"),
 
     path("accounts",views.accounts, name="accounts"),
+    path("accounts/delete",views.deleteAccount, name="deleteAccount"),
     path("addAccount",views.addAccount, name="addAccount"),
     path("editAccount/<int:id>",views.editAccount, name="editAccount"),
 
     path("categories",views.categories, name="categories"),
+    path("categories/deleteCategory",views.deleteCategory, name="deleteCategory"),
+    path("categories/deleteSubcategory",views.deleteSubcategory, name="deleteSubcategory"),
     path("editCategory/<int:id>",views.editCategory, name="editCategory"),
     path("editSubCategory/<int:id>",views.editSubCategory, name="editSubCategory"),
     path("addCategory",views.addCategory, name="addCategory"),

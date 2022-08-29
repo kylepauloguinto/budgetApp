@@ -161,9 +161,3 @@ ul li{
   top:-8px !important;
   right: -8px !important;
 }
-.invalid-feedback-amount{
-  font-size: 13px;
-  margin-top: 2px;
-  margin-bottom: 1rem;
-  color:#dc3545
-}
