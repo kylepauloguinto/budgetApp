@@ -165,7 +165,11 @@
                   <div class="form-floating">
                       <select name="accountName" class="form-select" id="accountName-debit">
                         {% for account in accounts %}
+                          {% if account.id == accountId %}
+                          <option value="{{ account.id }}" selected>{{ account.accountName }}</option>
+                          {% else %}
                           <option value="{{ account.id }}">{{ account.accountName }}</option>
+                          {% endif %}
                         {% endfor %}
                       </select>
                       <label for="floatingSelect">Account</label>
@@ -217,7 +221,11 @@
                   <div class="form-floating">
                     <select name="accountNameFrom" class="form-select" id="accountNameFrom">
                       {% for account in accounts %}
+                        {% if account.id == accountId %}
+                        <option value="{{ account.id }}" selected>{{ account.accountName }}</option>
+                        {% else %}
                         <option value="{{ account.id }}">{{ account.accountName }}</option>
+                        {% endif %}
                       {% endfor %}
                     </select>
                     <label for="floatingSelect">From</label>
