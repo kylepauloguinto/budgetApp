@@ -8,6 +8,7 @@
         <div class="col-8">
           <div class="row">
             <div class="col">
+              <a class="btn btn-outline-secondary" id="backAdd" role="button" style="position: absolute; margin-top: 6px"><i class="bi bi-box-arrow-in-left"></i> Back</a>
               <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
                 {% if do != 'transfer' %}
                   {% if do == 'credit'%}
@@ -73,6 +74,8 @@
                           {% endfor %}
                         </select>
                         <label for="floatingSelect">Category</label>
+                        <div class="invalid-feedback" id="invalid-cat-credit">
+                        </div>
                       </div>
                   </div>
                   <div class="form-group mb-3">
@@ -88,6 +91,8 @@
                           {% endfor %}
                         </select>
                         <label for="floatingSelect" id="label-sub" hidden>Subcategory</label>
+                        <div class="invalid-feedback" id="invalid-sub-credit">
+                        </div>
                       </div>
                   </div>
                   <div class="form-group row">
@@ -163,6 +168,8 @@
                         {% endfor %}
                       </select>
                       <label for="floatingSelect">Category</label>
+                      <div class="invalid-feedback" id="invalid-cat-debit">
+                      </div>
                     </div>
                   </div>
                   <div class="form-group mb-3">
@@ -178,6 +185,8 @@
                         {% endfor %}
                       </select>
                       <label for="floatingSelect" id="label-sub-debit" hidden>Subcategory</label>
+                      <div class="invalid-feedback" id="invalid-sub-debit">
+                      </div>
                     </div>
                   </div>
                   <div class="form-group row">

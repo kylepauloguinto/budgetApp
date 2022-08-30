@@ -45,12 +45,14 @@ def index(request):
     else: 
         return render(request, "budgetApp/login.html")
 
-def transaction(request, id):
+def transaction(request, id, pageNo):
     
     # If all accounts clicked
     if id == all_account:
         transactions = Transaction.objects.filter(userTransaction=request.user)
         transactions = transactions.order_by("-transactionDate").all()
+        transactions = Paginator(transactions,10)
+        transactions = transactions.page(pageNo).object_list
 
         for tran in transactions:
             tran.amount = currencyFormatter(tran.amount)
@@ -61,6 +63,8 @@ def transaction(request, id):
     else:
         transactions = Transaction.objects.filter(userTransaction=request.user,accountNameTransaction_id=id)
         transactions = transactions.order_by("-transactionDate").all()
+        transactions = Paginator(transactions,10)
+        transactions = transactions.page(pageNo).object_list
 
         for tran in transactions:
             tran.amount = currencyFormatter(tran.amount)
@@ -163,13 +167,14 @@ def editTransaction(request, id):
         "transaction" : transaction,
         "transationDate" : transationDate,
         "transationTime" : transationTime,
-        "do": transaction.transactionType
+        "do": transaction.transactionType,
+        "accountId": transaction.accountNameTransaction_id
     })
 
 # Add credit transaction
 @csrf_exempt
 @login_required
-def creditAdd(request):
+def creditAdd(request, id):
     
     messageList = validation(request, "credit")
     if len(messageList) > 0:
@@ -262,7 +267,7 @@ def creditEdit(request, id):
 # Add debit transaction
 @csrf_exempt
 @login_required
-def debitAdd(request):
+def debitAdd(request, id):
     
     messageList = validation(request, "debit")
     if len(messageList) > 0:
@@ -355,7 +360,7 @@ def debitEdit(request, id):
 # Add transfering money to another account
 @csrf_exempt
 @login_required
-def transferAdd(request):
+def transferAdd(request, id):
     
     messageList = validation(request, "transfer")
     if len(messageList) > 0:
@@ -1144,10 +1149,34 @@ def validation(request, action):
     # Description
     if description is not None and len(description) > 25:
         messageList.append({"id":"description", "message":"Please input description within 25 letters."})
-
-    # Account
+    
     if action != "transfer":
+
+        # Category and Subcategory
+        category = data.get("category")
+        subCategory = data.get("subcategory")
+        parentSubCategory = ""
+        parentExists = True
+
+        if subCategory != "" and subCategory != None:
+            subCategory = subCategory.split("-")
+            parentSubCategory = subCategory[0]
+            subCategory = subCategory[1]
+
+        if category != "" and not Categories.objects.filter(userCategory=request.user,id=category).exists():
+            messageList.append({"id":"category", "message":"Selected category is not exists."})
+
+        if subCategory != "" and subCategory != None and not SubCategories.objects.filter(userSubCategory=request.user,parentCategory_id=parentSubCategory).exists():
+            messageList.append({"id":"subCategory", "message":"Selected subcategory has no parent category."})
+            parentExists = False
+
+        if subCategory != "" and subCategory != None and parentExists and not SubCategories.objects.filter(userSubCategory=request.user,id=subCategory).exists():
+            messageList.append({"id":"subCategory", "message":"Selected subcategory is not exists."})
+
+
+        # Account
         accountName = data.get("accountName")
+        
         if accountName == "":
             messageList.append({"id":"accountName", "message":"Please input account."})
         

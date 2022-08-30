@@ -3,7 +3,15 @@
   <div class="row" id="main">
     <div class="col-2"></div>
     <div class="col-8">
-        {% if class == 'category' %}
+      <div class="row" style="margin-bottom: 30px;">
+        <div class="col-3" style="max-width: 19%; margin-top: 3px">
+          <a class="btn btn-outline-secondary" href="{% url 'categories' %}" role="button" ><i class="bi bi-box-arrow-in-left"></i> Back</a>
+        </div>
+        <div class="col">
+          <h2>Edit Category</h2>
+        </div>
+      </div>
+      {% if class == 'category' %}
         <form action="{% url 'editCategory' id %}" method="post">
           {% csrf_token %}
           <div class="form-group mb-3">
