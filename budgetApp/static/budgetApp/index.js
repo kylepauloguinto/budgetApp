@@ -484,7 +484,7 @@ function displayPage(id,pageNo){
     fetch(`transaction/${id}/${pageNo}`)
         .then(response => response.json())
         .then(transaction =>{
-            let mainDiv = document.getElementById("mainContainer");
+            let mainDiv = document.getElementById("main");
 
             transaction.forEach(data => {
 

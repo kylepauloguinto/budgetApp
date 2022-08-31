@@ -6,44 +6,48 @@
 {% endblock %}
 
 {% block body %}
+    <div id="mainContainer">
     {% if allAccount %}
-        <div id="mainContainer">
-            <div style="margin-bottom: 37px;">
-              <div class="row">
-                <div class="col" style="padding-top: 15px">
-                    <a class="btn btn-outline-secondary" href="{% url 'index' %}" role="button"><i class="bi bi-box-arrow-in-left"></i> Back</a>
-                </div>
-                <div class="col-1 fs-3" style="text-align: right;">
-                    <a class="nav-link" href="{% url 'addTransaction' '0' %}" onclick="edit(0)">
-                    <i class="bi bi-plus-circle-fill"></i></a>
-                </div>
-            </div>
-            <div class="row" id="main">
-                <div class="col-2">
-                </div>
-                <div class="col-8">
-                    <div class="center">
-                        <h3><i class="bi bi-bank"></i> All Account</h3>
+        <div id="main">
+            <div class="contents">
+                <div style="margin-bottom: 37px;">
+                  <div class="row">
+                    <div class="col" style="margin-top: 6px">
+                        <a class="btn btn-outline-secondary" href="{% url 'index' %}" role="button"><i class="bi bi-box-arrow-in-left"></i> Back</a>
                     </div>
-                    <div class="center">
-                        <h1 class="balance"><i class="bi bi-currency-yen"></i>{{ balance }}</h1>
+                    <div class="col-2 fs-3" style="text-align: right;">
+                        <a class="nav-link" href="{% url 'addTransaction' '0' %}" onclick="edit(0)">
+                        <i class="bi bi-plus-circle-fill"></i></a>
                     </div>
                 </div>
-            </div>
+                <div class="row">
+                    <div class="col-2">
+                    </div>
+                    <div class="col-8">
+                        <div class="center">
+                            <h3><i class="bi bi-bank"></i> All Account</h3>
+                        </div>
+                        <div class="center">
+                            <h1 class="balance"><i class="bi bi-currency-yen"></i>{{ balance }}</h1>
+                        </div>
+                    </div>
+                </div>
+            </div>  
         </div>  
     {% else %}
-        <div id="mainContainer">
+        <div id="main">
+            <div class="contents">
             <div style="margin-bottom: 37px;">
               <div class="row">
-                <div class="col" style="padding-top: 15px">
+                <div class="col" style="margin-top: 6px">
                     <a class="btn btn-outline-secondary" href="{% url 'index' %}" role="button"><i class="bi bi-box-arrow-in-left"></i> Back</a>
                 </div>
-                <div class="col-1 fs-3" style="padding-left: 0px;">
+                <div class="col-2 fs-3" style="text-align: right;">
                     <a class="nav-link" href="{% url 'addTransaction' account.id %}" onclick="edit(`{{account.id}}`)">
                     <i class="bi bi-plus-circle-fill"></i></a>
                 </div>
             </div>
-            <div class="row" id="main">
+            <div class="row">
                 <div class="col-2">
                 </div>
                 <div class="col-8">
@@ -55,6 +59,8 @@
                     </div>
                 </div>
             </div>
+            </div>
         </div>
     {% endif %}
+    </div>
 {% endblock %}

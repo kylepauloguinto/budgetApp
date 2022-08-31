@@ -6,11 +6,10 @@
 
 {% block body %}
 <div id="mainContainer">
-  <div class="row" id="main">
-    <div class="col-2"></div>
-    <div class="col-8">
+  <div id="main">
+    <div class="contents">
       <div class="row" style="margin-bottom: 30px;">
-        <div class="col-3" style="max-width: 19%; margin-top: 3px">
+        <div class="col-3" style="max-width: 23%; margin-top: 3px">
           <a class="btn btn-outline-secondary" href="{% url 'settings' %}" role="button" ><i class="bi bi-box-arrow-in-left"></i> Back</a>
         </div>
         <div class="col">
@@ -42,6 +41,5 @@
       {% endfor %}
     </div>
   </div>
-
   {% endblock %}
 </div>

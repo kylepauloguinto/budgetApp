@@ -2,13 +2,11 @@
 
 {% block body %}
     <div id="mainContainer">
-      <div class="row" id="main">
-        <div class="col-2">
-        </div>
-        <div class="col-8">
+      <div id="main">
+        <div class="contents">
           <div class="row">
             <div class="col">
-              <a class="btn btn-outline-secondary" id="backAdd" role="button" style="position: absolute; margin-top: 6px"><i class="bi bi-box-arrow-in-left"></i> Back</a>
+              <a class="btn btn-outline-secondary" id="backAdd" role="button" style="position: flex; margin-top: 6px"><i class="bi bi-box-arrow-in-left"></i> Back</a>
               <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
                 <li class="nav-item">
                   <a class="nav-link active" id="pills-credit-tab" data-toggle="pill" href="#pills-credit" role="tab" aria-controls="pills-credit" aria-selected="true">Expenses</a>
@@ -75,7 +73,7 @@
                       <label for="floatingInput">Date</label>
                     </div>
                     <div class="input-group-append" data-target="#datePicker" data-toggle="datetimepicker">
-                      <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                      <div class="input-group-text" style="padding-left:14px;"><i class="fa fa-calendar"></i></div>
                     </div>
                   </div>
                   <div class="col-sm-6  input-group">
@@ -157,7 +155,7 @@
                       <label for="floatingInput">Date</label>    
                     </div>                        
                     <div class="input-group-append" data-target="#datePicker-debit" data-toggle="datetimepicker">
-                      <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                      <div class="input-group-text" style="padding-left:14px;"><i class="fa fa-calendar"></i></div>
                     </div>
                   </div>
                   <div class="col-sm-6 input-group">
@@ -213,7 +211,7 @@
                       <label for="floatingInput">Date</label>
                     </div>
                       <div class="input-group-append" data-target="#datePicker-transfer" data-toggle="datetimepicker">
-                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                        <div class="input-group-text" style="padding-left:14px;"><i class="fa fa-calendar"></i></div>
                       </div>
                   </div>
                   <div class="col-sm-6 input-group">
@@ -256,7 +254,7 @@
                 </div>
             </div>
             <div class="button-container">
-              <input class="btn btn-primary" style="width: 150px" type="submit" value="Save" onclick="addSubmit()">
+              <button class="btn btn-primary" style="width: 150px" type="submit" value="Save" onclick="addSubmit()"><i class="bi bi-save"></i> Save</button>
             </div>
           </div>
         </div>

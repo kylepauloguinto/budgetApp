@@ -704,6 +704,8 @@ def editAccount(request, id ):
 
         # Validation success
         accounts = Account.objects.get(id=id,userAccount=request.user)
+        if balance != "" and accounts.balance != int(balance):
+            accounts.read = False
         accounts.accountName = request.POST["accountName"]
         accounts.description = request.POST["description"]
         accounts.previousBalance = accounts.balance
@@ -712,7 +714,6 @@ def editAccount(request, id ):
             balance = accounts.balance
 
         accounts.balance = balance
-        accounts.read = False
         accounts.save()
         
         return redirect('accounts')
