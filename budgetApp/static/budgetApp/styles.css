@@ -1,3 +1,6 @@
+body{
+  background-color: #e9f8e9 !important;
+}
 .transaction,#mainContainer {
   position:relative;
   display:flex;
@@ -25,6 +28,7 @@
   padding-right: 20px;
   padding-bottom: 20px;
   border: 2px solid #cfcdcd;
+  background-color: white;
 }
 textarea {
   -webkit-border-radius: 5px;
