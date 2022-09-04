@@ -6,10 +6,10 @@
     <div class="contents">
       <div class="row" style="margin-bottom: 30px;">
         <div class="col-3" style="max-width: 23%; margin-top: 3px">
-          <a class="btn btn-outline-secondary" href="{% url 'categories' %}" role="button" ><i class="bi bi-box-arrow-in-left"></i> Back</a>
+          <a class="btn btn-outline-success" href="{% url 'categories' %}" role="button" ><i class="bi bi-box-arrow-in-left"></i> Back</a>
         </div>
         <div class="col">
-          <h2>Add New Category</h2>
+          <h2 class="title">Add New Category</h2>
         </div>
       </div>
       <form action="{% url 'addCategory' %}" method="post" novalidate>
@@ -21,7 +21,7 @@
             {% else %}
             <input autofocus class="form-control" type="text" name="name" value="{{ name }}" placeholder="name"/>
             {% endif %}
-            <label for="floatingInput">Name</label>
+            <label for="floatingInput">Category/Subcategory Name</label>
             <div class="invalid-feedback">
               {{ nameErrMes }}
             </div>
@@ -50,7 +50,7 @@
           </div>
         </div>
         <div class="button-container">
-          <button class="btn btn-primary" type="submit" value="Save" style="width: 150px" ><i class="bi bi-save"></i> Save</button>
+          <button class="btn btn-success" type="submit" value="Save" style="width: 150px" ><i class="bi bi-save"></i> Save</button>
         </div>
       </form>
     </div>

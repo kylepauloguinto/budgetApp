@@ -4,10 +4,10 @@
     <div class="contents">
       <div class="row" style="margin-bottom: 30px;">
         <div class="col-3" style="max-width: 100%; margin-top: 3px">
-          <a class="btn btn-outline-secondary" href="{% url 'categories' %}" role="button" ><i class="bi bi-box-arrow-in-left"></i> Back</a>
+          <a class="btn btn-outline-success" href="{% url 'categories' %}" role="button" ><i class="bi bi-box-arrow-in-left"></i> Back</a>
         </div>
         <div class="col">
-          <h2>Edit Category</h2>
+          <h2 class="title">Edit Category</h2>
         </div>
       </div>
       {% if class == 'category' %}
@@ -20,13 +20,13 @@
               {% else %}
               <input autofocus class="form-control" type="text" name="name" value="{{ name }}" placeholder="name"/>
               {% endif %}
-              <label for="floatingInput">Name</label>
+              <label for="floatingInput">Category Name</label>
               <div class="invalid-feedback">
                 {{ nameErrMes }}
               </div>
             </div>
           </div>
-          {% elif class == 'subCategory' %}
+        {% elif class == 'subCategory' %}
           <form action="{% url 'editSubCategory' id %}" method="post">
             {% csrf_token %}
             <div class="form-group mb-3">
@@ -36,7 +36,7 @@
                 {% else %}
                 <input autofocus class="form-control" type="text" name="name" value="{{ name }}" placeholder="name"/>
                 {% endif %}
-                <label for="floatingInput">Name</label>
+                <label for="floatingInput">Subcategory Name</label>
                 <div class="invalid-feedback">
                   {{ nameErrMes }}
                 </div>
@@ -66,7 +66,7 @@
             </div>
         {% endif %}
         <div class="button-container">
-          <button class="btn btn-primary" type="submit" value="Save" style="width: 150px" ><i class="bi bi-save"></i> Save</button>
+          <button class="btn btn-success" type="submit" value="Save" style="width: 150px" ><i class="bi bi-save"></i> Save</button>
         </div>
       </form>
     </div>

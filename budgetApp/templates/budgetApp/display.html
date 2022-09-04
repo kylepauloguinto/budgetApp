@@ -13,11 +13,11 @@
                 <div style="margin-bottom: 37px;">
                   <div class="row">
                     <div class="col" style="margin-top: 6px">
-                        <a class="btn btn-outline-secondary" href="{% url 'index' %}" role="button"><i class="bi bi-box-arrow-in-left"></i> Back</a>
+                        <a class="btn btn-outline-success" href="{% url 'index' %}" role="button"><i class="bi bi-box-arrow-in-left"></i> Back</a>
                     </div>
-                    <div class="col-2 fs-3" style="text-align: right;">
+                    <div class="col-2 fs-3" style="text-align: right; ">
                         <a class="nav-link" href="{% url 'addTransaction' '0' %}" onclick="edit(0)">
-                        <i class="bi bi-plus-circle-fill"></i></a>
+                        <i class="bi bi-plus-circle-fill" style="color: #218838"></i></a>
                     </div>
                 </div>
                 <div class="row">
@@ -25,10 +25,10 @@
                     </div>
                     <div class="col-8">
                         <div class="center">
-                            <h3><i class="bi bi-bank"></i> All Account</h3>
+                            <h3 class="title"><i class="bi bi-bank"></i> All Account</h3>
                         </div>
                         <div class="center">
-                            <h1 class="balance"><i class="bi bi-currency-yen"></i>{{ balance }}</h1>
+                            <h1 class="balance title"><i class="bi bi-currency-yen"></i>{{ balance }}</h1>
                         </div>
                     </div>
                 </div>
@@ -40,11 +40,11 @@
             <div style="margin-bottom: 37px;">
               <div class="row">
                 <div class="col" style="margin-top: 6px">
-                    <a class="btn btn-outline-secondary" href="{% url 'index' %}" role="button"><i class="bi bi-box-arrow-in-left"></i> Back</a>
+                    <a class="btn btn-outline-success" href="{% url 'index' %}" role="button"><i class="bi bi-box-arrow-in-left"></i> Back</a>
                 </div>
                 <div class="col-2 fs-3" style="text-align: right;">
                     <a class="nav-link" href="{% url 'addTransaction' account.id %}" onclick="edit(`{{account.id}}`)">
-                    <i class="bi bi-plus-circle-fill"></i></a>
+                    <i class="bi bi-plus-circle-fill" style="color: #218838"></i></a>
                 </div>
             </div>
             <div class="row">
@@ -52,10 +52,10 @@
                 </div>
                 <div class="col-8">
                     <div class="center">
-                        <h3><i class="bi bi-bank"></i> {{ account.accountName }} Account</h3>
+                        <h3 class="title"><i class="bi bi-bank"></i> {{ account.accountName }} Account</h3>
                     </div>
                     <div class="center">
-                        <h1 class="balance"><i class="bi bi-currency-yen"></i>{{ account.balance }}</h1>
+                        <h1 class="balance title"><i class="bi bi-currency-yen"></i>{{ account.balance }}</h1>
                     </div>
                 </div>
             </div>

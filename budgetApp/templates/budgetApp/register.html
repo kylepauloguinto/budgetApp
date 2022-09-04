@@ -1,35 +1,53 @@
 {% extends "budgetApp/layout.html" %}
 
-{% block body %}
-
-    <div class="row">
-        <div class="col-4"></div>
-        <div class="col-4" id="newPost">
-            <h2>Register</h2>
+{% block login %}
+        <div class="col-4" id="login">
+            <div id="logo">
+                <img src="/static/budgetApp/logo.png" alt="budget tracker">
+            </div>
+            <div style="text-align:center;margin-top:60px;margin-bottom:20px;">
+                <h2 class="title">Budget Tracker</h2>
+            </div>
+            <h2 class="title">Register</h2>
             
-            {% if message %}
-                <div>{{ message }}</div>
+            {% if messages %}
+            <div class="alert alert-danger" role="alert">
+                {% for message in messages %}
+                    <div>※　{{ message }}</div>
+                {% endfor %}
+            </div>
             {% endif %}
             
             <form action="{% url 'register' %}" method="post">
                 {% csrf_token %}
-                <div class="form-group">
-                    <input class="form-control" autofocus type="text" name="username" placeholder="Username">
+                <div class="input-group mb-3 ">
+                    <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                    <div class="form-floating ">
+                        <input class="form-control" autofocus type="text" name="username" placeholder="Username">
+                        <label for="floatingInput">Username</label>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <input class="form-control" type="email" name="email" placeholder="Email Address">
+                <div class="input-group mb-3">
+                    <span class="input-group-text"><i class="bi bi-shield-lock-fill"></i></span>
+                    <div class="form-floating">
+                        <input class="form-control" type="password" name="password" placeholder="Password">
+                        <label for="floatingInput">Password</label>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <input class="form-control" type="password" name="password" placeholder="Password">
+                <div class="input-group mb-3">
+                    <span class="input-group-text"><i class="bi bi-shield-lock-fill"></i></span>
+                    <div class="form-floating">
+                        <input class="form-control" type="password" name="confirmation" placeholder="Confirm Password">
+                        <label for="floatingInput">Confirm Password</label>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <input class="form-control" type="password" name="confirmation" placeholder="Confirm Password">
+                <div style="text-align:right;color: #218838">
+                    Already have an account? <a href="{% url 'login' %}" class="link">Log In here.</a>
                 </div>
-                <input class="btn btn-primary" type="submit" value="Register">
+                <div style="text-align:center;margin-top:20px;">
+                    <button class="btn btn-success" style="width: 100%;" type="submit" >Register</button>
+                </div>
             </form>
         
-            Already have an account? <a href="{% url 'login' %}">Log In here.</a>
         </div>
-        <div class="col-4"></div>
-    </div>
 {% endblock %}

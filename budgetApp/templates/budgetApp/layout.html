@@ -85,24 +85,15 @@
     <script src="{% static 'budgetApp/index.js' %}"></script>
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    {% if user.is_authenticated %}
+    <nav class="navbar navbar-expand-lg navbar-light">
       <a class="navbar-brand" href="{% url 'index' %}">Budget Tracker</a>
-
-      <div>
-        <ul class="navbar-nav mr-auto">
-          {% if not user.is_authenticated %}
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'login' %}">Log In</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'register' %}">Register</a>
-          </li>
-          {% endif %}
-        </ul>
-      </div>
     </nav>
 
     <div class="body">{% block body %} {% endblock %}</div>
+    {% else %}
+    <div class="body">{% block login %} {% endblock %}</div>
+    {% endif %}
     <!-- The Modal -->
     <div class="modal" id="myModal">
         <div class="modal-dialog modal-dialog-centered">
@@ -122,7 +113,7 @@
             <!-- Modal footer -->
             <div class="button-container" style="margin-bottom: 20px;">
               <button type="button" class="btn btn-danger" id="submitDelete" style="margin-right: 50px;"><i class="bi bi-trash3"></i> Yes</button>
-              <button type="button" class="btn btn-primary" data-bs-dismiss="modal"><i class="bi bi-x"></i> Cancel</button>
+              <button type="button" class="btn btn-success" data-bs-dismiss="modal"><i class="bi bi-x"></i> Cancel</button>
             </div>
       
           </div>

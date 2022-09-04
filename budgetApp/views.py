@@ -1077,26 +1077,40 @@ def logout_view(request):
 def register(request):
     
     if request.method == "POST":
-        username = request.POST["username"]
-        email = request.POST["email"]
+        error = False
+        messageList = []
+        username = request.POST["username"].replace(' ','')
 
         # Ensure password matches confirmation
-        password = request.POST["password"]
-        confirmation = request.POST["confirmation"]
+        password = request.POST["password"].replace(' ','')
+        confirmation = request.POST["confirmation"].replace(' ','')
+
+        if username == "":
+            messageList.append("Please input a username.")
+            error = True
+
+        if password == "":
+            messageList.append("Please input a password.")
+            error = True
+        
+        if error:
+            return render(request, "budgetApp/register.html", {
+                "messages": messageList
+            })
 
         if password != confirmation:
             return render(request, "budgetApp/register.html", {
-                "message": "Passwords must match."
+                "messages": {"Passwords must match."}
             })
 
         # Attempt to create new user
         try:
-            user = User.objects.create_user(username, email, password)
+            user = User.objects.create_user(username, password)
             user.save()
 
         except IntegrityError:
             return render(request, "budgetApp/register.html", {
-                "message": "Username already taken."
+                "messages": {"Username already taken."}
             })
 
         login(request, user)
