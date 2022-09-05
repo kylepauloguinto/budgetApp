@@ -95,3 +95,30 @@ class Transaction(models.Model):
             "transactionDate": self.transactionDate,
             "readTransaction": self.readTransaction
         }
+
+class Budget(models.Model):
+    userBudget = models.ForeignKey(User, on_delete=models.CASCADE, related_name="userBudget")
+    budgetName = models.TextField(blank=False)
+    accountNameBudget = models.ForeignKey(Account, on_delete=models.PROTECT, related_name="accountNameBudget")
+    currentAmount = models.IntegerField()
+    budgetAmount = models.IntegerField()
+    descriptionBudget = models.TextField(blank=True)
+    categoryBudget = models.ForeignKey(Categories, on_delete=models.PROTECT, blank=True, null=True, related_name="categoryBudget")
+    subCategoryBudget = models.ForeignKey(SubCategories, on_delete=models.PROTECT, blank=True, null=True, related_name="subCategoryBudget")
+    startDate = models.DateTimeField(auto_now_add=False, blank=True)
+    endDate = models.DateTimeField(auto_now_add=False, blank=True)
+    periodCount = models.IntegerField()
+    periodProcess = models.IntegerField()
+    minusAmount = models.BooleanField(default=False)
+    ins_date = models.DateTimeField(auto_now_add=True, blank=True)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "budgetName": self.budgetName,
+            "accountNameBudget": self.accountNameBudget.accountName,
+            "currentAmount": self.currentAmount,
+            "budgetAmount": self.budgetAmount,
+            "descriptionBudget": self.descriptionBudget,
+            "ins_date": self.ins_date
+        }

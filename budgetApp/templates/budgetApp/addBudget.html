@@ -1,0 +1,135 @@
+{% extends "budgetApp/layout.html" %}
+
+{% block body %}
+    <div id="mainContainer">
+      <div id="main">
+        <div class="contents">
+          <div class="row" style="margin-bottom: 30px;">
+            <div class="col-3" style="max-width: 23%; margin-top: 3px">
+              <a class="btn btn-outline-success"  href="{% url 'budget' %}"role="button"><i class="bi bi-box-arrow-in-left"></i> Back</a>
+            </div>
+            <div class="col">
+              <h2 class="title">Add New Budget</h2>
+            </div>
+          </div>
+            <div class="form-group mb-3">
+                <div class="form-floating">
+                  <input autofocus class="form-control" type="text" name="Name" placeholder="Name" id="name">
+                  <label for="floatingInput">Name</label>
+                  <div class="invalid-feedback" id="invalid-name">
+                  </div>
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <span class="input-group-text"><i class="bi bi-currency-yen"></i></span>
+                <div class="form-floating" id="amount-div">
+                  <input autofocus class="form-control" type="number" name="amount" placeholder="¥" id="amount">
+                  <label for="floatingInput">Limit</label>
+                </div>
+                <div class="invalid-feedback" id="invalid-amount">
+                </div>
+            </div>
+            <div class="form-group mb-3">
+                <div class="form-floating">
+                  <input autofocus class="form-control" type="text" name="description" placeholder="Description" id="des">
+                  <label for="floatingInput">Description</label>
+                  <div class="invalid-feedback" id="invalid-des">
+                  </div>
+                </div>
+            </div>
+            <div class="form-group mb-3">
+                <div class="form-floating">
+                  <select name="category" class="form-select" id="category">
+                    <option value=""></option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.category }}</option>
+                    {% endfor %}
+                  </select>
+                  <label for="floatingSelect">Category</label>
+                  <div class="invalid-feedback" id="invalid-cat">
+                  </div>
+                </div>
+            </div>
+            <div class="form-group mb-3">
+                <div class="form-floating">
+                  <select name="subCategory" class="form-select" id="subCategory" hidden="hidden">
+                    <option value=""></option>
+                    {% for subCategory in subCategories %}
+                      <option value="{{ subCategory.parentCategory.id }}-{{ subCategory.id }}">{{ subCategory.subCategory }}</option>
+                    {% endfor %}
+                  </select>
+                  <label for="floatingSelect" id="label-sub" hidden>Subcategory</label>
+                  <div class="invalid-feedback" id="invalid-sub">
+                  </div>
+                </div>
+            </div>
+            <div class="form-group row">
+              <div class="col-sm-6 input-group">
+                <div class="form-floating" id="datePicker" data-target-input="nearest">
+                  <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker" onkeydown="return false" value="{{ date }}" id="date"/>
+                  <label for="floatingInput">Date</label>
+                </div>
+                <div class="input-group-append" data-target="#datePicker" data-toggle="datetimepicker">
+                  <div class="input-group-text" style="padding-left:14px;"><i class="fa fa-calendar"></i></div>
+                </div>
+              </div>
+              <div class="col-sm-6  input-group">
+                <div class="form-floating" id="timePicker" data-target-input="nearest">
+                  <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker" onkeydown="return false" value="{{ time }}" id="time"/>
+                  <label for="floatingInput">Time</label>
+                </div>
+                <div class="input-group-append" data-target="#timePicker" data-toggle="datetimepicker">
+                  <div class="input-group-text"><i class="fa fa-clock"></i></div>
+                </div>
+              </div>
+            </div><div class="row g-2">
+              <div class="col-md">
+                <div class="form-floating">
+                  <select name="periodCount" class="form-select" id="periodCount" aria-label="Floating label select example">
+                    {% for count in counts %}
+                      {% if count == 1 %}
+                        <option value="{{ count }}" selected>{{ count }}</option>
+                      {% else %}
+                        <option value="{{ count }}" >{{ count }}</option>
+                      {% endif %}
+                    {% endfor %}
+                  </select>
+                  <label for="floatingSelectGrid">Period Every</label>
+                </div>
+              </div>
+              <div class="col-md mb-3">
+                <div class="form-floating">
+                  <select name="periodProcess" class="form-select" id="periodProcess" aria-label="Floating label select example">
+                    <option value="1" selected>day(s)</option>
+                    <option value="2">week(s)</option>
+                    <option value="3">month(s)</option>
+                    <option value="4">year(s)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="form-group mb-3">
+                <div class="form-floating">
+                  <select name="accountName" class="form-select" id="accountName">
+                    {% for account in accounts %}
+                      <option value="{{ account.id }}">{{ account.accountName }}</option>
+                    {% endfor %}
+                  </select>
+                  <label for="floatingSelect" >Account</label>
+                  <div class="invalid-feedback" id="invalid-account">
+                  </div>
+                </div>
+            </div>
+          </div>
+          <div class="button-container">
+            <button class="btn btn-success" style="width: 150px" type="submit" value="Save" onclick="addBudget()"><i class="bi bi-save"></i> Save</button>
+          </div>
+      </div>
+    </div>
+  <script type="text/javascript">
+    $(function () {
+        $('#datePicker').datetimepicker({locale: 'ja', dayViewHeaderFormat: 'YYYY年M月' ,format: 'YYYY/MM/DD'});
+        $('#timePicker').datetimepicker({locale: 'ja', format: 'HH:mm'});
+    });
+</script>
+{% endblock %}
