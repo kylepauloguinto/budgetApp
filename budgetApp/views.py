@@ -11,9 +11,10 @@ from django.core.paginator import Paginator
 from django.utils import timezone
 from django import forms
 from django.shortcuts import redirect
-from datetime import datetime, timedelta
+from datetime import  date, datetime, timedelta
+import calendar
 
-from .models import User, Categories, SubCategories, Account, Transaction
+from .models import User, Categories, SubCategories, Account, Transaction, Budget
 
 all_account = 0 # All account ID
 
@@ -1049,6 +1050,363 @@ def addCategory(request):
             "categories" : categories
         })
 
+def budget(request):
+
+    return render(request, "budgetApp/budget.html")
+
+def budgetDisplay(request):
+
+    budgets = Budget.objects.filter(userBudget=request.user)
+    
+    for budget in budgets:
+        budget.currentAmount = currencyFormatter(budget.currentAmount)
+        budget.budgetAmount = currencyFormatter(budget.budgetAmount)
+    
+    return JsonResponse([budget.serialize() for budget in budgets], safe=False)
+
+# Add budget screen display
+def addBudget(request):
+
+    # Dropdown account, categories and subcategories data
+    accounts = Account.objects.filter(userAccount=request.user).order_by("accountName")
+    categories = Categories.objects.filter(userCategory=request.user).order_by("category")
+    subCategories = SubCategories.objects.filter(userSubCategory=request.user).order_by("subCategory")
+    counts = []
+    for count in range(1,32):
+        counts.append(count)
+
+    process = []
+    process.append({"id": 1, "name":"day(s)"})
+    process.append({"id": 2, "name":"week(s)"})
+    process.append({"id": 3, "name":"month(s)"})
+    process.append({"id": 4, "name":"year(s)"})
+
+    return render(request, "budgetApp/addBudget.html",{
+        "accounts" : accounts,
+        "categories" : categories,
+        "subCategories" : subCategories,
+        "counts": counts,
+        "process": process,
+        "date": datetime.now().strftime("%Y/%m/%d"),
+        "time": datetime.now().strftime("%H:%M")
+    })
+
+# Add budget
+@csrf_exempt
+@login_required
+def budgetAdd(request):
+    
+    data = json.loads(request.body)
+    messageList = []
+    name = data.get("name")
+    amount = data.get("amount")
+    description = data.get("description")
+
+    # Name
+    if name is not None and len(name) > 25:
+        messageList.append({"id":"name", "message":"Please input name within 25 letters."})
+
+    # Amount
+    if amount == "":
+        messageList.append({"id":"amount", "message":"Please input amount."})
+
+    if amount.find(".") > 0 or amount.find("-") > 0:
+        messageList.append({"id":"amount", "message":"Please input integer number."})
+    
+    if amount is not None and len(amount) > 15:
+        messageList.append({"id":"amount", "message":"Please input amount within 15 numbers."})
+
+    # Description
+    if description is not None and len(description) > 25:
+        messageList.append({"id":"description", "message":"Please input description within 25 letters."})
+
+    # Category and Subcategory
+    category = data.get("category")
+    subCategory = data.get("subcategory")
+    parentSubCategory = ""
+    parentExists = True
+
+    if category == "" :
+        messageList.append({"id":"category", "message":"Please select category"})
+
+    if subCategory != "" and subCategory != None:
+        subCategory = subCategory.split("-")
+        parentSubCategory = subCategory[0]
+        subCategory = subCategory[1]
+
+    if category != "" and not Categories.objects.filter(userCategory=request.user,id=category).exists():
+        messageList.append({"id":"category", "message":"Selected category is not exists."})
+
+    if subCategory != "" and subCategory != None and not SubCategories.objects.filter(userSubCategory=request.user,parentCategory_id=parentSubCategory).exists():
+        messageList.append({"id":"subCategory", "message":"Selected subcategory has no parent category."})
+        parentExists = False
+
+    if subCategory != "" and subCategory != None and parentExists and not SubCategories.objects.filter(userSubCategory=request.user,id=subCategory).exists():
+        messageList.append({"id":"subCategory", "message":"Selected subcategory is not exists."})
+
+    # Account
+    accountName = data.get("accountName")
+    
+    if accountName == "":
+        messageList.append({"id":"accountName", "message":"Please input account."})
+    
+    if accountName != "" and not Account.objects.filter(userAccount=request.user,id=accountName).exists():
+        messageList.append({"id":"accountName", "message":"Account is not exists."})
+
+    if len(messageList) > 0:
+        return JsonResponse({"message":"error","error": messageList}, status=400)
+
+    budget = Budget()
+    budget.userBudget = request.user
+    budget.budgetName = data["name"]
+    budget.accountNameBudget_id = data["accountName"]
+    budget.budgetAmount = data["amount"]
+    budget.descriptionBudget = data["description"]
+    
+    startDate = data["date"]
+    time = data["time"]
+    periodCount = int(data["periodCount"])
+    periodProcess = data["periodProcess"]
+    startDate = datetime.strptime(startDate+" "+time, "%Y/%m/%d %H:%M")
+    time = datetime.strptime(time, "%H:%M")
+
+    if periodProcess == "1":    # days
+        endDate = startDate + timedelta(days=periodCount)
+    
+    if periodProcess == "2":    # weeks
+        count = periodCount * 7
+        endDate = startDate + timedelta(days=count)
+
+    if periodProcess == "3":    # months
+        month = startDate.month - 1 + periodCount
+        year = startDate.year + month // 12
+        month = month % 12 + 1
+        day = min(startDate.day, calendar.monthrange(year,month)[1])
+        endDate = datetime(year, month, day,startDate.hour,startDate.minute)
+    
+    if periodProcess == "4":    # year
+        endDate = datetime(startDate.year + periodCount, startDate.month, startDate.day,startDate.hour,startDate.minute)
+
+    dateStart = datetime.strftime(startDate, "%Y-%m-%d %H:%M")
+    dateEnd = datetime.strftime(endDate, "%Y-%m-%d %H:%M")
+
+    if data["subcategory"] != "":
+        category = data["subcategory"].split("-")
+        budget.categoryBudget_id = category[0]
+        budget.subCategoryBudget_id = category[1]
+        amountData = Transaction.objects.filter(userTransaction=request.user,
+                                        accountNameTransaction_id=data["accountName"],
+                                        subCategoryTransaction_id=category[1],
+                                        transactionDate__range=[dateStart,endDate])
+    else:
+        budget.categoryBudget_id = data["category"]
+        amountData = Transaction.objects.filter(userTransaction=request.user,
+                                        accountNameTransaction_id=data["accountName"],
+                                        categoryTransaction_id=data["category"],
+                                        transactionDate__range=[dateStart,endDate])
+    
+    amount = 0
+    for data in amountData:
+        if data.transactionType == "credit":
+            amount += int(data.amount)
+            
+    budget.startDate = startDate
+    budget.endDate = endDate
+    budget.currentAmount = amount
+    budget.periodCount = periodCount
+    budget.periodProcess = periodProcess
+
+    diff = int(budget.budgetAmount) - amount
+    if diff < 0:
+        budget.minusAmount = True
+    else:
+        budget.minusAmount = False
+
+    budget.save()
+
+    return JsonResponse({"message": "success"}, status=200)
+
+# Edit budget screen display
+def editBudget(request , id):
+
+    # Dropdown account, categories and subcategories data
+    accounts = Account.objects.filter(userAccount=request.user).order_by("accountName")
+    categories = Categories.objects.filter(userCategory=request.user).order_by("category")
+    subCategories = SubCategories.objects.filter(userSubCategory=request.user).order_by("subCategory")
+    budget = Budget.objects.get(userBudget=request.user,id=id)
+    date = budget.startDate.strftime("%Y/%m/%d")
+    time = budget.startDate.strftime("%H:%M")
+    
+    counts = []
+    for count in range(1,32):
+        counts.append(count)
+
+    process = []
+    process.append({"id": 1, "name":"day(s)"})
+    process.append({"id": 2, "name":"week(s)"})
+    process.append({"id": 3, "name":"month(s)"})
+    process.append({"id": 4, "name":"year(s)"})
+
+    return render(request, "budgetApp/editBudget.html",{
+        "accounts" : accounts,
+        "categories" : categories,
+        "subCategories" : subCategories,
+        "counts": counts,
+        "process": process,
+        "budget": budget,
+        "date": date,
+        "time": time
+    })
+
+# Edit budget
+@csrf_exempt
+@login_required
+def budgetEdit(request , id ):
+    
+    data = json.loads(request.body)
+    messageList = []
+    name = data.get("name")
+    amount = data.get("amount")
+    description = data.get("description")
+
+    # Name
+    if name is not None and len(name) > 25:
+        messageList.append({"id":"name", "message":"Please input name within 25 letters."})
+
+    # Amount
+    if amount == "":
+        messageList.append({"id":"amount", "message":"Please input amount."})
+
+    if amount.find(".") > 0 or amount.find("-") > 0:
+        messageList.append({"id":"amount", "message":"Please input integer number."})
+    
+    if amount is not None and len(amount) > 15:
+        messageList.append({"id":"amount", "message":"Please input amount within 15 numbers."})
+
+    # Description
+    if description is not None and len(description) > 25:
+        messageList.append({"id":"description", "message":"Please input description within 25 letters."})
+
+    # Category and Subcategory
+    category = data.get("category")
+    subCategory = data.get("subcategory")
+    parentSubCategory = ""
+    parentExists = True
+
+    if category == "" :
+        messageList.append({"id":"category", "message":"Please select category"})
+        
+    if subCategory != "" and subCategory != None:
+        subCategory = subCategory.split("-")
+        parentSubCategory = subCategory[0]
+        subCategory = subCategory[1]
+
+    if category != "" and not Categories.objects.filter(userCategory=request.user,id=category).exists():
+        messageList.append({"id":"category", "message":"Selected category is not exists."})
+
+    if subCategory != "" and subCategory != None and not SubCategories.objects.filter(userSubCategory=request.user,parentCategory_id=parentSubCategory).exists():
+        messageList.append({"id":"subCategory", "message":"Selected subcategory has no parent category."})
+        parentExists = False
+
+    if subCategory != "" and subCategory != None and parentExists and not SubCategories.objects.filter(userSubCategory=request.user,id=subCategory).exists():
+        messageList.append({"id":"subCategory", "message":"Selected subcategory is not exists."})
+
+    # Account
+    accountName = data.get("accountName")
+    
+    if accountName == "":
+        messageList.append({"id":"accountName", "message":"Please input account."})
+    
+    if accountName != "" and not Account.objects.filter(userAccount=request.user,id=accountName).exists():
+        messageList.append({"id":"accountName", "message":"Account is not exists."})
+
+    if len(messageList) > 0:
+        return JsonResponse({"message":"error","error": messageList}, status=400)
+
+    budget = Budget.objects.get(userBudget=request.user,id=id)
+    budget.userBudget = request.user
+    budget.budgetName = data["name"]
+    budget.accountNameBudget_id = data["accountName"]
+    budget.budgetAmount = data["amount"]
+    budget.descriptionBudget = data["description"]
+    
+    startDate = data["date"]
+    time = data["time"]
+    periodCount = int(data["periodCount"])
+    periodProcess = data["periodProcess"]
+    startDate = datetime.strptime(startDate+" "+time, "%Y/%m/%d %H:%M")
+    time = datetime.strptime(time, "%H:%M")
+
+    if periodProcess == "1":    # days
+        endDate = startDate + timedelta(days=periodCount)
+    
+    if periodProcess == "2":    # weeks
+        count = periodCount * 7
+        endDate = startDate + timedelta(days=count)
+
+    if periodProcess == "3":    # months
+        month = startDate.month - 1 + periodCount
+        year = startDate.year + month // 12
+        month = month % 12 + 1
+        day = min(startDate.day, calendar.monthrange(year,month)[1])
+        endDate = datetime(year, month, day,startDate.hour,startDate.minute)
+    
+    if periodProcess == "4":    # year
+        endDate = datetime(startDate.year + periodCount, startDate.month, startDate.day,startDate.hour,startDate.minute)
+
+    dateStart = datetime.strftime(startDate, "%Y-%m-%d %H:%M")
+    dateEnd = datetime.strftime(endDate, "%Y-%m-%d %H:%M")
+
+    if data["subcategory"] != "":
+        category = data["subcategory"].split("-")
+        budget.categoryBudget_id = category[0]
+        budget.subCategoryBudget_id = category[1]
+        amountData = Transaction.objects.filter(userTransaction=request.user,
+                                        accountNameTransaction_id=data["accountName"],
+                                        subCategoryTransaction_id=category[1],
+                                        transactionDate__range=[dateStart,endDate])
+    else:
+        budget.categoryBudget_id = data["category"]
+        amountData = Transaction.objects.filter(userTransaction=request.user,
+                                        accountNameTransaction_id=data["accountName"],
+                                        categoryTransaction_id=data["category"],
+                                        transactionDate__range=[dateStart,endDate])
+    
+    amount = 0
+    for data in amountData:
+        if data.transactionType == "credit":
+            amount += int(data.amount)
+            
+    budget.startDate = startDate
+    budget.endDate = endDate
+    budget.currentAmount = amount
+    budget.periodCount = periodCount
+    budget.periodProcess = periodProcess
+
+    diff = int(budget.budgetAmount) - amount
+    if diff < 0:
+        budget.minusAmount = True
+    else:
+        budget.minusAmount = False
+
+    budget.save()
+
+    return JsonResponse({"message": "success"}, status=200)
+
+# Delete Budget
+@csrf_exempt
+@login_required
+def deleteBudget(request):
+    
+    data = json.loads(request.body)
+    try:
+        budget = Budget.objects.get(userBudget=request.user,id=data["item"])
+        budget.delete()
+    except:
+        return JsonResponse({"message": "error"}, status=500)
+
+    return JsonResponse({"message": "success"}, status=200)
+
 def login_view(request):
     if request.method == "POST":
 
@@ -1155,7 +1513,7 @@ def validation(request, action):
     if amount == "":
         messageList.append({"id":"amount", "message":"Please input amount."})
 
-    if amount.find(".") > 0 :
+    if amount.find(".") > 0 or amount.find("-") > 0:
         messageList.append({"id":"amount", "message":"Please input integer number."})
     
     if amount is not None and len(amount) > 15:

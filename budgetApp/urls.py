@@ -31,9 +31,12 @@ urlpatterns = [
 
     #budget
     path("budget", views.budget, name="budget"),
+    path("budget/delete", views.deleteBudget, name="deleteBudget"),
     path("addBudget", views.addBudget, name="addBudget"),
     path("budgetAdd", views.budgetAdd, name="budgetAdd"),
     path("budget/budgetDisplay", views.budgetDisplay, name="budgetDisplay"),
+    path("editBudget/<int:id>", views.editBudget, name="editBudget"),
+    path("budgetEdit/<int:id>", views.budgetEdit, name="editBudget"),
 
     #accounts
     path("accounts",views.accounts, name="accounts"),

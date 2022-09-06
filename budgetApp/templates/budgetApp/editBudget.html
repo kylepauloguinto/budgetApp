@@ -9,12 +9,12 @@
               <a class="btn btn-outline-success"  href="{% url 'budget' %}"role="button"><i class="bi bi-box-arrow-in-left"></i> Back</a>
             </div>
             <div class="col">
-              <h2 class="title">Add New Budget</h2>
+              <h2 class="title">Edit Budget</h2>
             </div>
           </div>
             <div class="form-group mb-3">
                 <div class="form-floating">
-                  <input autofocus class="form-control" type="text" name="name" placeholder="Name" id="name">
+                  <input autofocus class="form-control" type="text" name="name" placeholder="Name" id="name" value="{{ budget.budgetName }}">
                   <label for="floatingInput">Name</label>
                   <div class="invalid-feedback" id="invalid-name">
                   </div>
@@ -23,7 +23,7 @@
             <div class="input-group mb-3">
                 <span class="input-group-text"><i class="bi bi-currency-yen"></i></span>
                 <div class="form-floating" id="amount-div">
-                  <input autofocus class="form-control" type="number" name="amount" placeholder="¥" id="amount">
+                  <input autofocus class="form-control" type="number" name="amount" placeholder="¥" id="amount" value="{{ budget.budgetAmount }}">
                   <label for="floatingInput">Limit</label>
                 </div>
                 <div class="invalid-feedback" id="invalid-amount">
@@ -31,7 +31,7 @@
             </div>
             <div class="form-group mb-3">
                 <div class="form-floating">
-                  <input autofocus class="form-control" type="text" name="description" placeholder="Description" id="des">
+                  <input autofocus class="form-control" type="text" name="description" placeholder="Description" id="des"  value="{{ budget.descriptionBudget }}">
                   <label for="floatingInput">Description</label>
                   <div class="invalid-feedback" id="invalid-des">
                   </div>
@@ -42,7 +42,11 @@
                   <select name="category" class="form-select" id="category">
                     <option value=""></option>
                     {% for category in categories %}
+                      {% if category.id == budget.categoryBudget.id %}
+                        <option value="{{ category.id }}" selected>{{ category.category }}</option>
+                      {% else %}
                         <option value="{{ category.id }}">{{ category.category }}</option>
+                      {% endif %}
                     {% endfor %}
                   </select>
                   <label for="floatingSelect">Category</label>
@@ -55,7 +59,11 @@
                   <select name="subCategory" class="form-select" id="subCategory" hidden="hidden">
                     <option value=""></option>
                     {% for subCategory in subCategories %}
-                      <option value="{{ subCategory.parentCategory.id }}-{{ subCategory.id }}">{{ subCategory.subCategory }}</option>
+                      {% if subCategory.id == budget.subCategoryBudget.id %}
+                        <option value="{{ subCategory.parentCategory.id }}-{{ subCategory.id }}" selected>{{ subCategory.subCategory }}</option>
+                      {% else %}
+                        <option value="{{ subCategory.parentCategory.id }}-{{ subCategory.id }}">{{ subCategory.subCategory }}</option>
+                      {% endif %}
                     {% endfor %}
                   </select>
                   <label for="floatingSelect" id="label-sub" hidden>Subcategory</label>
@@ -87,7 +95,7 @@
                 <div class="form-floating">
                   <select name="periodCount" class="form-select" id="periodCount" aria-label="Floating label select example">
                     {% for count in counts %}
-                      {% if count == 1 %}
+                      {% if count == budget.periodCount %}
                         <option value="{{ count }}" selected>{{ count }}</option>
                       {% else %}
                         <option value="{{ count }}" >{{ count }}</option>
@@ -101,7 +109,7 @@
                 <div class="form-floating">
                   <select name="periodProcess" class="form-select" id="periodProcess" aria-label="Floating label select example">
                     {% for data in process %}
-                      {% if data.id == 1 %}
+                      {% if data.id == budget.periodProcess %}
                         <option value="{{ data.id }}" selected>{{ data.name }}</option>
                       {% else %}
                         <option value="{{ data.id }}" >{{ data.name }}</option>
@@ -115,7 +123,11 @@
                 <div class="form-floating">
                   <select name="accountName" class="form-select" id="accountName">
                     {% for account in accounts %}
-                      <option value="{{ account.id }}">{{ account.accountName }}</option>
+                      {% if account.id == budget.accountNameBudget.id %}
+                      <option value="{{ account.id }}" selected>{{ account.accountName }}</option>
+                      {% else %}
+                        <option value="{{ account.id }}">{{ account.accountName }}</option>
+                      {% endif %}
                     {% endfor %}
                   </select>
                   <label for="floatingSelect" >Account</label>
@@ -125,7 +137,7 @@
             </div>
           </div>
           <div class="button-container">
-            <button class="btn btn-success" style="width: 150px" type="submit" value="Save" onclick="addBudget()"><i class="bi bi-save"></i> Save</button>
+            <button class="btn btn-success" style="width: 150px" type="submit" value="Save" onclick="editBudget()"><i class="bi bi-save"></i> Save</button>
           </div>
       </div>
     </div>

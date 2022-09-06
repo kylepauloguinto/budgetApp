@@ -307,6 +307,153 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    if(path === "budget"){
+        fetch('budget/budgetDisplay')
+        .then(response => response.json())
+        .then(transaction =>{
+            let mainDiv = document.getElementById("main");
+
+            transaction.forEach(data => {
+
+                // transaction information
+                const main = document.createElement('div');
+                main.setAttribute('class','dropright');
+                const a = document.createElement('a');
+                a.setAttribute('class',`list-group-item list-group-item-action inbx-clck fs-2 ${data.id}`);
+                a.setAttribute('href',"#");
+                a.setAttribute('id','dropdownMenuLink');
+                a.setAttribute('role','button');
+                a.setAttribute('data-toggle','dropdown');
+                a.setAttribute('aria-haspopup','true');
+                a.setAttribute('aria-expanded','false');
+
+                // transaction description
+                let divRow0 = document.createElement('div');
+                divRow0.setAttribute('class','row');
+                let divRow1 = document.createElement('div');
+                divRow1.setAttribute('class','row');
+                let divRow1Col0 = document.createElement('div');
+                divRow1Col0.setAttribute('class','col');
+                divRow1Col0.setAttribute('style','text-align: left;');
+                let divRow1Col1 = document.createElement('div');
+                divRow1Col1.setAttribute('class','col');
+                divRow1Col1.setAttribute('style','text-align: left;');
+                let divRow1Col2 = document.createElement('div');
+                divRow1Col2.setAttribute('class','col');
+                divRow1Col2.setAttribute('style','text-align: right;');
+
+                let currentAmount = data.currentAmount.replace(",","")
+                let budgetAmount = data.budgetAmount.replace(",","")
+                let difference = budgetAmount - currentAmount;
+
+                let divRowLabel0 = document.createElement('label');
+                divRowLabel0.setAttribute('style','font-size: 30px;font-weight:bold;');
+                divRowLabel0.innerHTML = data.budgetName
+                let divRowLabel1 = document.createElement('label');
+                divRowLabel1.setAttribute('style','font-size: 25px;');
+                divRowLabel1.innerHTML = 'Spent: ¥ ' + data.currentAmount
+                let divRowLabel2 = document.createElement('label');
+                divRowLabel2.setAttribute('style','font-size: 25px;');
+                divRowLabel2.innerHTML = ' ¥ ' + difference
+                divRow1Col0.append(divRowLabel0);
+                divRow1Col1.append(divRowLabel1);
+                divRow1Col2.append(divRowLabel2);
+                divRow0.append(divRow1Col0);
+                divRow1.append(divRow1Col1);
+                divRow1.append(divRow1Col2);
+
+                let percentage = (currentAmount / budgetAmount ) * 100
+                let color = ""
+
+                if( percentage <= 100 && percentage >= 80 || data.minusAmount ){
+                    color = "bg-danger"
+                }else if( percentage < 80 && percentage >= 50 ){
+                    color = "bg-warning"
+                }else if( percentage < 25 ){
+                    color = "bg-info"
+                }
+                // transfer information
+                let divRow2 = document.createElement('div');
+                divRow2.setAttribute('class','progress');
+                let divColLabel1 = document.createElement('div');
+                divColLabel1.setAttribute('class',`progress-bar ${color}`);
+                divColLabel1.setAttribute('role','progressbar');
+                divColLabel1.setAttribute('aria-label','Basic example');
+                divColLabel1.setAttribute('style',`width: ${percentage}%`);
+                divColLabel1.setAttribute('aria-valuenow', percentage);
+                divColLabel1.setAttribute('aria-valuemin','0');
+                divColLabel1.setAttribute('aria-valuemax','100');
+                divRow2.append(divColLabel1);
+
+                a.append(divRow0);
+                a.append(divRow1);
+                a.append(divRow2);
+
+                // notification badge
+                if( data.readTransaction == false){
+                    const span = document.createElement('span');
+                    span.setAttribute('class','position-absolute top-0 start-100 translate-middle p-2 badge rounded-pill bg-danger')
+                    span.innerHTML = ' ';
+                    a.append(span);
+                }
+
+                // dropdown menu
+                const divMenu = document.createElement('div');
+                divMenu.setAttribute('class','dropdown-menu');
+                divMenu.setAttribute('aria-labelledby','dropdownMenuLink');
+                const aEdit = document.createElement('a');
+                const aDelete = document.createElement('a');
+                aEdit.setAttribute('class','dropdown-item');
+                aDelete.setAttribute('class','dropdown-item');
+                aEdit.setAttribute('href',`editBudget/${data.id}`);
+                const iEdit = document.createElement('i');
+                const iDelete = document.createElement('i');
+                iEdit.setAttribute('class','bi bi-pencil');
+                iDelete.setAttribute('class','bi bi-trash3');
+                aEdit.append(iEdit);
+                aEdit.append(' Edit');
+                aEdit.setAttribute('onclick',`edit(${id})`);
+                aDelete.append(iDelete);
+                aDelete.append(' Delete');
+                aDelete.setAttribute('data-bs-toggle','modal');
+                aDelete.setAttribute('data-bs-target','#myModal');
+                aDelete.setAttribute('onClick',`deleteBudget(${data.id})`);
+                aDelete.setAttribute('href','#');
+                const divDivider = document.createElement('div');
+                divDivider.setAttribute('class','dropdown-divider');
+                divMenu.append(aEdit);
+                divMenu.append(divDivider);
+                divMenu.append(aDelete);
+
+                main.append(a);
+                main.append(divMenu);
+                mainDiv.append(main);
+
+            });
+
+        })
+    }
+    if( path == "editBudget"){
+        let category = document.getElementById("category").value ;
+        if (category != "") document.getElementById("subCategory").removeAttribute("hidden");
+
+        let option = document.getElementById("subCategory").options.length;
+        let subCategory = document.getElementById("subCategory");
+        let hiddentCount = 0;
+        for(let i = 0 ; i < option ; i++){
+            let value = subCategory.options[i].value ;
+            value = value.split("-")
+            if(category != value[0]){
+                hiddentCount++;
+                subCategory.options[i].setAttribute("hidden", "hidden");
+            }else{
+                subCategory.options[i].removeAttribute("hidden");
+            }
+        }
+        if(option == hiddentCount){
+            document.getElementById("subCategory").setAttribute("hidden", "hidden");
+        }
+    }
     // Add transaction section event 
     // amount value
     $( "#amount-credit" ).focusout(function() {
@@ -472,6 +619,21 @@ document.addEventListener("DOMContentLoaded", function () {
                 if(result.message == "success" ){
                     // Process for all accounts display
                     $(`.${action}-${item}`).slideUp( "slow", function(){ this.remove(); });
+                    $("#myModal .btn-close").click()
+                }
+            })
+        }else if(action === "budget"){
+
+            fetch("/budget/delete",{
+                method: 'POST',
+                body: JSON.stringify({item: item })
+            })
+            .then(response => response.json())
+            .then( result => {
+
+                if(result.message == "success" ){
+                    // Process for all budget display
+                    $(`.${item}`).slideUp( "slow", function(){ this.remove(); });
                     $("#myModal .btn-close").click()
                 }
             })
@@ -1007,6 +1169,149 @@ function deleteSubcategory(id){
     
 };
 
+function deleteBudget(id){
+    
+    $("#submitDelete").attr('data-id',id);
+    $("#submitDelete").attr('data-action',"budget");
+    
+};
+
 function edit(id){
     sessionStorage.setItem("previousScreen", id);
+}
+
+function addBudget(){
+    let data = {
+        name: $("#name").val(),
+        amount: $("#amount").val(),
+        description: $("#des").val(),
+        category: $("#category").val(),
+        subcategory: $("#subCategory").val(),
+        date: $("#date").val(),
+        time: $("#time").val(),
+        periodCount: $("#periodCount").val(),
+        periodProcess: $("#periodProcess").val(),
+        accountName: $("#accountName").val()
+    }
+
+    fetch('/budgetAdd',{
+        method: 'POST',
+        body: JSON.stringify( data )
+    })
+    .then(response => response.json())
+    .then( result => {
+
+        $("#name").removeClass("is-invalid")
+        $("#invalid-name").html("")
+        $("#amount").removeClass("is-invalid")
+        $("#invalid-amount").html("")
+        $("#des").removeClass("is-invalid")
+        $("#invalid-des").html("")
+        $("#category").removeClass("is-invalid")
+        $("#invalid-cat").html("")
+        $("#subCategory").removeClass("is-invalid")
+        $("#invalid-sub").html("")
+        $("#accountName").removeClass("is-invalid")
+        $("#invalid-account").html("")
+        
+        if(result.message == "error" ){
+            result.error.forEach(error =>{
+                if( error.id == "name"){
+                    $("#name").addClass("is-invalid")
+                    $("#invalid-name").html(error.message)
+                }
+                if( error.id == "amount"){
+                    $("#amount").addClass("is-invalid")
+                    $("#amount-div").addClass("is-invalid")
+                    $("#invalid-amount").html(error.message)
+                }
+                if( error.id == "description"){
+                    $("#des").addClass("is-invalid")
+                    $("#invalid-des").html(error.message)
+                }
+                if( error.id == "category"){
+                    $("#category").addClass("is-invalid")
+                    $("#invalid-cat").html(error.message)
+                }
+                if( error.id == "subCategory"){
+                    $("#subCategory").addClass("is-invalid")
+                    $("#invalid-sub").html(error.message)
+                }
+                if( error.id == "accountName"){
+                    $("#accountName").addClass("is-invalid")
+                    $("#invalid-account").html(error.message)
+                }
+            })
+        } else {
+            window.location.href = "/budget";
+        }
+    })
+}
+
+function editBudget(){
+    let data = {
+        name: $("#name").val(),
+        amount: $("#amount").val(),
+        description: $("#des").val(),
+        category: $("#category").val(),
+        subcategory: $("#subCategory").val(),
+        date: $("#date").val(),
+        time: $("#time").val(),
+        periodCount: $("#periodCount").val(),
+        periodProcess: $("#periodProcess").val(),
+        accountName: $("#accountName").val()
+    }
+
+    fetch(`/budgetEdit/${id}`,{
+        method: 'POST',
+        body: JSON.stringify( data )
+    })
+    .then(response => response.json())
+    .then( result => {
+
+        $("#name").removeClass("is-invalid")
+        $("#invalid-name").html("")
+        $("#amount").removeClass("is-invalid")
+        $("#invalid-amount").html("")
+        $("#des").removeClass("is-invalid")
+        $("#invalid-des").html("")
+        $("#category").removeClass("is-invalid")
+        $("#invalid-cat").html("")
+        $("#subCategory").removeClass("is-invalid")
+        $("#invalid-sub").html("")
+        $("#accountName").removeClass("is-invalid")
+        $("#invalid-account").html("")
+        
+        if(result.message == "error" ){
+            result.error.forEach(error =>{
+                if( error.id == "name"){
+                    $("#name").addClass("is-invalid")
+                    $("#invalid-name").html(error.message)
+                }
+                if( error.id == "amount"){
+                    $("#amount").addClass("is-invalid")
+                    $("#amount-div").addClass("is-invalid")
+                    $("#invalid-amount").html(error.message)
+                }
+                if( error.id == "description"){
+                    $("#des").addClass("is-invalid")
+                    $("#invalid-des").html(error.message)
+                }
+                if( error.id == "category"){
+                    $("#category").addClass("is-invalid")
+                    $("#invalid-cat").html(error.message)
+                }
+                if( error.id == "subCategory"){
+                    $("#subCategory").addClass("is-invalid")
+                    $("#invalid-sub").html(error.message)
+                }
+                if( error.id == "accountName"){
+                    $("#accountName").addClass("is-invalid")
+                    $("#invalid-account").html(error.message)
+                }
+            })
+        } else {
+            window.location.href = "/budget";
+        }
+    })
 }

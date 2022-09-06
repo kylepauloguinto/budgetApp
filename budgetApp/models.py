@@ -120,5 +120,6 @@ class Budget(models.Model):
             "currentAmount": self.currentAmount,
             "budgetAmount": self.budgetAmount,
             "descriptionBudget": self.descriptionBudget,
+            "minusAmount": self.minusAmount,
             "ins_date": self.ins_date
         }
