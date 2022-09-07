@@ -51,7 +51,7 @@ def transaction(request, id, pageNo):
     # If all accounts clicked
     if id == all_account:
         transactions = Transaction.objects.filter(userTransaction=request.user)
-        transactions = transactions.order_by("-transactionDate").all()
+        transactions = transactions.order_by("-transactionDate","-id").all()
         transactions = Paginator(transactions,10)
         transactions = transactions.page(pageNo).object_list
 
@@ -63,7 +63,7 @@ def transaction(request, id, pageNo):
     # Specific account is clicked
     else:
         transactions = Transaction.objects.filter(userTransaction=request.user,accountNameTransaction_id=id)
-        transactions = transactions.order_by("-transactionDate").all()
+        transactions = transactions.order_by("-transactionDate","-id").all()
         transactions = Paginator(transactions,10)
         transactions = transactions.page(pageNo).object_list
 
@@ -183,32 +183,67 @@ def creditAdd(request, id):
 
     data = json.loads(request.body)
 
-    account = Account.objects.get(userAccount=request.user,id=data["accountName"])
+    accountName = data["accountName"]
+    description = data["description"]
+    amount = int(data["amount"])
+    category = data["category"]
+    subcategory = data["subcategory"]
+
+    # credit process
+    account = Account.objects.get(userAccount=request.user,id=accountName)
 
     credit = Transaction()
     credit.userTransaction = request.user
-    credit.accountNameTransaction_id = data["accountName"]
+    credit.accountNameTransaction_id = accountName
     credit.transactionType = "credit"
-    credit.amount = data["amount"]
+    credit.amount = amount
     credit.previousAccountBalance = account.balance
-    credit.descriptionTransaction = data["description"]
+    credit.descriptionTransaction = description
 
-    if data["subcategory"] != "":
-        category = data["subcategory"].split("-")
+    if subcategory != "":
+        category = subcategory.split("-")
         credit.categoryTransaction_id = category[0]
         credit.subCategoryTransaction_id = category[1]
     else:
-        credit.categoryTransaction_id = data["category"]
+        credit.categoryTransaction_id = category
 
     date = data["date"]
-    time = data["time"]
-    credit.transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    time = data["time"] 
+    transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    credit.transactionDate = transactionDate
     credit.readTransaction = False
     credit.save()
 
-    account.balance = account.balance - int(data["amount"])
+    account.balance = account.balance - amount
     account.read = False
     account.save()
+
+    # budget process
+    budgets = []
+
+    if subcategory != "":
+        budgets = Budget.objects.filter(userBudget_id=request.user,
+                                    accountNameBudget_id=accountName,
+                                    subCategoryBudget_id=category[1],
+                                    startDate__lte=transactionDate,
+                                    endDate__gte=transactionDate)
+    elif category != "":
+        budgets = Budget.objects.filter(userBudget_id=request.user,
+                                    accountNameBudget_id=accountName,
+                                    categoryBudget_id=category,
+                                    subCategoryBudget__isnull=True,
+                                    startDate__lte=transactionDate,
+                                    endDate__gte=transactionDate)
+
+    for budget in budgets:
+        budget.currentAmount += amount
+
+        diff = int(budget.budgetAmount) - int(budget.currentAmount)
+        if diff < 0:
+            budget.minusAmount = True
+        else:
+            budget.minusAmount = False
+        budget.save()
 
     return JsonResponse({"message": "success"}, status=200)
 
@@ -223,12 +258,47 @@ def creditEdit(request, id):
 
     data = json.loads(request.body)
 
+    accountName = data["accountName"]
+    description = data["description"]
+    amount = int(data["amount"])
+    category = data["category"]
+    subcategory = data["subcategory"]
+
     # Undo the previous data
     prevCredit = Transaction.objects.get(userTransaction=request.user,id=id)
     prevAccount = Account.objects.get(userAccount=request.user,id=prevCredit.accountNameTransaction_id)
+    prevBudgets = []
 
+    if prevCredit.subCategoryTransaction != "" and prevCredit.subCategoryTransaction is not None:
+        prevBudgets = Budget.objects.filter(userBudget_id=request.user,
+                                    accountNameBudget_id=prevCredit.accountNameTransaction_id,
+                                    subCategoryBudget_id=prevCredit.subCategoryTransaction_id,
+                                    startDate__lte=prevCredit.transactionDate,
+                                    endDate__gte=prevCredit.transactionDate)
+    elif prevCredit.categoryTransaction_id != "" and prevCredit.categoryTransaction_id is not None:
+        prevBudgets = Budget.objects.filter(userBudget_id=request.user,
+                                    accountNameBudget_id=prevCredit.accountNameTransaction_id,
+                                    categoryBudget_id=prevCredit.categoryTransaction_id,
+                                    subCategoryBudget__isnull=True,
+                                    startDate__lte=prevCredit.transactionDate,
+                                    endDate__gte=prevCredit.transactionDate)
     if prevCredit.transactionType == "credit":
         prevAccount.balance = prevAccount.balance + prevCredit.amount
+        
+        for budget in prevBudgets:
+            currentAmount = budget.currentAmount - prevCredit.amount
+
+            if currentAmount <= 0:
+                currentAmount = 0
+
+            budget.currentAmount = currentAmount
+            diff = int(budget.budgetAmount) - int(budget.currentAmount)
+            if diff < 0:
+                budget.minusAmount = True
+            else:
+                budget.minusAmount = False
+            budget.save()
+
     elif prevCredit.transactionType == "debit":
         prevAccount.balance = prevAccount.balance - prevCredit.amount
 
@@ -236,32 +306,61 @@ def creditEdit(request, id):
     prevAccount.save()
 
     # Update the data with input data
-    account = Account.objects.get(userAccount=request.user,id=data["accountName"])
+    account = Account.objects.get(userAccount=request.user,id=accountName)
 
     credit = Transaction.objects.get(userTransaction=request.user,id=id)
     credit.userTransaction = request.user
-    credit.accountNameTransaction_id = data["accountName"]
+    credit.accountNameTransaction_id = accountName
     credit.transactionType = "credit"
-    credit.amount = data["amount"]
+    credit.amount = amount
     credit.previousAccountBalance = account.balance
-    credit.descriptionTransaction = data["description"]
+    credit.descriptionTransaction = description
 
-    if data["subcategory"] != "":
-        category = data["subcategory"].split("-")
+    if subcategory != "":
+        category = subcategory.split("-")
         credit.categoryTransaction_id = category[0]
         credit.subCategoryTransaction_id = category[1]
     else:
-        credit.categoryTransaction_id = data["category"]
+        credit.categoryTransaction_id = category
+        credit.subCategoryTransaction_id = ""
 
     date = data["date"]
     time = data["time"]
-    credit.transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    credit.transactionDate = transactionDate
     credit.readTransaction = False
     credit.save()
 
-    account.balance = account.balance - int(data["amount"])
+    account.balance = account.balance - amount
     account.read = False
     account.save()
+
+    # budget process
+    budgets = []
+
+    if subcategory != "":
+        budgets = Budget.objects.filter(userBudget_id=request.user,
+                                    accountNameBudget_id=accountName,
+                                    subCategoryBudget_id=category[1],
+                                    startDate__lte=transactionDate,
+                                    endDate__gte=transactionDate)
+    elif category != "":
+        budgets = Budget.objects.filter(userBudget_id=request.user,
+                                    accountNameBudget_id=accountName,
+                                    categoryBudget_id=category,
+                                    subCategoryBudget__isnull=True,
+                                    startDate__lte=transactionDate,
+                                    endDate__gte=transactionDate)
+    
+    for budget in budgets:
+        budget.currentAmount += amount
+
+        diff = int(budget.budgetAmount) - int(budget.currentAmount)
+        if diff < 0:
+            budget.minusAmount = True
+        else:
+            budget.minusAmount = False
+        budget.save()
 
     return JsonResponse({"message": "success"}, status=200)
 
@@ -276,30 +375,38 @@ def debitAdd(request, id):
 
     data = json.loads(request.body)
 
-    account = Account.objects.get(userAccount=request.user,id=data["accountName"])
+    accountName = data["accountName"]
+    description = data["description"]
+    amount = int(data["amount"])
+    category = data["category"]
+    subcategory = data["subcategory"]
+
+    # debit process
+    account = Account.objects.get(userAccount=request.user,id=accountName)
 
     debit = Transaction()
     debit.userTransaction = request.user
-    debit.accountNameTransaction_id = data["accountName"]
+    debit.accountNameTransaction_id = accountName
     debit.transactionType = "debit"
-    debit.amount = data["amount"]
+    debit.amount = amount
     debit.previousAccountBalance = account.balance
-    debit.descriptionTransaction = data["description"]
+    debit.descriptionTransaction = description
 
-    if data["subcategory"] != "":
-        category = data["subcategory"].split("-")
+    if subcategory != "":
+        category = subcategory.split("-")
         debit.categoryTransaction_id = category[0]
         debit.subCategoryTransaction_id = category[1]
     else:
-        debit.categoryTransaction_id = data["category"]
+        debit.categoryTransaction_id = category
 
     date = data["date"]
     time = data["time"]
-    debit.transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    debit.transactionDate = transactionDate
     debit.readTransaction = False
     debit.save()
 
-    account.balance = account.balance + int(data["amount"])
+    account.balance = account.balance + amount
     account.read = False
     account.save()
 
@@ -316,12 +423,49 @@ def debitEdit(request, id):
 
     data = json.loads(request.body)
 
+    accountName = data["accountName"]
+    description = data["description"]
+    amount = int(data["amount"])
+    category = data["category"]
+    subcategory = data["subcategory"]
+
     # Undo the previous action
     prevDebit = Transaction.objects.get(userTransaction=request.user,id=id)
     prevAccount = Account.objects.get(userAccount=request.user,id=prevDebit.accountNameTransaction_id)
+    prevBudgets = []
+
+    if prevDebit.subCategoryTransaction != "" and prevDebit.subCategoryTransaction is not None:
+        prevBudgets = Budget.objects.filter(userBudget_id=request.user,
+                                    accountNameBudget_id=prevDebit.accountNameTransaction_id,
+                                    subCategoryBudget_id=prevDebit.subCategoryTransaction_id,
+                                    startDate__lte=prevDebit.transactionDate,
+                                    endDate__gte=prevDebit.transactionDate)
+    elif prevDebit.categoryTransaction_id != "" and prevDebit.categoryTransaction_id is not None:
+        prevBudgets = Budget.objects.filter(userBudget_id=request.user,
+                                    accountNameBudget_id=prevDebit.accountNameTransaction_id,
+                                    categoryBudget_id=prevDebit.categoryTransaction_id,
+                                    subCategoryBudget__isnull=True,
+                                    startDate__lte=prevDebit.transactionDate,
+                                    endDate__gte=prevDebit.transactionDate)
 
     if prevDebit.transactionType == "credit":
         prevAccount.balance = prevAccount.balance + prevDebit.amount
+
+        for budget in prevBudgets:
+            currentAmount = budget.currentAmount - prevDebit.amount
+
+            if currentAmount <= 0:
+                currentAmount = 0
+
+            budget.currentAmount = currentAmount
+
+            diff = int(budget.budgetAmount) - int(budget.currentAmount)
+            if diff < 0:
+                budget.minusAmount = True
+            else:
+                budget.minusAmount = False
+            budget.save()
+
     elif prevDebit.transactionType == "debit":
         prevAccount.balance = prevAccount.balance - prevDebit.amount
 
@@ -329,30 +473,32 @@ def debitEdit(request, id):
     prevAccount.save()
 
     # Update the data with current action
-    account = Account.objects.get(userAccount=request.user,id=data["accountName"])
+    account = Account.objects.get(userAccount=request.user,id=accountName)
 
     debit = Transaction.objects.get(userTransaction=request.user,id=id)
     debit.userTransaction = request.user
-    debit.accountNameTransaction_id = data["accountName"]
+    debit.accountNameTransaction_id = accountName
     debit.transactionType = "debit"
-    debit.amount = data["amount"]
+    debit.amount = amount
     debit.previousAccountBalance = account.balance
-    debit.descriptionTransaction = data["description"]
+    debit.descriptionTransaction = description
 
-    if data["subcategory"] != "":
-        category = data["subcategory"].split("-")
+    if subcategory != "":
+        category = subcategory.split("-")
         debit.categoryTransaction_id = category[0]
         debit.subCategoryTransaction_id = category[1]
     else:
-        debit.categoryTransaction_id = data["category"]
+        debit.categoryTransaction_id = category
+        debit.subCategoryTransaction_id = ""
 
     date = data["date"]
     time = data["time"]
-    debit.transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    debit.transactionDate = transactionDate
     debit.readTransaction = False
     debit.save()
 
-    account.balance = account.balance + int(data["amount"])
+    account.balance = account.balance + amount
     account.read = False
     account.save()
 
@@ -581,7 +727,39 @@ def deleteTransaction(request, id):
 
         elif transactionType == "credit":
             credit = Transaction.objects.get(userTransaction=request.user,id=item)
-            
+            prevBudgets = []
+
+            # For budget process
+            if credit.subCategoryTransaction != "" and credit.subCategoryTransaction is not None:
+                prevBudgets = Budget.objects.filter(userBudget_id=request.user,
+                                    accountNameBudget_id=credit.accountNameTransaction_id,
+                                    subCategoryBudget_id=credit.subCategoryTransaction_id,
+                                    startDate__lte=credit.transactionDate,
+                                    endDate__gte=credit.transactionDate)
+            elif credit.categoryTransaction_id != "" and credit.categoryTransaction_id is not None:
+                prevBudgets = Budget.objects.filter(userBudget_id=request.user,
+                                    accountNameBudget_id=credit.accountNameTransaction_id,
+                                    categoryBudget_id=credit.categoryTransaction_id,
+                                    subCategoryBudget__isnull=True,
+                                    startDate__lte=credit.transactionDate,
+                                    endDate__gte=credit.transactionDate)
+                    
+            for budget in prevBudgets:
+                currentAmount = budget.currentAmount - credit.amount
+
+                if currentAmount <= 0:
+                    currentAmount = 0
+
+                budget.currentAmount = currentAmount
+
+                diff = int(budget.budgetAmount) - int(budget.currentAmount)
+
+                if diff < 0:
+                    budget.minusAmount = True
+                else:
+                    budget.minusAmount = False
+                budget.save()
+
             account = Account.objects.get(userAccount=request.user,id=credit.accountNameTransaction_id)
             account.balance = account.balance + credit.amount
             account.read = False
@@ -599,7 +777,7 @@ def deleteTransaction(request, id):
 
         elif transactionType == "debit":
             debit = Transaction.objects.get(userTransaction=request.user,id=item)
-            
+
             account = Account.objects.get(userAccount=request.user,id=debit.accountNameTransaction_id)
             account.balance = account.balance - debit.amount
             account.read = False
@@ -1203,6 +1381,7 @@ def budgetAdd(request):
         amountData = Transaction.objects.filter(userTransaction=request.user,
                                         accountNameTransaction_id=data["accountName"],
                                         categoryTransaction_id=data["category"],
+                                        subCategoryTransaction__isnull=True,
                                         transactionDate__range=[dateStart,endDate])
     
     amount = 0
@@ -1370,6 +1549,7 @@ def budgetEdit(request , id ):
         amountData = Transaction.objects.filter(userTransaction=request.user,
                                         accountNameTransaction_id=data["accountName"],
                                         categoryTransaction_id=data["category"],
+                                        subCategoryTransaction__isnull=True,
                                         transactionDate__range=[dateStart,endDate])
     
     amount = 0
