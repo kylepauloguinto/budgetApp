@@ -1266,7 +1266,7 @@ def addBudget(request):
         "counts": counts,
         "process": process,
         "date": datetime.now().strftime("%Y/%m/%d"),
-        "time": datetime.now().strftime("%H:%M")
+        "time": "0:00"
     })
 
 # Add budget

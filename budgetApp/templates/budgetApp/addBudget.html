@@ -101,7 +101,7 @@
                 <div class="form-floating">
                   <select name="periodProcess" class="form-select" id="periodProcess" aria-label="Floating label select example">
                     {% for data in process %}
-                      {% if data.id == 1 %}
+                      {% if data.id == 3 %}
                         <option value="{{ data.id }}" selected>{{ data.name }}</option>
                       {% else %}
                         <option value="{{ data.id }}" >{{ data.name }}</option>
