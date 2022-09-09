@@ -332,6 +332,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 divRow0.setAttribute('class','row');
                 let divRow1 = document.createElement('div');
                 divRow1.setAttribute('class','row');
+                let divRow3 = document.createElement('div');
+                divRow3.setAttribute('class','row');
                 let divRow1Col0 = document.createElement('div');
                 divRow1Col0.setAttribute('class','col');
                 divRow1Col0.setAttribute('style','text-align: left;');
@@ -341,6 +343,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 let divRow1Col2 = document.createElement('div');
                 divRow1Col2.setAttribute('class','col');
                 divRow1Col2.setAttribute('style','text-align: right;');
+                let divRow1Col3 = document.createElement('div');
+                divRow1Col3.setAttribute('class','col');
+                divRow1Col3.setAttribute('style','text-align: left;');
 
                 let currentAmount = data.currentAmount.replace(",","")
                 let budgetAmount = data.budgetAmount.replace(",","")
@@ -355,12 +360,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 let divRowLabel2 = document.createElement('label');
                 divRowLabel2.setAttribute('style','font-size: 25px;');
                 divRowLabel2.innerHTML = ' ¥ ' + difference
+                let divRowLabel3 = document.createElement('label');
+                divRowLabel3.setAttribute('style','font-size: 15px;');
+                divRowLabel3.innerHTML = data.descriptionBudget
                 divRow1Col0.append(divRowLabel0);
                 divRow1Col1.append(divRowLabel1);
                 divRow1Col2.append(divRowLabel2);
+                divRow1Col3.append(divRowLabel3);
                 divRow0.append(divRow1Col0);
                 divRow1.append(divRow1Col1);
                 divRow1.append(divRow1Col2);
+                divRow3.append(divRow1Col3);
 
                 let percentage = (currentAmount / budgetAmount ) * 100
                 let color = ""
@@ -386,6 +396,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 divRow2.append(divColLabel1);
 
                 a.append(divRow0);
+                a.append(divRow3);
                 a.append(divRow1);
                 a.append(divRow2);
 

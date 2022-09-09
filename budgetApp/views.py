@@ -1339,34 +1339,18 @@ def budgetAdd(request):
     budget.budgetName = data["name"]
     budget.accountNameBudget_id = data["accountName"]
     budget.budgetAmount = data["amount"]
-    budget.descriptionBudget = data["description"]
     
-    startDate = data["date"]
     time = data["time"]
     periodCount = int(data["periodCount"])
     periodProcess = data["periodProcess"]
-    startDate = datetime.strptime(startDate+" "+time, "%Y/%m/%d %H:%M")
-    time = datetime.strptime(time, "%H:%M")
+    startDate = datetime.strptime(data["date"]+" "+time, "%Y/%m/%d %H:%M")
 
-    if periodProcess == "1":    # days
-        endDate = startDate + timedelta(days=periodCount)
-    
-    if periodProcess == "2":    # weeks
-        count = periodCount * 7
-        endDate = startDate + timedelta(days=count)
+    dates = dateSetter(startDate , periodCount , periodProcess)
 
-    if periodProcess == "3":    # months
-        month = startDate.month - 1 + periodCount
-        year = startDate.year + month // 12
-        month = month % 12 + 1
-        day = min(startDate.day, calendar.monthrange(year,month)[1])
-        endDate = datetime(year, month, day,startDate.hour,startDate.minute)
-    
-    if periodProcess == "4":    # year
-        endDate = datetime(startDate.year + periodCount, startDate.month, startDate.day,startDate.hour,startDate.minute)
-
-    dateStart = datetime.strftime(startDate, "%Y-%m-%d %H:%M")
-    dateEnd = datetime.strftime(endDate, "%Y-%m-%d %H:%M")
+    dateEnd = dates[1]
+    budget.descriptionBudget = countdown(dateEnd)
+    dateStart = datetime.strftime(dates[0], "%Y-%m-%d %H:%M")
+    dateEnd = datetime.strftime(dateEnd, "%Y-%m-%d %H:%M")
 
     if data["subcategory"] != "":
         category = data["subcategory"].split("-")
@@ -1375,22 +1359,22 @@ def budgetAdd(request):
         amountData = Transaction.objects.filter(userTransaction=request.user,
                                         accountNameTransaction_id=data["accountName"],
                                         subCategoryTransaction_id=category[1],
-                                        transactionDate__range=[dateStart,endDate])
+                                        transactionDate__range=[dateStart,dateEnd])
     else:
         budget.categoryBudget_id = data["category"]
         amountData = Transaction.objects.filter(userTransaction=request.user,
                                         accountNameTransaction_id=data["accountName"],
                                         categoryTransaction_id=data["category"],
                                         subCategoryTransaction__isnull=True,
-                                        transactionDate__range=[dateStart,endDate])
+                                        transactionDate__range=[dateStart,dateEnd])
     
     amount = 0
     for data in amountData:
         if data.transactionType == "credit":
             amount += int(data.amount)
             
-    budget.startDate = startDate
-    budget.endDate = endDate
+    budget.startDate = dateStart
+    budget.endDate = dateEnd
     budget.currentAmount = amount
     budget.periodCount = periodCount
     budget.periodProcess = periodProcess
@@ -1507,34 +1491,18 @@ def budgetEdit(request , id ):
     budget.budgetName = data["name"]
     budget.accountNameBudget_id = data["accountName"]
     budget.budgetAmount = data["amount"]
-    budget.descriptionBudget = data["description"]
     
-    startDate = data["date"]
     time = data["time"]
     periodCount = int(data["periodCount"])
     periodProcess = data["periodProcess"]
-    startDate = datetime.strptime(startDate+" "+time, "%Y/%m/%d %H:%M")
-    time = datetime.strptime(time, "%H:%M")
+    startDate = datetime.strptime(data["date"]+" "+time, "%Y/%m/%d %H:%M")
 
-    if periodProcess == "1":    # days
-        endDate = startDate + timedelta(days=periodCount)
-    
-    if periodProcess == "2":    # weeks
-        count = periodCount * 7
-        endDate = startDate + timedelta(days=count)
+    dates = dateSetter(startDate , periodCount , periodProcess)
 
-    if periodProcess == "3":    # months
-        month = startDate.month - 1 + periodCount
-        year = startDate.year + month // 12
-        month = month % 12 + 1
-        day = min(startDate.day, calendar.monthrange(year,month)[1])
-        endDate = datetime(year, month, day,startDate.hour,startDate.minute)
-    
-    if periodProcess == "4":    # year
-        endDate = datetime(startDate.year + periodCount, startDate.month, startDate.day,startDate.hour,startDate.minute)
-
-    dateStart = datetime.strftime(startDate, "%Y-%m-%d %H:%M")
-    dateEnd = datetime.strftime(endDate, "%Y-%m-%d %H:%M")
+    dateEnd = dates[1]
+    budget.descriptionBudget = countdown(dateEnd)
+    dateStart = datetime.strftime(dates[0], "%Y-%m-%d %H:%M")
+    dateEnd = datetime.strftime(dateEnd, "%Y-%m-%d %H:%M")
 
     if data["subcategory"] != "":
         category = data["subcategory"].split("-")
@@ -1543,22 +1511,22 @@ def budgetEdit(request , id ):
         amountData = Transaction.objects.filter(userTransaction=request.user,
                                         accountNameTransaction_id=data["accountName"],
                                         subCategoryTransaction_id=category[1],
-                                        transactionDate__range=[dateStart,endDate])
+                                        transactionDate__range=[dateStart,dateEnd])
     else:
         budget.categoryBudget_id = data["category"]
         amountData = Transaction.objects.filter(userTransaction=request.user,
                                         accountNameTransaction_id=data["accountName"],
                                         categoryTransaction_id=data["category"],
                                         subCategoryTransaction__isnull=True,
-                                        transactionDate__range=[dateStart,endDate])
+                                        transactionDate__range=[dateStart,dateEnd])
     
     amount = 0
     for data in amountData:
         if data.transactionType == "credit":
             amount += int(data.amount)
             
-    budget.startDate = startDate
-    budget.endDate = endDate
+    budget.startDate = dateStart
+    budget.endDate = dateEnd
     budget.currentAmount = amount
     budget.periodCount = periodCount
     budget.periodProcess = periodProcess
@@ -1572,6 +1540,57 @@ def budgetEdit(request , id ):
     budget.save()
 
     return JsonResponse({"message": "success"}, status=200)
+
+def dateSetter(startDate, count, process):
+    startDate = startDate
+    endDate = ""
+    currentDate = datetime.now()
+    checker = True
+    value = []
+
+    while checker:
+        if process == "1":    # days
+            endDate = startDate + timedelta(days=count)
+
+        if process == "2":    # weeks
+            count = count * 7
+            endDate = startDate + timedelta(days=count)
+
+        if process == "3":    # months
+            month = startDate.month - 1 + count
+            year = startDate.year + month // 12
+            month = month % 12 + 1
+            day = min(startDate.day, calendar.monthrange(year,month)[1])
+            endDate = datetime(year, month, day,startDate.hour,startDate.minute)
+
+        if process == "4":    # year
+            endDate = datetime(startDate.year + count, startDate.month, startDate.day,startDate.hour,startDate.minute)
+        
+        if endDate < currentDate:
+            startDate = endDate
+        else:
+            checker = False
+
+    value.append(startDate)
+    value.append(endDate)
+    return value
+
+def countdown(dateEnd):
+    remaining = ""
+    days = dateEnd - datetime.now()
+
+    if days.days >= 21:
+        remaining = "Ends in: " + str(dateFormatter(dateEnd))
+    elif days.days >= 14:
+        remaining = "Ends in: 3 weeks"
+    elif days.days >= 7:
+        remaining = "Ends in: 2 weeks"
+    elif days.days == 1 :
+        remaining = "Ends in: "+ str(days.days) +" day"
+    elif days.days < 7 :
+        remaining = "Ends in: "+ str(days.days) +" days"
+
+    return remaining
 
 # Delete Budget
 @csrf_exempt
