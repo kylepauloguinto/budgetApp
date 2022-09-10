@@ -269,7 +269,7 @@ def creditEdit(request, id):
     prevAccount = Account.objects.get(userAccount=request.user,id=prevCredit.accountNameTransaction_id)
     prevBudgets = []
 
-    if prevCredit.subCategoryTransaction != "" and prevCredit.subCategoryTransaction is not None:
+    if prevCredit.subCategoryTransaction_id != "" and prevCredit.subCategoryTransaction_id is not None:
         prevBudgets = Budget.objects.filter(userBudget_id=request.user,
                                     accountNameBudget_id=prevCredit.accountNameTransaction_id,
                                     subCategoryBudget_id=prevCredit.subCategoryTransaction_id,
@@ -434,7 +434,7 @@ def debitEdit(request, id):
     prevAccount = Account.objects.get(userAccount=request.user,id=prevDebit.accountNameTransaction_id)
     prevBudgets = []
 
-    if prevDebit.subCategoryTransaction != "" and prevDebit.subCategoryTransaction is not None:
+    if prevDebit.subCategoryTransaction_id != "" and prevDebit.subCategoryTransaction_id is not None:
         prevBudgets = Budget.objects.filter(userBudget_id=request.user,
                                     accountNameBudget_id=prevDebit.accountNameTransaction_id,
                                     subCategoryBudget_id=prevDebit.subCategoryTransaction_id,
@@ -1229,6 +1229,47 @@ def addCategory(request):
         })
 
 def budget(request):
+    
+    # Function for automatic update for outdated budgets 
+    budgets = Budget.objects.filter(userBudget=request.user)
+    
+    for budget in budgets:
+        dates = dateSetter(budget.startDate , budget.periodCount , str(budget.periodProcess) )
+
+        dateEnd = dates[1]
+        budget.descriptionBudget = countdown(dateEnd)
+        dateStart = datetime.strftime(dates[0], "%Y-%m-%d %H:%M")
+        dateEnd = datetime.strftime(dateEnd, "%Y-%m-%d %H:%M")
+
+
+        if budget.subCategoryBudget_id != ""  and budget.subCategoryBudget_id is not None:
+            amountData = Transaction.objects.filter(userTransaction=request.user,
+                                            accountNameTransaction_id=budget.accountNameBudget_id,
+                                            subCategoryTransaction_id=budget.subCategoryBudget_id,
+                                            transactionDate__range=[dateStart,dateEnd])
+        elif budget.categoryBudget_id != ""  and budget.categoryBudget_id is not None:
+            amountData = Transaction.objects.filter(userTransaction=request.user,
+                                            accountNameTransaction_id=budget.accountNameBudget_id,
+                                            categoryTransaction_id=budget.categoryBudget_id,
+                                            subCategoryTransaction__isnull=True,
+                                            transactionDate__range=[dateStart,dateEnd])
+
+        amount = 0
+        for data in amountData:
+            if data.transactionType == "credit":
+                amount += int(data.amount)
+
+        budget.startDate = dateStart
+        budget.endDate = dateEnd
+        budget.currentAmount = amount
+
+        diff = int(budget.budgetAmount) - amount
+        if diff < 0:
+            budget.minusAmount = True
+        else:
+            budget.minusAmount = False
+
+        budget.save()
 
     return render(request, "budgetApp/budget.html")
 
@@ -1293,10 +1334,6 @@ def budgetAdd(request):
     
     if amount is not None and len(amount) > 15:
         messageList.append({"id":"amount", "message":"Please input amount within 15 numbers."})
-
-    # Description
-    if description is not None and len(description) > 25:
-        messageList.append({"id":"description", "message":"Please input description within 25 letters."})
 
     # Category and Subcategory
     category = data.get("category")
@@ -1446,10 +1483,6 @@ def budgetEdit(request , id ):
     if amount is not None and len(amount) > 15:
         messageList.append({"id":"amount", "message":"Please input amount within 15 numbers."})
 
-    # Description
-    if description is not None and len(description) > 25:
-        messageList.append({"id":"description", "message":"Please input description within 25 letters."})
-
     # Category and Subcategory
     category = data.get("category")
     subCategory = data.get("subcategory")
@@ -1566,6 +1599,7 @@ def dateSetter(startDate, count, process):
         if process == "4":    # year
             endDate = datetime(startDate.year + count, startDate.month, startDate.day,startDate.hour,startDate.minute)
         
+        endDate = endDate.replace(tzinfo=None)
         if endDate < currentDate:
             startDate = endDate
         else:
@@ -1579,8 +1613,10 @@ def countdown(dateEnd):
     remaining = ""
     days = dateEnd - datetime.now()
 
-    if days.days >= 21:
-        remaining = "Ends in: " + str(dateFormatter(dateEnd))
+    if days.days >= 365:
+        remaining = "Ends in: " + datetime.strftime(dateEnd, "%B %d, %Y")
+    elif days.days >= 21:
+        remaining = "Ends in: " + datetime.strftime(dateEnd, "%B %d")
     elif days.days >= 14:
         remaining = "Ends in: 3 weeks"
     elif days.days >= 7:
