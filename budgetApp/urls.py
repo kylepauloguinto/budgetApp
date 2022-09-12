@@ -38,6 +38,10 @@ urlpatterns = [
     path("editBudget/<int:id>", views.editBudget, name="editBudget"),
     path("budgetEdit/<int:id>", views.budgetEdit, name="editBudget"),
 
+    #report
+    path("report", views.report, name="report"),
+    path("report/reportDisplay", views.reportDisplay, name="reportDisplay"),
+
     #accounts
     path("accounts",views.accounts, name="accounts"),
     path("accounts/delete",views.deleteAccount, name="deleteAccount"),
