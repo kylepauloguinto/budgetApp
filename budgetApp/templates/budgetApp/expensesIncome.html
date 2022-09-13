@@ -1,0 +1,74 @@
+{% extends "budgetApp/layout.html" %}
+
+
+{% block head %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block body %}
+    <div id="mainContainer">
+        <div id="main">
+            <div class="contents">
+                <div class="row" style="margin-bottom: 37px;">
+                    <div class="col-3" style="max-width: 23%; margin-top: 3px">
+                        <a class="btn btn-outline-success" href="{% url 'report' %}" role="button"><i class="bi bi-box-arrow-in-left"></i> Back</a>
+                    </div>
+                    <div class="col">
+                      <h2 class="title">Expenses and Income</h2>
+                    </div>
+                    <div class="form-group mb-3">
+                        <div class="form-floating"style="margin-top:20px">
+                          <select name="year" class="form-select" id="year">
+                            <option value=""></option>
+                            {% for year in years %}
+                                {% if year == currentYear %}
+                                <option value="{{ year }}" selected>{{ year }}</option>
+                                {% else %}
+                                <option value="{{ year }}">{{ year }}</option>
+                                {% endif %}
+                            {% endfor %}
+                          </select>
+                          <label for="floatingSelect" id="label-sub">Year</label>
+                        </div>
+                    </div>
+                    <div class="form-group mb-3" >
+                        <div class="form-floating">
+                          <select name="accountName" class="form-select" id="accountName-report">
+                            {% for account in accounts %}
+                              <option value="{{ account.id }}">{{ account.accountName }}</option>
+                            {% endfor %}
+                          </select>
+                          <label for="floatingSelect" >Account</label>
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <div class="form-floating">
+                          <select name="category" class="form-select" id="category">
+                            <option value=""></option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.category }}</option>
+                            {% endfor %}
+                          </select>
+                          <label for="floatingSelect">Category</label>
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <div class="form-floating">
+                          <select name="subCategory" class="form-select" id="subCategory" hidden="hidden">
+                            <option value=""></option>
+                            {% for subCategory in subCategories %}
+                              <option value="{{ subCategory.parentCategory.id }}-{{ subCategory.id }}">{{ subCategory.subCategory }}</option>
+                            {% endfor %}
+                          </select>
+                          <label for="floatingSelect" id="label-sub" hidden>Subcategory</label>
+                        </div>
+                    </div>
+                    <canvas id="myChart" width="400" height="400"></canvas>
+                </div>
+            </div>  
+            <div id="dates">
+            </div>
+        </div>  
+    </div>
+{% endblock %}

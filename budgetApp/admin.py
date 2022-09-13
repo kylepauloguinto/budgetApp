@@ -12,7 +12,7 @@ class SubCategoriesAdmin(admin.ModelAdmin):
     list_display = ("id","userSubCategory", "parentCategory", "subCategory" ,"ins_date" )
     
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ("id","userTransaction", "accountNameTransaction", "accountNameTransferFrom", "accountNameTransferTo", "transactionFromId", "transactionType", "amount","previousAccountBalance","descriptionTransaction","categoryTransaction", "subCategoryTransaction", "transactionDate", "readTransaction","ins_date")
+    list_display = ("id","userTransaction", "accountNameTransaction", "accountNameTransferFrom", "accountNameTransferTo", "transactionFromId", "transactionType", "amount","previousAccountBalance","currentAccountBalance","descriptionTransaction","categoryTransaction", "subCategoryTransaction", "transactionDate", "readTransaction","ins_date")
 
 class BudgetAdmin(admin.ModelAdmin):
     list_display = ("id","userBudget", "budgetName", "accountNameBudget", "currentAmount", "budgetAmount", "descriptionBudget", "categoryBudget","subCategoryBudget","startDate","endDate", "periodCount", "periodProcess", "minusAmount","ins_date")

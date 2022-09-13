@@ -72,6 +72,7 @@ class Transaction(models.Model):
     transactionType = models.TextField(blank=True)
     amount = models.IntegerField()
     previousAccountBalance = models.IntegerField()
+    currentAccountBalance = models.IntegerField()
     descriptionTransaction = models.TextField(blank=True)
     categoryTransaction = models.ForeignKey(Categories, on_delete=models.PROTECT, blank=True, null=True, related_name="categoryTransaction")
     subCategoryTransaction = models.ForeignKey(SubCategories, on_delete=models.PROTECT, blank=True, null=True, related_name="subCategoryTransaction")

@@ -198,6 +198,7 @@ def creditAdd(request, id):
     credit.transactionType = "credit"
     credit.amount = amount
     credit.previousAccountBalance = account.balance
+    credit.currentAccountBalance = account.balance - amount
     credit.descriptionTransaction = description
 
     if subcategory != "":
@@ -314,6 +315,7 @@ def creditEdit(request, id):
     credit.transactionType = "credit"
     credit.amount = amount
     credit.previousAccountBalance = account.balance
+    credit.currentAccountBalance = account.balance - amount
     credit.descriptionTransaction = description
 
     if subcategory != "":
@@ -390,6 +392,7 @@ def debitAdd(request, id):
     debit.transactionType = "debit"
     debit.amount = amount
     debit.previousAccountBalance = account.balance
+    debit.currentAccountBalance = account.balance + amount
     debit.descriptionTransaction = description
 
     if subcategory != "":
@@ -481,6 +484,7 @@ def debitEdit(request, id):
     debit.transactionType = "debit"
     debit.amount = amount
     debit.previousAccountBalance = account.balance
+    debit.currentAccountBalance = account.balance + amount
     debit.descriptionTransaction = description
 
     if subcategory != "":
@@ -1232,44 +1236,49 @@ def budget(request):
     
     # Function for automatic update for outdated budgets 
     budgets = Budget.objects.filter(userBudget=request.user)
-    
+    currentDate = datetime.now()
+
     for budget in budgets:
-        dates = dateSetter(budget.startDate , budget.periodCount , str(budget.periodProcess) )
+        
+        endDate = budget.endDate.replace(tzinfo=None)
 
-        dateEnd = dates[1]
-        budget.descriptionBudget = countdown(dateEnd)
-        dateStart = datetime.strftime(dates[0], "%Y-%m-%d %H:%M")
-        dateEnd = datetime.strftime(dateEnd, "%Y-%m-%d %H:%M")
+        if endDate < currentDate:
+            dates = dateSetter(budget.startDate , budget.periodCount , str(budget.periodProcess) )
+
+            dateEnd = dates[1]
+            budget.descriptionBudget = countdown(dateEnd)
+            dateStart = datetime.strftime(dates[0], "%Y-%m-%d %H:%M")
+            dateEnd = datetime.strftime(dateEnd, "%Y-%m-%d %H:%M")
 
 
-        if budget.subCategoryBudget_id != ""  and budget.subCategoryBudget_id is not None:
-            amountData = Transaction.objects.filter(userTransaction=request.user,
-                                            accountNameTransaction_id=budget.accountNameBudget_id,
-                                            subCategoryTransaction_id=budget.subCategoryBudget_id,
-                                            transactionDate__range=[dateStart,dateEnd])
-        elif budget.categoryBudget_id != ""  and budget.categoryBudget_id is not None:
-            amountData = Transaction.objects.filter(userTransaction=request.user,
-                                            accountNameTransaction_id=budget.accountNameBudget_id,
-                                            categoryTransaction_id=budget.categoryBudget_id,
-                                            subCategoryTransaction__isnull=True,
-                                            transactionDate__range=[dateStart,dateEnd])
+            if budget.subCategoryBudget_id != ""  and budget.subCategoryBudget_id is not None:
+                amountData = Transaction.objects.filter(userTransaction=request.user,
+                                                accountNameTransaction_id=budget.accountNameBudget_id,
+                                                subCategoryTransaction_id=budget.subCategoryBudget_id,
+                                                transactionDate__range=[dateStart,dateEnd])
+            elif budget.categoryBudget_id != ""  and budget.categoryBudget_id is not None:
+                amountData = Transaction.objects.filter(userTransaction=request.user,
+                                                accountNameTransaction_id=budget.accountNameBudget_id,
+                                                categoryTransaction_id=budget.categoryBudget_id,
+                                                subCategoryTransaction__isnull=True,
+                                                transactionDate__range=[dateStart,dateEnd])
 
-        amount = 0
-        for data in amountData:
-            if data.transactionType == "credit":
-                amount += int(data.amount)
+            amount = 0
+            for data in amountData:
+                if data.transactionType == "credit":
+                    amount += int(data.amount)
 
-        budget.startDate = dateStart
-        budget.endDate = dateEnd
-        budget.currentAmount = amount
+            budget.startDate = dateStart
+            budget.endDate = dateEnd
+            budget.currentAmount = amount
 
-        diff = int(budget.budgetAmount) - amount
-        if diff < 0:
-            budget.minusAmount = True
-        else:
-            budget.minusAmount = False
+            diff = int(budget.budgetAmount) - amount
+            if diff < 0:
+                budget.minusAmount = True
+            else:
+                budget.minusAmount = False
 
-        budget.save()
+            budget.save()
 
     return render(request, "budgetApp/budget.html")
 
@@ -1573,6 +1582,126 @@ def budgetEdit(request , id ):
     budget.save()
 
     return JsonResponse({"message": "success"}, status=200)
+
+# Display report
+def report(request):
+
+    return render(request, "budgetApp/report.html")
+
+# Display expenses and income report
+def expensesIncome(request):
+
+    # Dropdown account, categories and subcategories data
+    accounts = Account.objects.filter(userAccount=request.user).order_by("accountName")
+    categories = Categories.objects.filter(userCategory=request.user).order_by("category")
+    subCategories = SubCategories.objects.filter(userSubCategory=request.user).order_by("subCategory")
+    years = []
+    for count in range(1000,5001):
+        years.append(count)
+
+    currentDate = datetime.now()
+
+    return render(request, "budgetApp/expensesIncome.html",{
+        "accounts" : accounts,
+        "categories" : categories,
+        "subCategories" : subCategories,
+        "years": years,
+        "currentYear": currentDate.year,
+    })
+
+@csrf_exempt
+@login_required
+def expensesIncomeDisplay(request):
+
+    data = json.loads(request.body)
+    expenses = []
+    income = []
+    months = []
+    year = data.get("year")
+    accountName = data.get("accountName")
+    category = data.get("category")
+    subCategory = data.get("subcategory")
+
+
+    for month in range(1,13):
+        expensesAmount = 0
+        incomeAmount = 0
+
+        if subCategory != ""  and subCategory is not None:
+            category = subCategory.split("-")
+            subCategorySearch = int(category[1])
+            transactions = Transaction.objects.filter(userTransaction=request.user,
+                                            accountNameTransaction_id=accountName,
+                                            subCategoryTransaction_id=subCategorySearch,
+                                            transactionDate__year=year,
+                                            transactionDate__month=month)
+        elif category != ""  and category is not None:
+            transactions = Transaction.objects.filter(userTransaction=request.user,
+                                            accountNameTransaction_id=accountName,
+                                            categoryTransaction_id=category,
+                                            transactionDate__year=year,
+                                            transactionDate__month=month)
+        else:
+            transactions = Transaction.objects.filter(userTransaction=request.user,
+                                            accountNameTransaction_id=accountName,
+                                            transactionDate__year=year,
+                                            transactionDate__month=month)
+        if len(transactions) > 0:
+            months.append(month)
+
+        for tran in transactions:
+
+            if tran.transactionType == "credit":
+                expensesAmount = expensesAmount + tran.amount
+            elif tran.transactionType == "debit":
+                incomeAmount = incomeAmount + tran.amount
+        
+        expenses.append(expensesAmount)
+        income.append(incomeAmount)
+    
+    return JsonResponse({"expenses": expenses
+                        ,"income": income
+                        ,"months": months }, status=200)
+
+@csrf_exempt
+@login_required
+def expensesIncomeDetail(request):
+
+    data = json.loads(request.body)
+    expenses = []
+    income = []
+    month = data.get("month")
+    year = data.get("year")
+    accountName = data.get("accountName")
+    category = data.get("category")
+    subCategory = data.get("subcategory")
+
+    if subCategory != ""  and subCategory is not None and subCategory != 'null':
+        category = subCategory.split("-")
+        subCategorySearch = int(category[1])
+        transactions = Transaction.objects.filter(userTransaction=request.user,
+                                        accountNameTransaction_id=accountName,
+                                        subCategoryTransaction_id=subCategorySearch,
+                                        transactionDate__year=year,
+                                        transactionDate__month=month)
+    elif category != ""  and category is not None and category != 'null':
+        transactions = Transaction.objects.filter(userTransaction=request.user,
+                                        accountNameTransaction_id=accountName,
+                                        categoryTransaction_id=category,
+                                        transactionDate__year=year,
+                                        transactionDate__month=month)
+    else:
+        transactions = Transaction.objects.filter(userTransaction=request.user,
+                                        accountNameTransaction_id=accountName,
+                                        transactionDate__year=year,
+                                        transactionDate__month=month)
+
+    for tran in transactions:
+        tran.amount = currencyFormatter(tran.amount)
+        tran.previousAccountBalance = currencyFormatter(tran.previousAccountBalance)
+        tran.transactionDate = dateFormatter(tran.transactionDate)
+    
+    return JsonResponse([transaction.serialize() for transaction in transactions], safe=False)
 
 def dateSetter(startDate, count, process):
     startDate = startDate

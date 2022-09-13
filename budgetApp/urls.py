@@ -40,7 +40,11 @@ urlpatterns = [
 
     #report
     path("report", views.report, name="report"),
-    path("report/reportDisplay", views.reportDisplay, name="reportDisplay"),
+    path("expensesIncome", views.expensesIncome, name="expensesIncome"),
+    path("expensesIncome/expensesIncomeDisplay", views.expensesIncomeDisplay, name="expensesIncomeDisplay"),
+    path("expensesIncome/expensesIncomeDetail", views.expensesIncomeDetail, name="expensesIncomeDetail"),
+    path("accountReport", views.expensesIncome, name="accountReport"),
+    path("accountReport/accountReportDisplay", views.expensesIncomeDisplay, name="accountReportDisplay"),
 
     #accounts
     path("accounts",views.accounts, name="accounts"),
