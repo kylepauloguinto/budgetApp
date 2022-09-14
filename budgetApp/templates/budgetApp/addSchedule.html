@@ -1,0 +1,388 @@
+{% extends "budgetApp/layout.html" %}
+
+{% block body %}
+    <div id="mainContainer">
+      <div id="main">
+        <div class="contents">
+          <div class="row" >
+            <div class="col-3" style="max-width: 23%; margin-top: 3px">
+              <a class="btn btn-outline-success" href="{% url 'schedule' %}" role="button" ><i class="bi bi-box-arrow-in-left"></i> Back</a>
+            </div>
+            <div class="col">
+              <h2 class="title">Add New Schedule</h2>
+            </div>
+              <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                <li class="nav-item">
+                  <a class="nav-link active" id="pills-credit-tab" data-toggle="pill" href="#pills-credit" role="tab" aria-controls="pills-credit" aria-selected="true">Expenses</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" id="pills-debit-tab" data-toggle="pill" href="#pills-debit" role="tab" aria-controls="pills-debit" aria-selected="false">Income</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" id="pills-transfer-tab" data-toggle="pill" href="#pills-transfer" role="tab" aria-controls="pills-transfer" aria-selected="false" >Transfer</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <!-- Credit section -->
+          <div class="tab-content" id="pills-tabContent">
+            <div class="tab-pane show active" id="pills-credit" role="tabpanel" aria-labelledby="pills-credit-tab">
+                <div class="input-group mb-3">
+                    <span class="input-group-text"><i class="bi bi-currency-yen"></i></span>
+                    <div class="form-floating" id="amount-div">
+                      <input autofocus class="form-control" type="number" name="amount" placeholder="¥" id="amount-credit">
+                      <label for="floatingInput">Amount</label>
+                    </div>
+                    <div class="invalid-feedback" id="invalid-amount">
+                    </div>
+                </div>
+                <div class="form-group mb-3">
+                    <div class="form-floating">
+                      <input autofocus class="form-control" type="text" name="descriptions" placeholder="Description" id="des-credit">
+                      <label for="floatingInput">Description</label>
+                      <div class="invalid-feedback" id="invalid-des">
+                      </div>
+                    </div>
+                </div>
+                <div class="form-group mb-3">
+                    <div class="form-floating">
+                      <select name="category" class="form-select" id="category">
+                        <option value=""></option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.category }}</option>
+                        {% endfor %}
+                      </select>
+                      <label for="floatingSelect">Category</label>
+                      <div class="invalid-feedback" id="invalid-cat-credit">
+                      </div>
+                    </div>
+                </div>
+                <div class="form-group mb-3">
+                    <div class="form-floating">
+                      <select name="subCategory" class="form-select" id="subCategory" hidden="hidden">
+                        <option value=""></option>
+                        {% for subCategory in subCategories %}
+                          <option value="{{ subCategory.parentCategory.id }}-{{ subCategory.id }}">{{ subCategory.subCategory }}</option>
+                        {% endfor %}
+                      </select>
+                      <label for="floatingSelect" id="label-sub" hidden>Subcategory</label>
+                      <div class="invalid-feedback" id="invalid-sub-credit">
+                      </div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                  <div class="col-sm-6 input-group">
+                    <div class="form-floating" id="datePicker" data-target-input="nearest">
+                      <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker" onkeydown="return false" value="{{ date }}" id="date-credit"/>
+                      <label for="floatingInput">Date</label>
+                    </div>
+                    <div class="input-group-append" data-target="#datePicker" data-toggle="datetimepicker">
+                      <div class="input-group-text" style="padding-left:14px;"><i class="fa fa-calendar"></i></div>
+                    </div>
+                  </div>
+                  <div class="col-sm-6  input-group">
+                    <div class="form-floating" id="timePicker" data-target-input="nearest">
+                      <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker" onkeydown="return false" value="{{ time }}" id="time-credit"/>
+                      <label for="floatingInput">Time</label>
+                    </div>
+                    <div class="input-group-append" data-target="#timePicker" data-toggle="datetimepicker">
+                      <div class="input-group-text"><i class="fa fa-clock"></i></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group mb-3">
+                  <div class="form-check" style="padding-left: 25px;">
+                    <input class="form-check-input" type="checkbox" id="repeat-credit" onclick="onCheckCredit()">
+                    <label class="form-check-label" for="flexCheckDefault">
+                      Repeat
+                    </label>
+                  </div>
+                </div>
+                <div class="row g-2 repeat" hidden>
+                  <div class="col-md">
+                    <div class="form-floating">
+                      <select name="periodCount" class="form-select" id="periodCount-credit" aria-label="Floating label select example">
+                        {% for count in counts %}
+                          {% if count == 1 %}
+                            <option value="{{ count }}" selected>{{ count }}</option>
+                          {% else %}
+                            <option value="{{ count }}" >{{ count }}</option>
+                          {% endif %}
+                        {% endfor %}
+                      </select>
+                      <label for="floatingSelectGrid">Period Every</label>
+                    </div>
+                  </div>
+                  <div class="col-md mb-3">
+                    <div class="form-floating">
+                      <select name="periodProcess" class="form-select" id="periodProcess-credit" aria-label="Floating label select example">
+                        {% for data in process %}
+                          {% if data.id == 3 %}
+                            <option value="{{ data.id }}" selected>{{ data.name }}</option>
+                          {% else %}
+                            <option value="{{ data.id }}" >{{ data.name }}</option>
+                          {% endif %}
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group mb-3">
+                    <div class="form-floating">
+                      <select name="accountName" class="form-select" id="accountName-credit">
+                        {% for account in accounts %}
+                          {% if account.id == accountId %}
+                          <option value="{{ account.id }}" selected>{{ account.accountName }}</option>
+                          {% else %}
+                          <option value="{{ account.id }}">{{ account.accountName }}</option>
+                          {% endif %}
+                        {% endfor %}
+                      </select>
+                      <label for="floatingSelect" >Account</label>
+                      <div class="invalid-feedback" id="invalid-account">
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Debit section -->
+            <div class="tab-pane" id="pills-debit" role="tabpanel" aria-labelledby="pills-debit-tab">
+                <div class="input-group mb-3">
+                    <span class="input-group-text"><i class="bi bi-currency-yen"></i></span>
+                    <div class="form-floating" id="amount-div-debit">
+                        <input autofocus class="form-control" type="number" name="amount" placeholder="¥" id="amount-debit" value="{{ amount }}">
+                        <label for="floatingInput">Amount</label>
+                    </div>
+                    <div class="invalid-feedback" id="invalid-amount-debit">
+                    </div>
+                </div>
+                <div class="form-group mb-3">
+                    <div class="form-floating">
+                        <input autofocus class="form-control" type="text" name="descriptions" placeholder="Description" id="des-debit" value="{{ description }}">
+                        <label for="floatingInput">Description</label>
+                        <div class="invalid-feedback" id="invalid-des-debit">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group mb-3">
+                  <div class="form-floating">
+                    <select name="category-debit" class="form-select" id="category-debit" >
+                      <option value=""></option>
+                      {% for category in categories %}
+                          <option value="{{ category.id }}">{{ category.category }}</option>
+                      {% endfor %}
+                    </select>
+                    <label for="floatingSelect">Category</label>
+                    <div class="invalid-feedback" id="invalid-cat-debit">
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group mb-3">
+                  <div class="form-floating">
+                    <select name="subCategory-debit" class="form-select" id="subCategory-debit" hidden="hidden">
+                      <option value=""></option>
+                      {% for subCategory in subCategories %}
+                          <option value="{{ subCategory.parentCategory.id }}-{{ subCategory.id }}">{{ subCategory.subCategory }}</option>
+                      {% endfor %}
+                    </select>
+                    <label for="floatingSelect" id="label-sub-debit" hidden>Subcategory</label>
+                    <div class="invalid-feedback" id="invalid-sub-debit">
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <div class="col-sm-6 input-group">
+                    <div class="form-floating" id="datePicker-debit" data-target-input="nearest">
+                      <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker-debit" onkeydown="return false" value="{{ date }}" id="date-debit"/>
+                      <label for="floatingInput">Date</label>    
+                    </div>                        
+                    <div class="input-group-append" data-target="#datePicker-debit" data-toggle="datetimepicker">
+                      <div class="input-group-text" style="padding-left:14px;"><i class="fa fa-calendar"></i></div>
+                    </div>
+                  </div>
+                  <div class="col-sm-6 input-group">
+                      <div class="form-floating" id="timePicker-debit" data-target-input="nearest">
+                        <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker-debit" onkeydown="return false" value="{{ time }}" id="time-debit"/>
+                        <label for="floatingInput">Time</label>    
+                      </div>
+                      <div class="input-group-append" data-target="#timePicker-debit" data-toggle="datetimepicker">
+                        <div class="input-group-text"><i class="fa fa-clock"></i></div>
+                      </div>
+                  </div>
+                </div>
+                <div class="form-group mb-3">
+                  <div class="form-check" style="padding-left: 25px;">
+                    <input class="form-check-input" type="checkbox" value="" id="repeat-debit" onclick="onCheckDebit()">
+                    <label class="form-check-label" for="flexCheckDefault">
+                      Repeat
+                    </label>
+                  </div>
+                </div>
+                <div class="row g-2 repeat" hidden>
+                  <div class="col-md">
+                    <div class="form-floating">
+                      <select name="periodCount" class="form-select" id="periodCount-debit" aria-label="Floating label select example">
+                        {% for count in counts %}
+                          {% if count == 1 %}
+                            <option value="{{ count }}" selected>{{ count }}</option>
+                          {% else %}
+                            <option value="{{ count }}" >{{ count }}</option>
+                          {% endif %}
+                        {% endfor %}
+                      </select>
+                      <label for="floatingSelectGrid">Period Every</label>
+                    </div>
+                  </div>
+                  <div class="col-md mb-3">
+                    <div class="form-floating">
+                      <select name="periodProcess" class="form-select" id="periodProcess-debit" aria-label="Floating label select example">
+                        {% for data in process %}
+                          {% if data.id == 3 %}
+                            <option value="{{ data.id }}" selected>{{ data.name }}</option>
+                          {% else %}
+                            <option value="{{ data.id }}" >{{ data.name }}</option>
+                          {% endif %}
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group mb-3">
+                  <div class="form-floating">
+                      <select name="accountName" class="form-select" id="accountName-debit">
+                        {% for account in accounts %}
+                          {% if account.id == accountId %}
+                          <option value="{{ account.id }}" selected>{{ account.accountName }}</option>
+                          {% else %}
+                          <option value="{{ account.id }}">{{ account.accountName }}</option>
+                          {% endif %}
+                        {% endfor %}
+                      </select>
+                      <label for="floatingSelect">Account</label>
+                      <div class="invalid-feedback" id="invalid-account-debit">
+                      </div>
+                  </div>
+                </div>
+            </div>
+            <!-- Transfer section -->
+            <div class="tab-pane" id="pills-transfer" role="tabpanel" aria-labelledby="pills-transfer-tab">
+                <div class="input-group mb-3">
+                  <span class="input-group-text"><i class="bi bi-currency-yen"></i></span>
+                  <div class="form-floating" id="amount-div-transfer">
+                    <input autofocus class="form-control" type="number" name="amount" placeholder="¥" id="amount-transfer" value="{{ amount }}">
+                    <label for="floatingInput">Amount</label>
+                  </div>
+                  <div class="invalid-feedback" id="invalid-amount-transfer">
+                  </div>
+                </div>
+                <div class="input-group mb-3">
+                  <div class="form-floating">
+                    <input autofocus class="form-control" type="text" name="descriptions" placeholder="Description" id="des-transfer" value="{{ description }}">
+                    <label for="floatingInput">Description</label>
+                    <div class="invalid-feedback" id="invalid-des-transfer">
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <div class="col-sm-6 input-group">
+                    <div class="form-floating" id="datePicker-transfer" data-target-input="nearest">
+                      <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker-transfer" onkeydown="return false" value="{{ date }}" id="date-transfer"/>
+                      <label for="floatingInput">Date</label>
+                    </div>
+                      <div class="input-group-append" data-target="#datePicker-transfer" data-toggle="datetimepicker">
+                        <div class="input-group-text" style="padding-left:14px;"><i class="fa fa-calendar"></i></div>
+                      </div>
+                  </div>
+                  <div class="col-sm-6 input-group">
+                    <div class="form-floating" id="timePicker-transfer" data-target-input="nearest">
+                      <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker-transfer" onkeydown="return false" value="{{ time }}" id="time-transfer"/>
+                      <label for="floatingInput">Time</label>
+                    </div>
+                    <div class="input-group-append" data-target="#timePicker-transfer" data-toggle="datetimepicker">
+                      <div class="input-group-text"><i class="fa fa-clock"></i></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group mb-3">
+                  <div class="form-check" style="padding-left: 25px;">
+                    <input class="form-check-input" type="checkbox" value="" id="repeat-transfer" onclick="onCheckTransfer()">
+                    <label class="form-check-label" for="flexCheckDefault">
+                      Repeat
+                    </label>
+                  </div>
+                </div>
+                <div class="row g-2 repeat" hidden>
+                  <div class="col-md">
+                    <div class="form-floating">
+                      <select name="periodCount" class="form-select" id="periodCount-transfer" aria-label="Floating label select example">
+                        {% for count in counts %}
+                          {% if count == 1 %}
+                            <option value="{{ count }}" selected>{{ count }}</option>
+                          {% else %}
+                            <option value="{{ count }}" >{{ count }}</option>
+                          {% endif %}
+                        {% endfor %}
+                      </select>
+                      <label for="floatingSelectGrid">Period Every</label>
+                    </div>
+                  </div>
+                  <div class="col-md mb-3">
+                    <div class="form-floating">
+                      <select name="periodProcess" class="form-select" id="periodProcess-transfer" aria-label="Floating label select example">
+                        {% for data in process %}
+                          {% if data.id == 3 %}
+                            <option value="{{ data.id }}" selected>{{ data.name }}</option>
+                          {% else %}
+                            <option value="{{ data.id }}" >{{ data.name }}</option>
+                          {% endif %}
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group mb-3">
+                  <div class="form-floating">
+                    <select name="accountNameFrom" class="form-select" id="accountNameFrom">
+                      {% for account in accounts %}
+                        {% if account.id == accountId %}
+                        <option value="{{ account.id }}" selected>{{ account.accountName }}</option>
+                        {% else %}
+                        <option value="{{ account.id }}">{{ account.accountName }}</option>
+                        {% endif %}
+                      {% endfor %}
+                    </select>
+                    <label for="floatingSelect">From</label>
+                    <div class="invalid-feedback" id="invalid-account-transfer-from">
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group mb-3">
+                  <div class="form-floating">
+                    <select name="accountNameTo" class="form-select" id="accountNameTo">
+                      {% for account in accounts %}
+                        <option value="{{ account.id }}">{{ account.accountName }}</option>
+                      {% endfor %}
+                    </select>
+                    <label for="floatingSelect">To</label>
+                    <div class="invalid-feedback" id="invalid-account-transfer-to">
+                    </div>
+                  </div>
+                </div>
+            </div>
+            <div class="button-container">
+              <button class="btn btn-success" style="width: 150px" type="submit" value="Save" onclick="addSched()"><i class="bi bi-save"></i> Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <script type="text/javascript">
+    $(function () {
+        $('#datePicker').datetimepicker({locale: 'ja', dayViewHeaderFormat: 'YYYY年M月' ,format: 'YYYY/MM/DD'});
+        $('#timePicker').datetimepicker({locale: 'ja', format: 'HH:mm'});
+        $('#datePicker-debit').datetimepicker({locale: 'ja', dayViewHeaderFormat: 'YYYY年M月' ,format: 'YYYY/MM/DD'});
+        $('#timePicker-debit').datetimepicker({locale: 'ja', format: 'HH:mm'});
+        $('#datePicker-transfer').datetimepicker({locale: 'ja', dayViewHeaderFormat: 'YYYY年M月' ,format: 'YYYY/MM/DD'});
+        $('#timePicker-transfer').datetimepicker({locale: 'ja', format: 'HH:mm'});
+    });
+</script>
+{% endblock %}
