@@ -46,6 +46,11 @@ urlpatterns = [
     path("accountReport", views.expensesIncome, name="accountReport"),
     path("accountReport/accountReportDisplay", views.expensesIncomeDisplay, name="accountReportDisplay"),
 
+    #schedule
+    path("schedule", views.schedule, name="schedule"),
+    path("addSchedule", views.addSchedule, name="addSchedule"),
+    path("addSchedule/creditAddSched", views.creditAddSched, name="creditAddSched"),
+
     #accounts
     path("accounts",views.accounts, name="accounts"),
     path("accounts/delete",views.deleteAccount, name="deleteAccount"),
