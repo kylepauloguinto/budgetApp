@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import User, Categories, SubCategories, Account, Transaction, Budget, Schedule
+from .models import User, Categories, SubCategories, Account, Transaction, Budget, Schedule, Report
 
 class AccountAdmin(admin.ModelAdmin):
     list_display = ("id","userAccount", "accountName", "description","balance","previousBalance","read","ins_date")
@@ -18,7 +18,10 @@ class BudgetAdmin(admin.ModelAdmin):
     list_display = ("id","userBudget", "budgetName", "accountNameBudget", "currentAmount", "budgetAmount", "descriptionBudget", "categoryBudget","subCategoryBudget","startDate","endDate", "periodCount", "periodProcess", "minusAmount","ins_date")
 
 class ScheduleAdmin(admin.ModelAdmin):
-    list_display = ("id","userSchedule", "accountNameSchedule", "accountNameScheduleTransferFrom", "accountNameScheduleTransferTo", "scheduleFromId", "scheduleType", "amount","previousScheduleAccountBalance","currentScheduleAccountBalance","descriptionSchedule", "transactionId", "categorySchedule", "subCategorySchedule", "scheduleDate","repeatSchedule","ins_date")
+    list_display = ("id","userSchedule", "accountNameSchedule", "accountNameScheduleTransferFrom", "accountNameScheduleTransferTo", "scheduleFromId", "scheduleType", "amount","previousScheduleAccountBalance","currentScheduleAccountBalance","descriptionSchedule", "transactionId", "categorySchedule", "subCategorySchedule", "startScheduleDate","nextScheduleDate","nextScheduleDateText","endScheduleDate","endedSchedule","neverEndSchedule","repeatSchedule","periodCountSchedule","periodProcessSchedule","ins_date")
+
+class ReportAdmin(admin.ModelAdmin):
+    list_display = ("id","startDate", "accountNameReport", "amount", "ins_date")
 
 admin.site.register(User)
 admin.site.register(Account, AccountAdmin)
@@ -27,3 +30,4 @@ admin.site.register(SubCategories, SubCategoriesAdmin)
 admin.site.register(Transaction, TransactionAdmin)
 admin.site.register(Budget, BudgetAdmin)
 admin.site.register(Schedule, ScheduleAdmin)
+admin.site.register(Report, ReportAdmin)

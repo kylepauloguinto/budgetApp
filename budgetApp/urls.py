@@ -18,7 +18,7 @@ urlpatterns = [
     path("addTransaction/<int:id>", views.addTransaction, name="addTransaction"),
     path("display/editTransaction/<int:id>", views.editTransaction, name="editTransaction"),
     
-    #add or edit transaction page
+    # add or edit transaction page
     path("editTransaction/creditEdit/<int:id>", views.creditEdit, name="creditEdit"),
     path("editTransaction/debitEdit/<int:id>", views.debitEdit, name="debitEdit"),
     path("editTransaction/transferEdit/<int:id>", views.transferEdit, name="transferEdit"),
@@ -50,6 +50,7 @@ urlpatterns = [
     path("schedule", views.schedule, name="schedule"),
     path("addSchedule", views.addSchedule, name="addSchedule"),
     path("addSchedule/creditAddSched", views.creditAddSched, name="creditAddSched"),
+    path("schedule/scheduleDisplay", views.scheduleDisplay, name="scheduleDisplay"),
 
     #accounts
     path("accounts",views.accounts, name="accounts"),

@@ -75,8 +75,8 @@
                 <div class="form-group row">
                   <div class="col-sm-6 input-group">
                     <div class="form-floating" id="datePicker" data-target-input="nearest">
-                      <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker" onkeydown="return false" value="{{ date }}" id="date-credit"/>
-                      <label for="floatingInput">Date</label>
+                      <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker" onkeydown="return false" value="{{ date }}" id="start-date-credit"/>
+                      <label for="floatingInput">Start Date</label>
                     </div>
                     <div class="input-group-append" data-target="#datePicker" data-toggle="datetimepicker">
                       <div class="input-group-text" style="padding-left:14px;"><i class="fa fa-calendar"></i></div>
@@ -84,8 +84,8 @@
                   </div>
                   <div class="col-sm-6  input-group">
                     <div class="form-floating" id="timePicker" data-target-input="nearest">
-                      <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker" onkeydown="return false" value="{{ time }}" id="time-credit"/>
-                      <label for="floatingInput">Time</label>
+                      <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker" onkeydown="return false" value="{{ time }}" id="start-time-credit"/>
+                      <label for="floatingInput">Start Time</label>
                     </div>
                     <div class="input-group-append" data-target="#timePicker" data-toggle="datetimepicker">
                       <div class="input-group-text"><i class="fa fa-clock"></i></div>
@@ -98,6 +98,34 @@
                     <label class="form-check-label" for="flexCheckDefault">
                       Repeat
                     </label>
+                  </div>
+                </div>
+                <div class="form-group mb-3 ends" hidden>
+                  <div class="form-check" style="padding-left: 25px;">
+                    <input class="form-check-input" type="checkbox" id="ends-credit" onclick="onEndsCredit()">
+                    <label class="form-check-label" for="flexCheckDefault">
+                      Ends
+                    </label>
+                  </div>
+                </div>
+                <div class="form-group row end-date" hidden>
+                  <div class="col-sm-6 input-group">
+                    <div class="form-floating" id="datePicker" data-target-input="nearest">
+                      <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker" onkeydown="return false" value="{{ endDate }}" id="end-date-credit"/>
+                      <label for="floatingInput">End Date</label>
+                    </div>
+                    <div class="input-group-append" data-target="#datePicker" data-toggle="datetimepicker">
+                      <div class="input-group-text" style="padding-left:14px;"><i class="fa fa-calendar"></i></div>
+                    </div>
+                  </div>
+                  <div class="col-sm-6  input-group">
+                    <div class="form-floating" id="timePicker" data-target-input="nearest">
+                      <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker" onkeydown="return false" value="{{ endTime }}" id="end-time-credit"/>
+                      <label for="floatingInput">End Time</label>
+                    </div>
+                    <div class="input-group-append" data-target="#timePicker" data-toggle="datetimepicker">
+                      <div class="input-group-text"><i class="fa fa-clock"></i></div>
+                    </div>
                   </div>
                 </div>
                 <div class="row g-2 repeat" hidden>
@@ -194,8 +222,8 @@
                 <div class="form-group row">
                   <div class="col-sm-6 input-group">
                     <div class="form-floating" id="datePicker-debit" data-target-input="nearest">
-                      <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker-debit" onkeydown="return false" value="{{ date }}" id="date-debit"/>
-                      <label for="floatingInput">Date</label>    
+                      <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker-debit" onkeydown="return false" value="{{ date }}" id="start-date-debit"/>
+                      <label for="floatingInput">Start Date</label>    
                     </div>                        
                     <div class="input-group-append" data-target="#datePicker-debit" data-toggle="datetimepicker">
                       <div class="input-group-text" style="padding-left:14px;"><i class="fa fa-calendar"></i></div>
@@ -203,8 +231,8 @@
                   </div>
                   <div class="col-sm-6 input-group">
                       <div class="form-floating" id="timePicker-debit" data-target-input="nearest">
-                        <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker-debit" onkeydown="return false" value="{{ time }}" id="time-debit"/>
-                        <label for="floatingInput">Time</label>    
+                        <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker-debit" onkeydown="return false" value="{{ time }}" id="start-time-debit"/>
+                        <label for="floatingInput">Start Time</label>    
                       </div>
                       <div class="input-group-append" data-target="#timePicker-debit" data-toggle="datetimepicker">
                         <div class="input-group-text"><i class="fa fa-clock"></i></div>
@@ -217,6 +245,34 @@
                     <label class="form-check-label" for="flexCheckDefault">
                       Repeat
                     </label>
+                  </div>
+                </div>
+                <div class="form-group mb-3 ends" hidden>
+                  <div class="form-check" style="padding-left: 25px;">
+                    <input class="form-check-input" type="checkbox" id="ends-debit" onclick="onEndsDebit()">
+                    <label class="form-check-label" for="flexCheckDefault">
+                      Ends
+                    </label>
+                  </div>
+                </div>
+                <div class="form-group row end-date" hidden>
+                  <div class="col-sm-6 input-group">
+                    <div class="form-floating" id="datePicker-debit" data-target-input="nearest">
+                      <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker-debit" onkeydown="return false" value="{{ endDate }}" id="end-date-debit"/>
+                      <label for="floatingInput">End Date</label>    
+                    </div>                        
+                    <div class="input-group-append" data-target="#datePicker-debit" data-toggle="datetimepicker">
+                      <div class="input-group-text" style="padding-left:14px;"><i class="fa fa-calendar"></i></div>
+                    </div>
+                  </div>
+                  <div class="col-sm-6 input-group">
+                      <div class="form-floating" id="timePicker-debit" data-target-input="nearest">
+                        <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker-debit" onkeydown="return false" value="{{ endTime }}" id="end-time-debit"/>
+                        <label for="floatingInput">End Time</label>    
+                      </div>
+                      <div class="input-group-append" data-target="#timePicker-debit" data-toggle="datetimepicker">
+                        <div class="input-group-text"><i class="fa fa-clock"></i></div>
+                      </div>
                   </div>
                 </div>
                 <div class="row g-2 repeat" hidden>
@@ -287,8 +343,8 @@
                 <div class="form-group row">
                   <div class="col-sm-6 input-group">
                     <div class="form-floating" id="datePicker-transfer" data-target-input="nearest">
-                      <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker-transfer" onkeydown="return false" value="{{ date }}" id="date-transfer"/>
-                      <label for="floatingInput">Date</label>
+                      <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker-transfer" onkeydown="return false" value="{{ date }}" id="start-date-transfer"/>
+                      <label for="floatingInput">Start Date</label>
                     </div>
                       <div class="input-group-append" data-target="#datePicker-transfer" data-toggle="datetimepicker">
                         <div class="input-group-text" style="padding-left:14px;"><i class="fa fa-calendar"></i></div>
@@ -296,8 +352,8 @@
                   </div>
                   <div class="col-sm-6 input-group">
                     <div class="form-floating" id="timePicker-transfer" data-target-input="nearest">
-                      <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker-transfer" onkeydown="return false" value="{{ time }}" id="time-transfer"/>
-                      <label for="floatingInput">Time</label>
+                      <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker-transfer" onkeydown="return false" value="{{ time }}" id="start-time-transfer"/>
+                      <label for="floatingInput">Start Time</label>
                     </div>
                     <div class="input-group-append" data-target="#timePicker-transfer" data-toggle="datetimepicker">
                       <div class="input-group-text"><i class="fa fa-clock"></i></div>
@@ -310,6 +366,34 @@
                     <label class="form-check-label" for="flexCheckDefault">
                       Repeat
                     </label>
+                  </div>
+                </div>
+                <div class="form-group mb-3 ends" hidden>
+                  <div class="form-check" style="padding-left: 25px;">
+                    <input class="form-check-input" type="checkbox" id="ends-transfer" onclick="onEndsTransfer()">
+                    <label class="form-check-label" for="flexCheckDefault">
+                      Ends
+                    </label>
+                  </div>
+                </div>
+                <div class="form-group row end-date" hidden>
+                  <div class="col-sm-6 input-group">
+                    <div class="form-floating" id="datePicker-transfer" data-target-input="nearest">
+                      <input type="text" name="transactionDate" class="form-control form-control-sm datetimepicker-input" data-target="#datePicker-transfer" onkeydown="return false" value="{{ endDate }}" id="end-date-transfer"/>
+                      <label for="floatingInput">End Date</label>
+                    </div>
+                      <div class="input-group-append" data-target="#datePicker-transfer" data-toggle="datetimepicker">
+                        <div class="input-group-text" style="padding-left:14px;"><i class="fa fa-calendar"></i></div>
+                      </div>
+                  </div>
+                  <div class="col-sm-6 input-group">
+                    <div class="form-floating" id="timePicker-transfer" data-target-input="nearest">
+                      <input type="text" name="transactionTime" class="form-control form-control-sm datetimepicker-input" data-target="#timePicker-transfer" onkeydown="return false" value="{{ endTime }}" id="end-time-transfer"/>
+                      <label for="floatingInput">End Time</label>
+                    </div>
+                    <div class="input-group-append" data-target="#timePicker-transfer" data-toggle="datetimepicker">
+                      <div class="input-group-text"><i class="fa fa-clock"></i></div>
+                    </div>
                   </div>
                 </div>
                 <div class="row g-2 repeat" hidden>

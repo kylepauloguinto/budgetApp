@@ -14,13 +14,13 @@ from django.shortcuts import redirect
 from datetime import  date, datetime, timedelta
 import calendar
 
-from .models import User, Categories, SubCategories, Account, Transaction, Budget
+from .models import User, Categories, SubCategories, Account, Transaction, Budget, Schedule, Report
 
 all_account = 0 # All account ID
 
 def index(request):
-
     if request.user.is_authenticated:
+        scheduleAutoProcess(request)
         accounts = Account.objects.filter(userAccount=request.user)
         unread = Account.objects.filter(userAccount=request.user,read=False).count()
         isManyAccount = False
@@ -45,6 +45,55 @@ def index(request):
         })
     else: 
         return render(request, "budgetApp/login.html")
+
+def scheduleAutoProcess(request):
+
+    schedules = Schedule.objects.filter(userSchedule=request.user).order_by("-nextScheduleDate").all()
+    
+    for schedule in schedules:
+        date = schedule.nextScheduleDate
+        if  date.replace(tzinfo=None) < datetime.now() and schedule.endedSchedule == False :
+            report = Report.objects.filter(userReport=request.user,
+                                            accountNameReport_id=schedule.accountNameSchedule_id,
+                                            startDate__year=schedule.nextScheduleDate.year,
+                                            startDate__month=schedule.nextScheduleDate.month)
+            if len(report) > 0 :
+                if schedule.scheduleType == "credit":                         
+                    report[0].amount = report[0].amount - schedule.amount
+                elif schedule.scheduleType == "debit":                         
+                    report[0].amount += schedule.amount
+                report[0].save()
+            else:
+                prevAmount = 0 
+                prevMonth = Report.objects.filter(userReport=request.user,
+                                                    accountNameReport_id=schedule.accountNameSchedule_id,
+                                                    startDate__year=schedule.nextScheduleDate.year,
+                                                    startDate__month=schedule.nextScheduleDate.month - 1)
+                if len(prevMonth) > 0:
+                    prevAmount = prevMonth[0].amount
+
+                currMonth = Report()
+                currMonth.userReport = request.user
+                currMonth.accountNameReport = schedule.accountNameSchedule
+                currMonth.startDate = datetime(schedule.nextScheduleDate.year, 
+                                                schedule.nextScheduleDate.month, 
+                                                1,0,0)
+                if schedule.scheduleType == "credit":                         
+                    currMonth.amount = prevAmount - schedule.amount
+                elif schedule.scheduleType == "debit":                         
+                    currMonth.amount += schedule.amount
+                currMonth.save()
+
+            dates = dateSetter(schedule.nextScheduleDate , schedule.periodCountSchedule ,  str(schedule.periodProcessSchedule) )
+            schedule.nextScheduleDate = dates[1]
+            schedule.nextScheduleDateText = countdown(dates[1])
+
+            if  schedule.endScheduleDate.replace(tzinfo=None) <= schedule.nextScheduleDate.replace(tzinfo=None) :
+                schedule.endedSchedule = True
+
+            schedule.save()
+
+    return ""
 
 def transaction(request, id, pageNo):
     
@@ -183,6 +232,11 @@ def creditAdd(request, id):
 
     data = json.loads(request.body)
 
+    creditAddProcess(request, data, "manual")
+
+    return JsonResponse({"message": "success"}, status=200)
+
+def creditAddProcess(request,data,process):
     accountName = data["accountName"]
     description = data["description"]
     amount = int(data["amount"])
@@ -246,7 +300,56 @@ def creditAdd(request, id):
             budget.minusAmount = False
         budget.save()
 
-    return JsonResponse({"message": "success"}, status=200)
+    # Report process
+    if process == "manual":
+
+        currDate = datetime(datetime.now().year, 
+                            datetime.now().month, 
+                            1,0,0)
+        currDate = dateSetter(currDate, 1, "3")
+
+        processDate = datetime(transactionDate.year, 
+                                transactionDate.month, 
+                                1,0,0)
+
+        print(processDate)
+        processDate = dateSetter(processDate, 1, "3")
+        print(processDate[0])
+        while True:
+
+            processDate = processDate[1]
+            print(currDate[1])
+            if processDate < currDate[1] :
+
+                report = Report.objects.filter(userReport=request.user,
+                                                    accountNameReport_id=accountName,
+                                                    startDate__year=processDate.year,
+                                                    startDate__month=processDate.month)
+                if len(report) > 0 :
+                    report[0].amount = report[0].amount - amount
+                    report[0].save()
+                else:
+                    prevAmount = 0 
+                    prevMonth = Report.objects.filter(userReport=request.user,
+                                                        accountNameReport_id=accountName,
+                                                        startDate__year=processDate.year,
+                                                        startDate__month=processDate.month - 1)
+                    if len(prevMonth) > 0:
+                        prevAmount = prevMonth[0].amount
+
+                    currMonth = Report()
+                    currMonth.userReport = request.user
+                    currMonth.accountNameReport = accountName
+                    currMonth.startDate = datetime(processDate.year, 
+                                                    processDate.month, 
+                                                    1,0,0)
+                    currMonth.amount = prevAmount - amount
+                    currMonth.save()
+            else:
+                break
+    
+
+    return ""
 
 # Edit credit transaction
 @csrf_exempt
@@ -843,7 +946,7 @@ def editAccount(request, id ):
         descriptionErrMes = ""
         accountName = request.POST["accountName"]
         description = request.POST["description"]
-        balance = request.POST["balance"]
+        balance = "0"
 
         if accountName == "":
             accountNameErrMes = "Please input an account name."
@@ -931,7 +1034,7 @@ def addAccount(request):
         descriptionErrMes = ""
         accountName = request.POST["accountName"]
         description = request.POST["description"]
-        balance = request.POST["balance"]
+        balance = "0"
 
         if accountName == "":
             accountNameErrMes = "Please input an account name."
@@ -1583,6 +1686,20 @@ def budgetEdit(request , id ):
 
     return JsonResponse({"message": "success"}, status=200)
 
+# Delete Budget
+@csrf_exempt
+@login_required
+def deleteBudget(request):
+    
+    data = json.loads(request.body)
+    try:
+        budget = Budget.objects.get(userBudget=request.user,id=data["item"])
+        budget.delete()
+    except:
+        return JsonResponse({"message": "error"}, status=500)
+
+    return JsonResponse({"message": "success"}, status=200)
+
 # Display report
 def report(request):
 
@@ -1757,17 +1874,119 @@ def countdown(dateEnd):
 
     return remaining
 
-# Delete Budget
+# Display schedule
+def schedule(request):
+    
+    return render(request, "budgetApp/schedule.html")
+
+def addSchedule(request):
+
+    # Dropdown account, categories and subcategories data
+    accounts = Account.objects.filter(userAccount=request.user).order_by("accountName")
+    categories = Categories.objects.filter(userCategory=request.user).order_by("category")
+    subCategories = SubCategories.objects.filter(userSubCategory=request.user).order_by("subCategory")
+
+    counts = []
+    for count in range(1,32):
+        counts.append(count)
+
+    process = []
+    process.append({"id": 1, "name":"day(s)"})
+    process.append({"id": 2, "name":"week(s)"})
+    process.append({"id": 3, "name":"month(s)"})
+    process.append({"id": 4, "name":"year(s)"})
+
+    currentDate = datetime.now() + timedelta(days=1)
+
+    month = currentDate.month - 1 + 1
+    year = currentDate.year + month // 12
+    month = month % 12 + 1
+    day = min(currentDate.day, calendar.monthrange(year,month)[1])
+    endDate = datetime(year, month, day,currentDate.hour,currentDate.minute)
+
+    return render(request, "budgetApp/addSchedule.html",{
+        "accounts" : accounts,
+        "categories" : categories,
+        "subCategories" : subCategories,
+        "counts": counts,
+        "process": process,
+        "date": currentDate.strftime("%Y/%m/%d"),
+        "time": currentDate.strftime("%H:%M"),
+        "endDate": endDate.strftime("%Y/%m/%d"),
+        "endTime": endDate.strftime("%H:%M"),
+        "do": "credit",
+    })
+
+def scheduleDisplay(request):
+
+    schedules = Schedule.objects.filter(userSchedule=request.user
+                                        ,endedSchedule=False)
+    
+    for schedule in schedules:
+        schedule.amount = currencyFormatter(schedule.amount)
+    
+    return JsonResponse([schedule.serialize() for schedule in schedules], safe=False)
+
+# Add credit schedule
 @csrf_exempt
 @login_required
-def deleteBudget(request):
+def creditAddSched(request):
     
+    messageList = validation(request, "credit")
     data = json.loads(request.body)
-    try:
-        budget = Budget.objects.get(userBudget=request.user,id=data["item"])
-        budget.delete()
-    except:
-        return JsonResponse({"message": "error"}, status=500)
+    date = data.get("startDate")
+    time = data.get("startTime")
+    transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    neverEnd = True
+
+    if  transactionDate < datetime.now():
+            messageList.append({"id":"datetime", "message":"Please input datetime from current date."})
+    
+    if len(messageList) > 0:
+        return JsonResponse({"message":"error","error": messageList}, status=400)
+
+    data = json.loads(request.body)
+
+    accountName = data["accountName"]
+    description = data["description"]
+    amount = int(data["amount"])
+    category = data["category"]
+    subcategory = data["subcategory"]
+
+    # credit process
+    account = Account.objects.get(userAccount=request.user,id=accountName)
+
+    credit = Schedule()
+    credit.userSchedule = request.user
+    credit.accountNameSchedule_id = accountName
+    credit.scheduleType = "credit"
+    credit.amount = amount
+    credit.previousScheduleAccountBalance = account.balance
+    credit.currentScheduleAccountBalance = account.balance - amount
+    credit.descriptionSchedule = description
+
+    if subcategory != "":
+        category = subcategory.split("-")
+        credit.categorySchedule_id = category[0]
+        credit.subCategorySchedule_id = category[1]
+    else:
+        credit.categorySchedule_id = category
+
+    if data["end"] :
+        neverEnd = False
+
+    date = data["startDate"]
+    time = data["startTime"] 
+    transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    credit.startScheduleDate = transactionDate
+    credit.nextScheduleDate = transactionDate
+    credit.endScheduleDate = datetime.strptime(data["endDate"]+" "+data["endTime"], "%Y/%m/%d %H:%M")
+    credit.neverEndSchedule = neverEnd
+    credit.repeatSchedule = data["repeat"]
+    credit.nextScheduleDateText = countdown(transactionDate)
+    credit.periodCountSchedule = data["count"]
+    credit.periodProcessSchedule = data["process"]
+    credit.save()
 
     return JsonResponse({"message": "success"}, status=200)
 

@@ -74,6 +74,7 @@ class Transaction(models.Model):
     previousAccountBalance = models.IntegerField()
     currentAccountBalance = models.IntegerField()
     descriptionTransaction = models.TextField(blank=True)
+    scheduleId = models.IntegerField(blank=True, null=True)
     categoryTransaction = models.ForeignKey(Categories, on_delete=models.PROTECT, blank=True, null=True, related_name="categoryTransaction")
     subCategoryTransaction = models.ForeignKey(SubCategories, on_delete=models.PROTECT, blank=True, null=True, related_name="subCategoryTransaction")
     transactionDate = models.DateTimeField(auto_now_add=False, blank=True)
@@ -122,5 +123,63 @@ class Budget(models.Model):
             "budgetAmount": self.budgetAmount,
             "descriptionBudget": self.descriptionBudget,
             "minusAmount": self.minusAmount,
+            "ins_date": self.ins_date
+        }
+
+class Schedule(models.Model):
+    userSchedule = models.ForeignKey(User, on_delete=models.CASCADE, related_name="userSchedule")
+    accountNameSchedule = models.ForeignKey(Account, on_delete=models.PROTECT, related_name="accountNameSchedule")
+    accountNameScheduleTransferFrom = models.ForeignKey(Account, on_delete=models.PROTECT, blank=True, null=True, related_name="accountNameScheduleTransferFrom")
+    accountNameScheduleTransferTo = models.ForeignKey(Account, on_delete=models.PROTECT, blank=True, null=True, related_name="accountNameScheduleTransferTo")
+    scheduleFromId = models.IntegerField(blank=True, null=True)
+    scheduleType = models.TextField(blank=True)
+    amount = models.IntegerField()
+    previousScheduleAccountBalance = models.IntegerField()
+    currentScheduleAccountBalance = models.IntegerField()
+    descriptionSchedule = models.TextField(blank=True)
+    transactionId = models.IntegerField(blank=True, null=True)
+    categorySchedule = models.ForeignKey(Categories, on_delete=models.PROTECT, blank=True, null=True, related_name="categorySchedule")
+    subCategorySchedule = models.ForeignKey(SubCategories, on_delete=models.PROTECT, blank=True, null=True, related_name="subCategorySchedule")
+    startScheduleDate = models.DateTimeField(auto_now_add=False, blank=True)
+    nextScheduleDate = models.DateTimeField(auto_now_add=False, blank=True)
+    nextScheduleDateText = models.TextField(blank=True)
+    endScheduleDate = models.DateTimeField(auto_now_add=False, blank=True)
+    endedSchedule = models.BooleanField(default=False)
+    neverEndSchedule = models.BooleanField(default=False)
+    repeatSchedule = models.BooleanField(default=False)
+    periodCountSchedule = models.IntegerField(blank=True, null=True)
+    periodProcessSchedule = models.IntegerField(blank=True, null=True)
+    ins_date = models.DateTimeField(auto_now_add=True, blank=True)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "accountNameSchedule": self.accountNameSchedule.accountName,
+            "accountNameScheduleTransferFrom": "" if self.accountNameScheduleTransferFrom == None else self.accountNameScheduleTransferFrom.accountName,
+            "accountNameScheduleTransferFromId": "" if self.accountNameScheduleTransferFrom == None else self.accountNameScheduleTransferFrom.id,
+            "accountNameScheduleTransferTo": "" if self.accountNameScheduleTransferTo == None else self.accountNameScheduleTransferTo.accountName,
+            "accountNameScheduleTransferToId": "" if self.accountNameScheduleTransferTo == None else self.accountNameScheduleTransferTo.id,
+            "scheduleFromId": self.scheduleFromId,
+            "scheduleType": self.scheduleType,
+            "amount": self.amount,
+            "descriptionSchedule": self.descriptionSchedule,
+            "startScheduleDate": self.startScheduleDate,
+            "nextScheduleDateText": self.nextScheduleDateText,
+            "repeatSchedule": self.repeatSchedule
+        }
+
+class Report(models.Model):
+    userReport = models.ForeignKey(User, on_delete=models.CASCADE, related_name="userReport")
+    startDate = models.DateTimeField(auto_now_add=False, blank=True)
+    accountNameReport = models.ForeignKey(Account, on_delete=models.PROTECT, related_name="accountNameReport")
+    amount = models.IntegerField()
+    ins_date = models.DateTimeField(auto_now_add=True, blank=True)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "startDate": self.startDate,
+            "accountNameReport": self.accountNameReport.accountName,
+            "amount": self.amount,
             "ins_date": self.ins_date
         }

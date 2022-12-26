@@ -1,0 +1,27 @@
+{% extends "budgetApp/layout.html" %}
+
+
+{% block head %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+{% endblock %}
+
+{% block body %}
+    <div id="mainContainer">
+        <div id="main">
+            <div class="contents">
+                <div class="row" style="margin-bottom: 37px;">
+                    <div class="col-3" style="max-width: 23%; margin-top: 3px">
+                        <a class="btn btn-outline-success" href="{% url 'index' %}" role="button"><i class="bi bi-box-arrow-in-left"></i> Back</a>
+                    </div>
+                    <div class="col">
+                      <h2 class="title">Schedule</h2>
+                    </div>
+                    <div class="col-2 fs-3" style="text-align: right; ">
+                        <a class="nav-link" href="{% url 'addSchedule' %}">
+                        <i class="bi bi-plus-circle-fill" style="color: #218838"></i></a>
+                    </div>
+                </div>
+            </div>  
+        </div>  
+    </div>
+{% endblock %}
