@@ -61,7 +61,7 @@ def scheduleAutoProcess(request):
                 if schedule.scheduleType == "credit":                         
                     report[0].amount = report[0].amount - schedule.amount
                 elif schedule.scheduleType == "debit":                         
-                    report[0].amount += schedule.amount
+                    report[0].amount = report[0].amount + schedule.amount
                 report[0].save()
             else:
                 prevAmount = 0 
@@ -81,18 +81,157 @@ def scheduleAutoProcess(request):
                 if schedule.scheduleType == "credit":                         
                     currMonth.amount = prevAmount - schedule.amount
                 elif schedule.scheduleType == "debit":                         
-                    currMonth.amount += schedule.amount
+                    currMonth.amount = prevAmount + schedule.amount
                 currMonth.save()
 
             dates = dateSetter(schedule.nextScheduleDate , schedule.periodCountSchedule ,  str(schedule.periodProcessSchedule) )
             schedule.nextScheduleDate = dates[1]
             schedule.nextScheduleDateText = countdown(dates[1])
 
-            if  schedule.endScheduleDate.replace(tzinfo=None) <= schedule.nextScheduleDate.replace(tzinfo=None) :
+            if not schedule.repeatSchedule or schedule.endScheduleDate.replace(tzinfo=None) <= schedule.nextScheduleDate.replace(tzinfo=None) :
                 schedule.endedSchedule = True
 
             schedule.save()
 
+            if schedule.scheduleType == "credit":   
+                accountName = schedule.accountNameSchedule_id
+                description = schedule.descriptionSchedule
+                amount = int(schedule.amount)
+                category = schedule.categorySchedule_id
+                subcategory = schedule.subCategorySchedule_id
+
+                # credit process
+                account = Account.objects.get(userAccount=request.user,id=accountName)
+
+                credit = Transaction()
+                credit.userTransaction = request.user
+                credit.accountNameTransaction_id = accountName
+                credit.transactionType = "credit"
+                credit.amount = amount
+                credit.previousAccountBalance = account.balance
+                credit.currentAccountBalance = account.balance - amount
+                credit.descriptionTransaction = description
+
+                
+                credit.categoryTransaction_id = category
+                credit.subCategoryTransaction_id = subcategory
+
+                credit.transactionDate = date
+                credit.readTransaction = False
+                credit.save()
+
+                account.balance = account.balance - amount
+                account.read = False
+                account.save()
+
+                # budget process
+                budgets = []
+
+                if subcategory != "":
+                    budgets = Budget.objects.filter(userBudget_id=request.user,
+                                                accountNameBudget_id=accountName,
+                                                subCategoryBudget_id=subcategory,
+                                                startDate__lte=date,
+                                                endDate__gte=date)
+                elif category != "":
+                    budgets = Budget.objects.filter(userBudget_id=request.user,
+                                                accountNameBudget_id=accountName,
+                                                categoryBudget_id=category,
+                                                subCategoryBudget__isnull=True,
+                                                startDate__lte=date,
+                                                endDate__gte=date)
+
+                for budget in budgets:
+                    budget.currentAmount += amount
+
+                    diff = int(budget.budgetAmount) - int(budget.currentAmount)
+                    if diff < 0:
+                        budget.minusAmount = True
+                    else:
+                        budget.minusAmount = False
+                    budget.save()
+
+            elif schedule.scheduleType == "debit": 
+
+                accountName = schedule.accountNameSchedule_id
+                description = schedule.descriptionSchedule
+                amount = int(schedule.amount)
+                category = schedule.categorySchedule_id
+                subcategory = schedule.subCategorySchedule_id
+
+                # debit process
+                account = Account.objects.get(userAccount=request.user,id=accountName)
+
+                debit = Transaction()
+                debit.userTransaction = request.user
+                debit.accountNameTransaction_id = accountName
+                debit.transactionType = "debit"
+                debit.amount = amount
+                debit.previousAccountBalance = account.balance
+                debit.currentAccountBalance = account.balance + amount
+                debit.descriptionTransaction = description
+
+                debit.categoryTransaction_id = category
+                debit.subCategoryTransaction_id = subcategory
+
+                debit.transactionDate = date
+                debit.readTransaction = False
+                debit.save()
+
+                account.balance = account.balance + amount
+                account.read = False
+                account.save()
+            elif schedule.scheduleType == "transfer":
+
+                amount = int(schedule.amount)
+                lastId = Transaction.objects.latest('id')
+    
+                accountFrom = Account.objects.get(userAccount=request.user,id=schedule.accountNameScheduleTransferFrom_id)
+                accountTo = Account.objects.get(userAccount=request.user,id=schedule.accountNameScheduleTransferTo_id)
+            
+                # Account that will be deducted
+                transfer = Transaction()
+                transfer.id = lastId.id + 1
+                transfer.userTransaction = request.user
+                transfer.accountNameTransaction_id = schedule.accountNameScheduleTransferFrom_id
+                transfer.accountNameTransferFrom_id = schedule.accountNameScheduleTransferFrom_id
+                transfer.accountNameTransferTo_id = schedule.accountNameScheduleTransferTo_id
+                transfer.transactionType = "transfer"
+                transfer.amount = amount
+                transfer.previousAccountBalance = accountFrom.balance
+                transfer.currentAccountBalance = accountFrom.balance - amount
+                transfer.descriptionTransaction = schedule.descriptionSchedule
+                transfer.transactionDate = date
+                transfer.readTransaction = False
+                transfer.ins_date = datetime.now()
+                transfer.save()
+            
+                # Destination account of transfer
+                transfer = Transaction()
+                transfer.id = lastId.id + 2
+                transfer.userTransaction = request.user
+                transfer.accountNameTransaction_id = schedule.accountNameScheduleTransferTo_id
+                transfer.accountNameTransferFrom_id = schedule.accountNameScheduleTransferFrom_id
+                transfer.accountNameTransferTo_id = schedule.accountNameScheduleTransferTo_id
+                transfer.transactionFromId = lastId.id + 1
+                transfer.transactionType = "transfer"
+                transfer.amount = amount
+                transfer.previousAccountBalance = accountTo.balance
+                transfer.currentAccountBalance = accountFrom.balance + amount
+                transfer.descriptionTransaction = schedule.descriptionSchedule
+                transfer.transactionDate = date
+                transfer.readTransaction = False
+                transfer.ins_date = datetime.now()
+                transfer.save()
+            
+                accountFrom.balance = accountFrom.balance - amount
+                accountFrom.read = False
+                accountFrom.save()
+            
+                accountTo.balance = accountTo.balance + amount
+                accountTo.read = False
+                accountTo.save()
+            
     return ""
 
 def transaction(request, id, pageNo):
@@ -232,11 +371,6 @@ def creditAdd(request, id):
 
     data = json.loads(request.body)
 
-    creditAddProcess(request, data, "manual")
-
-    return JsonResponse({"message": "success"}, status=200)
-
-def creditAddProcess(request,data,process):
     accountName = data["accountName"]
     description = data["description"]
     amount = int(data["amount"])
@@ -300,56 +434,7 @@ def creditAddProcess(request,data,process):
             budget.minusAmount = False
         budget.save()
 
-    # Report process
-    if process == "manual":
-
-        currDate = datetime(datetime.now().year, 
-                            datetime.now().month, 
-                            1,0,0)
-        currDate = dateSetter(currDate, 1, "3")
-
-        processDate = datetime(transactionDate.year, 
-                                transactionDate.month, 
-                                1,0,0)
-
-        print(processDate)
-        processDate = dateSetter(processDate, 1, "3")
-        print(processDate[0])
-        while True:
-
-            processDate = processDate[1]
-            print(currDate[1])
-            if processDate < currDate[1] :
-
-                report = Report.objects.filter(userReport=request.user,
-                                                    accountNameReport_id=accountName,
-                                                    startDate__year=processDate.year,
-                                                    startDate__month=processDate.month)
-                if len(report) > 0 :
-                    report[0].amount = report[0].amount - amount
-                    report[0].save()
-                else:
-                    prevAmount = 0 
-                    prevMonth = Report.objects.filter(userReport=request.user,
-                                                        accountNameReport_id=accountName,
-                                                        startDate__year=processDate.year,
-                                                        startDate__month=processDate.month - 1)
-                    if len(prevMonth) > 0:
-                        prevAmount = prevMonth[0].amount
-
-                    currMonth = Report()
-                    currMonth.userReport = request.user
-                    currMonth.accountNameReport = accountName
-                    currMonth.startDate = datetime(processDate.year, 
-                                                    processDate.month, 
-                                                    1,0,0)
-                    currMonth.amount = prevAmount - amount
-                    currMonth.save()
-            else:
-                break
-    
-
-    return ""
+    return JsonResponse({"message": "success"}, status=200)
 
 # Edit credit transaction
 @csrf_exempt
@@ -637,6 +722,7 @@ def transferAdd(request, id):
     transfer.transactionType = "transfer"
     transfer.amount = data["amount"]
     transfer.previousAccountBalance = accountFrom.balance
+    transfer.currentAccountBalance = accountFrom.balance - int(data["amount"])
     transfer.descriptionTransaction = data["description"]
     date = data["date"]
     time = data["time"]
@@ -656,6 +742,7 @@ def transferAdd(request, id):
     transfer.transactionType = "transfer"
     transfer.amount = data["amount"]
     transfer.previousAccountBalance = accountTo.balance
+    transfer.currentAccountBalance = accountFrom.balance + int(data["amount"])
     transfer.descriptionTransaction = data["description"]
     date = data["date"]
     time = data["time"]
@@ -724,6 +811,7 @@ def transferEdit(request, id):
     transfer.transactionType = "transfer"
     transfer.amount = data["amount"]
     transfer.previousAccountBalance = accountFrom.balance
+    transfer.currentAccountBalance = accountFrom.balance - int(data["amount"])
     transfer.descriptionTransaction = data["description"]
     date = data["date"]
     time = data["time"]
@@ -740,6 +828,7 @@ def transferEdit(request, id):
     transfer.transactionType = "transfer"
     transfer.amount = data["amount"]
     transfer.previousAccountBalance = accountTo.balance
+    transfer.currentAccountBalance = accountFrom.balance + int(data["amount"])
     transfer.descriptionTransaction = data["description"]
     date = data["date"]
     time = data["time"]
@@ -1820,6 +1909,41 @@ def expensesIncomeDetail(request):
     
     return JsonResponse([transaction.serialize() for transaction in transactions], safe=False)
 
+@csrf_exempt
+@login_required
+def budgetTransaction(request):
+
+    data = json.loads(request.body)
+    budgetId = data.get("id")
+
+    budget = Budget.objects.get(userBudget=request.user,id=budgetId)
+    category = budget.categoryBudget_id
+    subCategory = budget.subCategoryBudget
+
+    if subCategory != ""  and subCategory is not None and subCategory != 'null':
+        transactions = Transaction.objects.filter(userTransaction=request.user,
+                                        accountNameTransaction_id=budget.accountNameBudget_id,
+                                        categoryTransaction_id=category,
+                                        subCategoryTransaction_id=subCategory,
+                                        transactionDate__range=[budget.startDate,budget.endDate])
+    elif category != ""  and category is not None and category != 'null':
+        transactions = Transaction.objects.filter(userTransaction=request.user,
+                                        accountNameTransaction_id=budget.accountNameBudget_id,
+                                        categoryTransaction_id=category,
+                                        transactionDate__range=[budget.startDate,budget.endDate])
+    else:
+        transactions = Transaction.objects.filter(userTransaction=request.user,
+                                        accountNameTransaction_id=budget.accountNameBudget_id,
+                                        transactionDate__range=[budget.startDate,budget.endDate])
+
+
+    for tran in transactions:
+        tran.amount = currencyFormatter(tran.amount)
+        tran.previousAccountBalance = currencyFormatter(tran.previousAccountBalance)
+        tran.transactionDate = dateFormatter(tran.transactionDate)
+    
+    return JsonResponse([transaction.serialize() for transaction in transactions], safe=False)
+
 def dateSetter(startDate, count, process):
     startDate = startDate
     endDate = ""
@@ -1917,6 +2041,40 @@ def addSchedule(request):
         "do": "credit",
     })
 
+def editSchedule(request, id):
+
+    # Dropdown account, categories and subcategories data
+    accounts = Account.objects.filter(userAccount=request.user).order_by("accountName")
+    categories = Categories.objects.filter(userCategory=request.user).order_by("category")
+    subCategories = SubCategories.objects.filter(userSubCategory=request.user).order_by("subCategory")
+
+    schedule = Schedule.objects.get(userSchedule=request.user,id=id)
+
+    counts = []
+    for count in range(1,32):
+        counts.append(count)
+
+    process = []
+    process.append({"id": 1, "name":"day(s)"})
+    process.append({"id": 2, "name":"week(s)"})
+    process.append({"id": 3, "name":"month(s)"})
+    process.append({"id": 4, "name":"year(s)"})
+
+
+    return render(request, "budgetApp/editSchedule.html",{
+        "accounts" : accounts,
+        "categories" : categories,
+        "subCategories" : subCategories,
+        "counts": counts,
+        "process": process,
+        "schedule": schedule,
+        "date": schedule.startScheduleDate.strftime("%Y/%m/%d"),
+        "time": schedule.startScheduleDate.strftime("%H:%M"),
+        "endDate": schedule.endScheduleDate.strftime("%Y/%m/%d"),
+        "endTime": schedule.endScheduleDate.strftime("%H:%M"),
+        "do": schedule.scheduleType,
+    })
+
 def scheduleDisplay(request):
 
     schedules = Schedule.objects.filter(userSchedule=request.user
@@ -1944,8 +2102,6 @@ def creditAddSched(request):
     
     if len(messageList) > 0:
         return JsonResponse({"message":"error","error": messageList}, status=400)
-
-    data = json.loads(request.body)
 
     accountName = data["accountName"]
     description = data["description"]
@@ -1990,6 +2146,319 @@ def creditAddSched(request):
 
     return JsonResponse({"message": "success"}, status=200)
 
+# Edit credit transaction
+@csrf_exempt
+@login_required
+def creditEditSched(request, id):
+    
+
+    messageList = validation(request, "credit")
+    data = json.loads(request.body)
+    date = data.get("startDate")
+    time = data.get("startTime")
+    transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    neverEnd = True
+
+    if  transactionDate < datetime.now():
+            messageList.append({"id":"datetime", "message":"Please input datetime from current date."})
+
+    if len(messageList) > 0:
+        return JsonResponse({"message":"error","error": messageList}, status=400)
+
+    accountName = data["accountName"]
+    description = data["description"]
+    amount = int(data["amount"])
+    category = data["category"]
+    subcategory = data["subcategory"]
+
+    # Update the data with input data
+    account = Account.objects.get(userAccount=request.user,id=accountName)
+
+    credit = Schedule.objects.get(userSchedule=request.user,id=id)
+    credit.userSchedule = request.user
+    credit.accountNameSchedule_id = accountName
+    credit.scheduleType = "credit"
+    credit.amount = amount
+    credit.previousScheduleAccountBalance = account.balance
+    credit.currentScheduleAccountBalance = account.balance - amount
+    credit.descriptionSchedule = description
+
+    if subcategory != "":
+        category = subcategory.split("-")
+        credit.categorySchedule_id = category[0]
+        credit.subCategorySchedule_id = category[1]
+    else:
+        credit.categorySchedule_id = category
+        credit.subCategorySchedule_id = ""
+
+    if data["end"] :
+        neverEnd = False
+
+    date = data["startDate"]
+    time = data["startTime"]
+    transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    credit.startScheduleDate = transactionDate
+    credit.nextScheduleDate = transactionDate
+    credit.endScheduleDate = datetime.strptime(data["endDate"]+" "+data["endTime"], "%Y/%m/%d %H:%M")
+    credit.neverEndSchedule = neverEnd
+    credit.repeatSchedule = data["repeat"]
+    credit.nextScheduleDateText = countdown(transactionDate)
+    credit.periodCountSchedule = data["count"]
+    credit.periodProcessSchedule = data["process"]
+    credit.save()
+
+    return JsonResponse({"message": "success"}, status=200)
+
+# Add debit schedule
+@csrf_exempt
+@login_required
+def debitAddSched(request):
+    
+    messageList = validation(request, "debit")
+    data = json.loads(request.body)
+    date = data.get("startDate")
+    time = data.get("startTime")
+    transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    neverEnd = True
+
+    if  transactionDate < datetime.now():
+            messageList.append({"id":"datetime", "message":"Please input datetime from current date."})
+    
+    if len(messageList) > 0:
+        return JsonResponse({"message":"error","error": messageList}, status=400)
+
+    data = json.loads(request.body)
+
+    accountName = data["accountName"]
+    description = data["description"]
+    amount = int(data["amount"])
+    category = data["category"]
+    subcategory = data["subcategory"]
+
+    # debit process
+    account = Account.objects.get(userAccount=request.user,id=accountName)
+
+    debit = Schedule()
+    debit.userSchedule = request.user
+    debit.accountNameSchedule_id = accountName
+    debit.scheduleType = "debit"
+    debit.amount = amount
+    debit.previousScheduleAccountBalance = account.balance
+    debit.currentScheduleAccountBalance = account.balance + amount
+    debit.descriptionSchedule = description
+
+    if subcategory != "":
+        category = subcategory.split("-")
+        debit.categorySchedule_id = category[0]
+        debit.subCategorySchedule_id = category[1]
+    else:
+        debit.categorySchedule_id = category
+
+    if data["end"] :
+        neverEnd = False
+
+    date = data["startDate"]
+    time = data["startTime"] 
+    transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    debit.startScheduleDate = transactionDate
+    debit.nextScheduleDate = transactionDate
+    debit.endScheduleDate = datetime.strptime(data["endDate"]+" "+data["endTime"], "%Y/%m/%d %H:%M")
+    debit.neverEndSchedule = neverEnd
+    debit.repeatSchedule = data["repeat"]
+    debit.nextScheduleDateText = countdown(transactionDate)
+    debit.periodCountSchedule = data["count"]
+    debit.periodProcessSchedule = data["process"]
+    debit.save()
+
+    return JsonResponse({"message": "success"}, status=200)
+
+# Edit debit transaction
+@csrf_exempt
+@login_required
+def debitEditSched(request, id):
+
+    messageList = validation(request, "debit")
+    data = json.loads(request.body)
+    date = data.get("startDate")
+    time = data.get("startTime")
+    transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    neverEnd = True
+    
+    if  transactionDate < datetime.now():
+            messageList.append({"id":"datetime", "message":"Please input datetime from current date."})
+
+    if len(messageList) > 0:
+        return JsonResponse({"message":"error","error": messageList}, status=400)
+
+    accountName = data["accountName"]
+    description = data["description"]
+    amount = int(data["amount"])
+    category = data["category"]
+    subcategory = data["subcategory"]
+
+    # Update the data with input data
+    account = Account.objects.get(userAccount=request.user,id=accountName)
+
+    
+    debit = Schedule.objects.get(userSchedule=request.user,id=id)
+    debit.userSchedule = request.user
+    debit.accountNameSchedule_id = accountName
+    debit.scheduleType = "debit"
+    debit.amount = amount
+    debit.previousScheduleAccountBalance = account.balance
+    debit.currentScheduleAccountBalance = account.balance - amount
+    debit.descriptionSchedule = description
+
+    if subcategory != "":
+        category = subcategory.split("-")
+        debit.categorySchedule_id = category[0]
+        debit.subCategorySchedule_id = category[1]
+    else:
+        debit.categorySchedule_id = category
+        debit.subCategorySchedule_id = ""
+
+    if data["end"] :
+        neverEnd = False
+
+    date = data["startDate"]
+    time = data["startTime"]
+    transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    debit.startScheduleDate = transactionDate
+    debit.nextScheduleDate = transactionDate
+    debit.endScheduleDate = datetime.strptime(data["endDate"]+" "+data["endTime"], "%Y/%m/%d %H:%M")
+    debit.neverEndSchedule = neverEnd
+    debit.repeatSchedule = data["repeat"]
+    debit.nextScheduleDateText = countdown(transactionDate)
+    debit.periodCountSchedule = data["count"]
+    debit.periodProcessSchedule = data["process"]
+    debit.save()
+
+    return JsonResponse({"message": "success"}, status=200)
+
+# Add transfer schedule
+@csrf_exempt
+@login_required
+def transferAddSched(request):
+    
+    messageList = validation(request, "transfer")
+    data = json.loads(request.body)
+    date = data.get("startDate")
+    time = data.get("startTime")
+    transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    neverEnd = True
+
+    if  transactionDate < datetime.now():
+            messageList.append({"id":"datetime", "message":"Please input datetime from current date."})
+    
+    if len(messageList) > 0:
+        return JsonResponse({"message":"error","error": messageList}, status=400)
+
+    data = json.loads(request.body)
+
+    description = data["description"]
+    amount = int(data["amount"])
+
+    # transfer process
+    account = Account.objects.get(userAccount=request.user,id=data["accountNameFrom"])
+
+    transfer = Schedule()
+    transfer.userSchedule = request.user
+    transfer.accountNameSchedule_id = data["accountNameFrom"]
+    transfer.accountNameScheduleTransferFrom_id = data["accountNameFrom"]
+    transfer.accountNameScheduleTransferTo_id = data["accountNameTo"]
+    transfer.scheduleType = "transfer"
+    transfer.amount = amount
+    transfer.previousScheduleAccountBalance = account.balance
+    transfer.currentScheduleAccountBalance = account.balance - amount
+    transfer.descriptionSchedule = description
+
+    if data["end"] :
+        neverEnd = False
+
+    date = data["startDate"]
+    time = data["startTime"] 
+    transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    transfer.startScheduleDate = transactionDate
+    transfer.nextScheduleDate = transactionDate
+    transfer.endScheduleDate = datetime.strptime(data["endDate"]+" "+data["endTime"], "%Y/%m/%d %H:%M")
+    transfer.neverEndSchedule = neverEnd
+    transfer.repeatSchedule = data["repeat"]
+    transfer.nextScheduleDateText = countdown(transactionDate)
+    transfer.periodCountSchedule = data["count"]
+    transfer.periodProcessSchedule = data["process"]
+    transfer.save()
+
+    return JsonResponse({"message": "success"}, status=200)
+
+# Edit transfer schedule
+@csrf_exempt
+@login_required
+def transferEditSched(request, id):
+    
+    messageList = validation(request, "transfer")
+    data = json.loads(request.body)
+    date = data.get("startDate")
+    time = data.get("startTime")
+    transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    neverEnd = True
+
+    if  transactionDate < datetime.now():
+            messageList.append({"id":"datetime", "message":"Please input datetime from current date."})
+    
+    if len(messageList) > 0:
+        return JsonResponse({"message":"error","error": messageList}, status=400)
+
+    data = json.loads(request.body)
+
+    description = data["description"]
+    amount = int(data["amount"])
+
+    # transfer process
+    account = Account.objects.get(userAccount=request.user,id=data["accountNameFrom"])
+
+    transfer = Schedule.objects.get(userSchedule=request.user,id=id)
+    transfer.userSchedule = request.user
+    transfer.accountNameSchedule_id = data["accountNameFrom"]
+    transfer.accountNameScheduleTransferFrom_id = data["accountNameFrom"]
+    transfer.accountNameScheduleTransferTo_id = data["accountNameTo"]
+    transfer.scheduleType = "transfer"
+    transfer.amount = amount
+    transfer.previousScheduleAccountBalance = account.balance
+    transfer.currentScheduleAccountBalance = account.balance - amount
+    transfer.descriptionSchedule = description
+
+    if data["end"] :
+        neverEnd = False
+
+    date = data["startDate"]
+    time = data["startTime"] 
+    transactionDate = datetime.strptime(date+" "+time, "%Y/%m/%d %H:%M")
+    transfer.startScheduleDate = transactionDate
+    transfer.nextScheduleDate = transactionDate
+    transfer.endScheduleDate = datetime.strptime(data["endDate"]+" "+data["endTime"], "%Y/%m/%d %H:%M")
+    transfer.neverEndSchedule = neverEnd
+    transfer.repeatSchedule = data["repeat"]
+    transfer.nextScheduleDateText = countdown(transactionDate)
+    transfer.periodCountSchedule = data["count"]
+    transfer.periodProcessSchedule = data["process"]
+    transfer.save()
+
+    return JsonResponse({"message": "success"}, status=200)
+
+# Delete Schedule
+@csrf_exempt
+@login_required
+def deleteSchedule(request):
+    
+    data = json.loads(request.body)
+    try:
+        schedule = Schedule.objects.get(userSchedule=request.user,id=data["item"])
+        schedule.delete()
+    except:
+        return JsonResponse({"message": "error"}, status=500)
+
+    return JsonResponse({"message": "success"}, status=200)
+
 def login_view(request):
     if request.method == "POST":
 
@@ -2021,6 +2490,7 @@ def register(request):
         error = False
         messageList = []
         username = request.POST["username"].replace(' ','')
+        email = username + "@budgetTracker.com"
 
         # Ensure password matches confirmation
         password = request.POST["password"].replace(' ','')
@@ -2046,7 +2516,7 @@ def register(request):
 
         # Attempt to create new user
         try:
-            user = User.objects.create_user(username, password)
+            user = User.objects.create_user(username, email, password)
             user.save()
 
         except IntegrityError:

@@ -34,6 +34,7 @@ urlpatterns = [
     path("budget/delete", views.deleteBudget, name="deleteBudget"),
     path("addBudget", views.addBudget, name="addBudget"),
     path("budgetAdd", views.budgetAdd, name="budgetAdd"),
+    path("budget/budgetTransaction", views.budgetTransaction, name="budgetTransaction"),
     path("budget/budgetDisplay", views.budgetDisplay, name="budgetDisplay"),
     path("editBudget/<int:id>", views.editBudget, name="editBudget"),
     path("budgetEdit/<int:id>", views.budgetEdit, name="editBudget"),
@@ -48,8 +49,15 @@ urlpatterns = [
 
     #schedule
     path("schedule", views.schedule, name="schedule"),
+    path("schedule/delete", views.deleteSchedule, name="deleteSchedule"),
     path("addSchedule", views.addSchedule, name="addSchedule"),
     path("addSchedule/creditAddSched", views.creditAddSched, name="creditAddSched"),
+    path("addSchedule/debitAddSched", views.debitAddSched, name="debitAddSched"),
+    path("addSchedule/transferAddSched", views.transferAddSched, name="transferAddSched"),
+    path("editSchedule/<int:id>", views.editSchedule, name="editSchedule"),
+    path("editSchedule/creditEditSched/<int:id>", views.creditEditSched, name="creditEditSched"),
+    path("editSchedule/debitEditSched/<int:id>", views.debitEditSched, name="debitEditSched"),
+    path("editSchedule/transferEditSched/<int:id>", views.transferEditSched, name="transferEditSched"),
     path("schedule/scheduleDisplay", views.scheduleDisplay, name="scheduleDisplay"),
 
     #accounts

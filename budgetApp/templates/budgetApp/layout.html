@@ -87,7 +87,11 @@
   <body>
     {% if user.is_authenticated %}
     <nav class="navbar navbar-expand-lg navbar-light">
-      <a class="navbar-brand" href="{% url 'index' %}">Budget Tracker</a>
+      <a class="navbar-brand mr-auto" href="{% url 'index' %}">Budget Tracker</a>
+      <div class="fs-4">
+        <i class="bi bi-person-circle"></i>
+        <a class="navbar-brand " href="{% url 'index' %}">{{ user.username }}</a>
+      </div>
     </nav>
 
     <div class="body">{% block body %} {% endblock %}</div>
@@ -132,6 +136,24 @@
             <div id="reportExpenses"></div>
             <label style="font-size: 30px;margin-top: 20px;">Income</label>
             <div id="reportIncome"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Budget modal -->
+    <div class="modal" id="modalBudget">
+      <div class="modal-dialog modal-dialog-scrollable" >
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="budgetTransactionTitle"></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" id="budgetTransactionBody">
+            <label style="font-size: 30px">Expenses</label>
+            <div id="budgetTransactionExpenses"></div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-success" data-bs-dismiss="modal">Close</button>

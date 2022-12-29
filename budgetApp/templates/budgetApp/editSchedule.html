@@ -9,18 +9,33 @@
               <a class="btn btn-outline-success" href="{% url 'schedule' %}" role="button" ><i class="bi bi-box-arrow-in-left"></i> Back</a>
             </div>
             <div class="col">
-              <h2 class="title">Add New Schedule</h2>
+              <h2 class="title">Edit Schedule</h2>
             </div>
               <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                {% if do != 'transfer' %}
+                  {% if do == 'credit'%}
+                  <li class="nav-item">
+                    <a class="nav-link active" id="pills-credit-tab" data-toggle="pill" href="#pills-credit" role="tab" aria-controls="pills-credit" aria-selected="true">Expenses</a>
+                  </li>
+                  {% else %}
+                  <li class="nav-item">
+                    <a class="nav-link" id="pills-credit-tab" data-toggle="pill" href="#pills-credit" role="tab" aria-controls="pills-credit" aria-selected="true">Expenses</a>
+                  </li>
+                  {% endif %}
+                  {% if do == 'debit'%}
+                  <li class="nav-item">
+                    <a class="nav-link active" id="pills-debit-tab" data-toggle="pill" href="#pills-debit" role="tab" aria-controls="pills-debit" aria-selected="false">Income</a>
+                  </li>
+                  {% else %}
+                  <li class="nav-item">
+                    <a class="nav-link" id="pills-debit-tab" data-toggle="pill" href="#pills-debit" role="tab" aria-controls="pills-debit" aria-selected="false">Income</a>
+                  </li>
+                  {% endif %}
+                {% else %}
                 <li class="nav-item">
-                  <a class="nav-link active" id="pills-credit-tab" data-toggle="pill" href="#pills-credit" role="tab" aria-controls="pills-credit" aria-selected="true">Expenses</a>
+                  <a class="nav-link active" id="pills-transfer-tab" data-toggle="pill" href="#pills-transfer" role="tab" aria-controls="pills-transfer" aria-selected="false" >Transfer</a>
                 </li>
-                <li class="nav-item">
-                  <a class="nav-link" id="pills-debit-tab" data-toggle="pill" href="#pills-debit" role="tab" aria-controls="pills-debit" aria-selected="false">Income</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" id="pills-transfer-tab" data-toggle="pill" href="#pills-transfer" role="tab" aria-controls="pills-transfer" aria-selected="false" >Transfer</a>
-                </li>
+                {% endif %}
               </ul>
             </div>
           </div>
@@ -28,11 +43,15 @@
           <div class="alert alert-danger" role="alert" id="datetime" hidden>
           </div>
           <div class="tab-content" id="pills-tabContent">
+            {% if do == 'credit'%}
             <div class="tab-pane show active" id="pills-credit" role="tabpanel" aria-labelledby="pills-credit-tab">
-                <div class="input-group mb-3">
+            {% else %}
+            <div class="tab-pane" id="pills-credit" role="tabpanel" aria-labelledby="pills-credit-tab">
+            {% endif %}
+                  <div class="input-group mb-3">
                     <span class="input-group-text"><i class="bi bi-currency-yen"></i></span>
                     <div class="form-floating" id="amount-div">
-                      <input autofocus class="form-control" type="number" name="amount" placeholder="¥" id="amount-credit">
+                      <input autofocus class="form-control" type="number" name="amount" placeholder="¥" id="amount-credit" value ="{{ schedule.amount }}">
                       <label for="floatingInput">Amount</label>
                     </div>
                     <div class="invalid-feedback" id="invalid-amount">
@@ -40,7 +59,7 @@
                 </div>
                 <div class="form-group mb-3">
                     <div class="form-floating">
-                      <input autofocus class="form-control" type="text" name="descriptions" placeholder="Description" id="des-credit">
+                      <input autofocus class="form-control" type="text" name="descriptions" placeholder="Description" id="des-credit" value ="{{ schedule.descriptionSchedule }}">
                       <label for="floatingInput">Description</label>
                       <div class="invalid-feedback" id="invalid-des">
                       </div>
@@ -51,7 +70,11 @@
                       <select name="category" class="form-select" id="category">
                         <option value=""></option>
                         {% for category in categories %}
+                          {% if category.id == schedule.categorySchedule.id %}
+                            <option value="{{ category.id }}" selected>{{ category.category }}</option>
+                          {% else %}
                             <option value="{{ category.id }}">{{ category.category }}</option>
+                          {% endif %}
                         {% endfor %}
                       </select>
                       <label for="floatingSelect">Category</label>
@@ -64,7 +87,11 @@
                       <select name="subCategory" class="form-select" id="subCategory" hidden="hidden">
                         <option value=""></option>
                         {% for subCategory in subCategories %}
-                          <option value="{{ subCategory.parentCategory.id }}-{{ subCategory.id }}">{{ subCategory.subCategory }}</option>
+                          {% if subCategory.id == schedule.subCategorySchedule.id %}
+                            <option value="{{ subCategory.parentCategory.id }}-{{ subCategory.id }}" selected>{{ subCategory.subCategory }}</option>
+                          {% else %}
+                            <option value="{{ subCategory.parentCategory.id }}-{{ subCategory.id }}">{{ subCategory.subCategory }}</option>
+                          {% endif %}
                         {% endfor %}
                       </select>
                       <label for="floatingSelect" id="label-sub" hidden>Subcategory</label>
@@ -95,6 +122,7 @@
                 <div class="form-group mb-3">
                   <div class="form-check" style="padding-left: 25px;">
                     <input class="form-check-input" type="checkbox" id="repeat-credit" onclick="onCheckCredit()">
+                    <input type="text" id="creditRepeatEditHidden" value="{{ schedule.repeatSchedule }}" hidden>
                     <label class="form-check-label" for="flexCheckDefault">
                       Repeat
                     </label>
@@ -103,6 +131,7 @@
                 <div class="form-group mb-3 ends" hidden>
                   <div class="form-check" style="padding-left: 25px;">
                     <input class="form-check-input" type="checkbox" id="ends-credit" onclick="onEndsCredit()">
+                    <input type="text" id="creditEndEditHidden" value="{{ schedule.neverEndSchedule }}" hidden>
                     <label class="form-check-label" for="flexCheckDefault">
                       Ends
                     </label>
@@ -133,7 +162,7 @@
                     <div class="form-floating">
                       <select name="periodCount" class="form-select" id="periodCount-credit" aria-label="Floating label select example">
                         {% for count in counts %}
-                          {% if count == 1 %}
+                          {% if count == schedule.periodCountSchedule %}
                             <option value="{{ count }}" selected>{{ count }}</option>
                           {% else %}
                             <option value="{{ count }}" >{{ count }}</option>
@@ -147,7 +176,7 @@
                     <div class="form-floating">
                       <select name="periodProcess" class="form-select" id="periodProcess-credit" aria-label="Floating label select example">
                         {% for data in process %}
-                          {% if data.id == 3 %}
+                          {% if data.id == schedule.periodProcessSchedule %}
                             <option value="{{ data.id }}" selected>{{ data.name }}</option>
                           {% else %}
                             <option value="{{ data.id }}" >{{ data.name }}</option>
@@ -161,7 +190,7 @@
                     <div class="form-floating">
                       <select name="accountName" class="form-select" id="accountName-credit">
                         {% for account in accounts %}
-                          {% if account.id == accountId %}
+                          {% if account.id == schedule.accountNameSchedule.id %}
                           <option value="{{ account.id }}" selected>{{ account.accountName }}</option>
                           {% else %}
                           <option value="{{ account.id }}">{{ account.accountName }}</option>
@@ -175,11 +204,15 @@
                 </div>
             </div>
             <!-- Debit section -->
+            {% if do == 'debit'%}
+            <div class="tab-pane show active" id="pills-debit" role="tabpanel" aria-labelledby="pills-debit-tab">
+            {% else %}
             <div class="tab-pane" id="pills-debit" role="tabpanel" aria-labelledby="pills-debit-tab">
-                <div class="input-group mb-3">
+            {% endif %}
+              <div class="input-group mb-3">
                     <span class="input-group-text"><i class="bi bi-currency-yen"></i></span>
                     <div class="form-floating" id="amount-div-debit">
-                        <input autofocus class="form-control" type="number" name="amount" placeholder="¥" id="amount-debit" value="{{ amount }}">
+                        <input autofocus class="form-control" type="number" name="amount" placeholder="¥" id="amount-debit" value="{{ schedule.amount  }}">
                         <label for="floatingInput">Amount</label>
                     </div>
                     <div class="invalid-feedback" id="invalid-amount-debit">
@@ -187,7 +220,7 @@
                 </div>
                 <div class="form-group mb-3">
                     <div class="form-floating">
-                        <input autofocus class="form-control" type="text" name="descriptions" placeholder="Description" id="des-debit" value="{{ description }}">
+                        <input autofocus class="form-control" type="text" name="descriptions" placeholder="Description" id="des-debit" value="{{ schedule.descriptionSchedule }}">
                         <label for="floatingInput">Description</label>
                         <div class="invalid-feedback" id="invalid-des-debit">
                         </div>
@@ -198,7 +231,11 @@
                     <select name="category-debit" class="form-select" id="category-debit" >
                       <option value=""></option>
                       {% for category in categories %}
+                        {% if category.id == schedule.categorySchedule.id %}
+                          <option value="{{ category.id }}" selected>{{ category.category }}</option>
+                        {% else %}
                           <option value="{{ category.id }}">{{ category.category }}</option>
+                        {% endif %}
                       {% endfor %}
                     </select>
                     <label for="floatingSelect">Category</label>
@@ -211,7 +248,11 @@
                     <select name="subCategory-debit" class="form-select" id="subCategory-debit" hidden="hidden">
                       <option value=""></option>
                       {% for subCategory in subCategories %}
+                        {% if subCategory.id == schedule.subCategorySchedule.id %}
+                          <option value="{{ subCategory.parentCategory.id }}-{{ subCategory.id }}" selected>{{ subCategory.subCategory }}</option>
+                        {% else %}
                           <option value="{{ subCategory.parentCategory.id }}-{{ subCategory.id }}">{{ subCategory.subCategory }}</option>
+                        {% endif %}
                       {% endfor %}
                     </select>
                     <label for="floatingSelect" id="label-sub-debit" hidden>Subcategory</label>
@@ -242,6 +283,7 @@
                 <div class="form-group mb-3">
                   <div class="form-check" style="padding-left: 25px;">
                     <input class="form-check-input" type="checkbox" value="" id="repeat-debit" onclick="onCheckDebit()">
+                    <input type="text" id="debitRepeatEditHidden" value="{{ schedule.repeatSchedule }}" hidden>
                     <label class="form-check-label" for="flexCheckDefault">
                       Repeat
                     </label>
@@ -250,6 +292,7 @@
                 <div class="form-group mb-3 ends" hidden>
                   <div class="form-check" style="padding-left: 25px;">
                     <input class="form-check-input" type="checkbox" id="ends-debit" onclick="onEndsDebit()">
+                    <input type="text" id="debitEndEditHidden" value="{{ schedule.neverEndSchedule }}" hidden>
                     <label class="form-check-label" for="flexCheckDefault">
                       Ends
                     </label>
@@ -280,7 +323,7 @@
                     <div class="form-floating">
                       <select name="periodCount" class="form-select" id="periodCount-debit" aria-label="Floating label select example">
                         {% for count in counts %}
-                          {% if count == 1 %}
+                          {% if count == schedule.periodCountSchedule %}
                             <option value="{{ count }}" selected>{{ count }}</option>
                           {% else %}
                             <option value="{{ count }}" >{{ count }}</option>
@@ -294,7 +337,7 @@
                     <div class="form-floating">
                       <select name="periodProcess" class="form-select" id="periodProcess-debit" aria-label="Floating label select example">
                         {% for data in process %}
-                          {% if data.id == 3 %}
+                          {% if data.id == schedule.periodProcessSchedule %}
                             <option value="{{ data.id }}" selected>{{ data.name }}</option>
                           {% else %}
                             <option value="{{ data.id }}" >{{ data.name }}</option>
@@ -308,7 +351,7 @@
                   <div class="form-floating">
                       <select name="accountName" class="form-select" id="accountName-debit">
                         {% for account in accounts %}
-                          {% if account.id == accountId %}
+                          {% if account.id == schedule.accountNameSchedule.id %}
                           <option value="{{ account.id }}" selected>{{ account.accountName }}</option>
                           {% else %}
                           <option value="{{ account.id }}">{{ account.accountName }}</option>
@@ -322,11 +365,15 @@
                 </div>
             </div>
             <!-- Transfer section -->
+            {% if do == 'transfer'%}
+            <div class="tab-pane show active" id="pills-transfer" role="tabpanel" aria-labelledby="pills-transfer-tab">
+            {% else %}
             <div class="tab-pane" id="pills-transfer" role="tabpanel" aria-labelledby="pills-transfer-tab">
-                <div class="input-group mb-3">
+            {% endif %}
+              <div class="input-group mb-3">
                   <span class="input-group-text"><i class="bi bi-currency-yen"></i></span>
                   <div class="form-floating" id="amount-div-transfer">
-                    <input autofocus class="form-control" type="number" name="amount" placeholder="¥" id="amount-transfer" value="{{ amount }}">
+                    <input autofocus class="form-control" type="number" name="amount" placeholder="¥" id="amount-transfer" value="{{ schedule.amount }}">
                     <label for="floatingInput">Amount</label>
                   </div>
                   <div class="invalid-feedback" id="invalid-amount-transfer">
@@ -334,7 +381,7 @@
                 </div>
                 <div class="input-group mb-3">
                   <div class="form-floating">
-                    <input autofocus class="form-control" type="text" name="descriptions" placeholder="Description" id="des-transfer" value="{{ description }}">
+                    <input autofocus class="form-control" type="text" name="descriptions" placeholder="Description" id="des-transfer" value="{{ schedule.descriptionSchedule }}">
                     <label for="floatingInput">Description</label>
                     <div class="invalid-feedback" id="invalid-des-transfer">
                     </div>
@@ -363,6 +410,7 @@
                 <div class="form-group mb-3">
                   <div class="form-check" style="padding-left: 25px;">
                     <input class="form-check-input" type="checkbox" value="" id="repeat-transfer" onclick="onCheckTransfer()">
+                    <input type="text" id="transferRepeatEditHidden" value="{{ schedule.repeatSchedule }}" hidden>
                     <label class="form-check-label" for="flexCheckDefault">
                       Repeat
                     </label>
@@ -371,6 +419,7 @@
                 <div class="form-group mb-3 ends" hidden>
                   <div class="form-check" style="padding-left: 25px;">
                     <input class="form-check-input" type="checkbox" id="ends-transfer" onclick="onEndsTransfer()">
+                    <input type="text" id="transferEndEditHidden" value="{{ schedule.neverEndSchedule }}" hidden>
                     <label class="form-check-label" for="flexCheckDefault">
                       Ends
                     </label>
@@ -401,7 +450,7 @@
                     <div class="form-floating">
                       <select name="periodCount" class="form-select" id="periodCount-transfer" aria-label="Floating label select example">
                         {% for count in counts %}
-                          {% if count == 1 %}
+                          {% if count == schedule.periodCountSchedule %}
                             <option value="{{ count }}" selected>{{ count }}</option>
                           {% else %}
                             <option value="{{ count }}" >{{ count }}</option>
@@ -415,7 +464,7 @@
                     <div class="form-floating">
                       <select name="periodProcess" class="form-select" id="periodProcess-transfer" aria-label="Floating label select example">
                         {% for data in process %}
-                          {% if data.id == 3 %}
+                          {% if data.id == schedule.periodProcessSchedule %}
                             <option value="{{ data.id }}" selected>{{ data.name }}</option>
                           {% else %}
                             <option value="{{ data.id }}" >{{ data.name }}</option>
@@ -429,7 +478,7 @@
                   <div class="form-floating">
                     <select name="accountNameFrom" class="form-select" id="accountNameFrom">
                       {% for account in accounts %}
-                        {% if account.id == accountId %}
+                        {% if account.id == schedule.accountNameScheduleTransferFrom.id %}
                         <option value="{{ account.id }}" selected>{{ account.accountName }}</option>
                         {% else %}
                         <option value="{{ account.id }}">{{ account.accountName }}</option>
@@ -445,7 +494,11 @@
                   <div class="form-floating">
                     <select name="accountNameTo" class="form-select" id="accountNameTo">
                       {% for account in accounts %}
+                        {% if account.id == schedule.accountNameScheduleTransferTo.id %}
+                        <option value="{{ account.id }}" selected>{{ account.accountName }}</option>
+                        {% else %}
                         <option value="{{ account.id }}">{{ account.accountName }}</option>
+                        {% endif %}
                       {% endfor %}
                     </select>
                     <label for="floatingSelect">To</label>
@@ -455,7 +508,7 @@
                 </div>
             </div>
             <div class="button-container">
-              <button class="btn btn-success" style="width: 150px" type="submit" value="Save" onclick="addSched()"><i class="bi bi-save"></i> Save</button>
+              <button class="btn btn-success" style="width: 150px" type="submit" value="Save" onclick="editSched()"><i class="bi bi-save"></i> Save</button>
             </div>
           </div>
         </div>

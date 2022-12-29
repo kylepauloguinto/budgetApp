@@ -3,6 +3,7 @@ let url = "";
 let path = "";
 let id = "";
 let transaction_edit_id = ""
+let schedule_edit_id = ""
 let myChart = null;
 document.addEventListener("DOMContentLoaded", function () {
     
@@ -414,17 +415,27 @@ document.addEventListener("DOMContentLoaded", function () {
                 divMenu.setAttribute('class','dropdown-menu');
                 divMenu.setAttribute('aria-labelledby','dropdownMenuLink');
                 const aEdit = document.createElement('a');
+                const atransaction = document.createElement('a');
                 const aDelete = document.createElement('a');
                 aEdit.setAttribute('class','dropdown-item');
+                atransaction.setAttribute('class','dropdown-item');
                 aDelete.setAttribute('class','dropdown-item');
                 aEdit.setAttribute('href',`editBudget/${data.id}`);
                 const iEdit = document.createElement('i');
+                const iTransaction = document.createElement('i');
                 const iDelete = document.createElement('i');
                 iEdit.setAttribute('class','bi bi-pencil');
+                iTransaction.setAttribute('class','bi bi-list-columns-reverse');
                 iDelete.setAttribute('class','bi bi-trash3');
                 aEdit.append(iEdit);
                 aEdit.append(' Edit');
                 aEdit.setAttribute('onclick',`edit(${id})`);
+                atransaction.append(iTransaction);
+                atransaction.append(' Transactions');
+                atransaction.setAttribute('data-bs-toggle','modal');
+                atransaction.setAttribute('data-bs-target','#modalBudget');
+                atransaction.setAttribute('onClick',`budgetTransaction("${data.budgetName}",${data.id})`);
+                atransaction.setAttribute('href','#');
                 aDelete.append(iDelete);
                 aDelete.append(' Delete');
                 aDelete.setAttribute('data-bs-toggle','modal');
@@ -434,6 +445,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const divDivider = document.createElement('div');
                 divDivider.setAttribute('class','dropdown-divider');
                 divMenu.append(aEdit);
+                divMenu.append(atransaction);
                 divMenu.append(divDivider);
                 divMenu.append(aDelete);
 
@@ -499,6 +511,124 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
+
+        // edit schedule section
+    if( path == 'editSchedule'){
+
+        // when page of add transaction loads, set transaction code as credit
+        TRANSACTION_CODE = "credit";
+        $("#pills-credit-tab").click(function() {
+            TRANSACTION_CODE = "credit";
+        })
+        $("#pills-debit-tab").click(function() {
+            TRANSACTION_CODE = "debit";
+        })        
+        $( "#pills-transfer-tab" ).click(function() {
+            TRANSACTION_CODE = "transfer";
+        })
+        
+        let creditRepeat = document.getElementById("creditRepeatEditHidden").value;
+        if(creditRepeat === "True"){
+            $("#repeat-credit").prop('checked', true); 
+            onCheckCredit(); 
+        }
+        
+        let creditEnd = document.getElementById("creditEndEditHidden").value;
+        if(creditEnd === "False"){
+            $("#ends-credit").prop('checked', true); 
+            onEndsCredit(); 
+        }
+
+        let debitRepeat = document.getElementById("debitRepeatEditHidden").value;
+        if(debitRepeat === "True"){
+            $("#repeat-debit").prop('checked', true); 
+            onCheckDebit(); 
+        }
+        
+        let debitEnd = document.getElementById("debitEndEditHidden").value;
+        if(debitEnd === "False"){
+            $("#ends-debit").prop('checked', true); 
+            onEndsDebit(); 
+        }
+
+        let transferRepeat = document.getElementById("transferRepeatEditHidden").value;
+        if(transferRepeat === "True"){
+            $("#repeat-transfer").prop('checked', true); 
+            onCheckTransfer(); 
+        }
+        
+        let transferEnd = document.getElementById("transferEndEditHidden").value;
+        if(transferEnd === "False"){
+            $("#ends-transfer").prop('checked', true); 
+            onEndsTransfer(); 
+        }
+
+
+        var active_tab = $(".active");
+        TRANSACTION_CODE = active_tab.attr('id').split("-")[1]
+        schedule_edit_id = url.split("/")[4]
+
+        // credit subCategory function
+        let category = document.getElementById("category").value ;
+        if (category != "") document.getElementById("subCategory").removeAttribute("hidden");
+
+        let option = document.getElementById("subCategory").options.length;
+        let subCategory = document.getElementById("subCategory");
+        let hiddentCount = TRANSACTION_CODE == "transfer" ? 1 : 0;
+        for(let i = 0 ; i < option ; i++){
+            let value = subCategory.options[i].value ;
+            value = value.split("-")
+            if(category != value[0]){
+                hiddentCount++;
+                subCategory.options[i].setAttribute("hidden", "hidden");
+            }else{
+                subCategory.options[i].removeAttribute("hidden");
+            }
+        }
+        if(option == hiddentCount){
+            document.getElementById("subCategory").setAttribute("hidden", "hidden");
+        }
+
+        // debit subCategory function
+        category = document.getElementById("category-debit").value ;
+        if (category != "") document.getElementById("subCategory-debit").removeAttribute("hidden");
+
+        option = document.getElementById("subCategory-debit").options.length;
+        subCategory = document.getElementById("subCategory-debit");
+        hiddentCount = TRANSACTION_CODE == "transfer" ? 1 : 0;
+
+        for(let i = 0 ; i < option ; i++){
+            let value = subCategory.options[i].value ;
+            value = value.split("-")
+            if(category != value[0]){
+                hiddentCount++;
+                subCategory.options[i].setAttribute("hidden", "hidden");
+            }else{
+                subCategory.options[i].removeAttribute("hidden");
+            }
+        }
+        if(option == hiddentCount){
+            document.getElementById("subCategory-debit").setAttribute("hidden", "hidden");
+        }
+
+        // transfer function accountFrom and accountTo 
+        let accountNameFrom =  document.getElementById("accountNameFrom").value ;
+        option = document.getElementById("accountNameTo").options.length;
+        let accountNameTo =  document.getElementById("accountNameTo");
+
+        for(let i = 0 ; i < option ; i++){
+            let value = accountNameTo.options[i].value ;
+            value = value.split("-")
+            if(accountNameFrom == value[0]){
+                accountNameTo.options[i].setAttribute("hidden", "hidden");
+            }else if(accountNameTo.options[i].value == ""){
+                accountNameTo.options[i].setAttribute("hidden", "hidden");
+            }else{
+                accountNameTo.options[i].removeAttribute("hidden");
+            }
+        }
+    }
+
     if(path === "schedule"){
         fetch('schedule/scheduleDisplay')
         .then(response => response.json())
@@ -556,7 +686,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 divCol2.setAttribute('class','col');
                 divCol2.setAttribute('style','text-align: center;');
-                if(data.transactionType === 'transfer' && id == 0 ){
+                if(data.scheduleType === 'transfer'){
                     let i = document.createElement('i');
                     i.setAttribute('class','bi bi-arrow-left-right');
                     divColLabel2.append(data.accountNameScheduleTransferFrom);
@@ -619,7 +749,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const aDelete = document.createElement('a');
                 aEdit.setAttribute('class','dropdown-item');
                 aDelete.setAttribute('class','dropdown-item');
-                aEdit.setAttribute('href',`editTransaction/${data.id}`);
+                aEdit.setAttribute('href',`editSchedule/${data.id}`);
                 const iEdit = document.createElement('i');
                 const iDelete = document.createElement('i');
                 iEdit.setAttribute('class','bi bi-pencil');
@@ -631,7 +761,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 aDelete.append(' Delete');
                 aDelete.setAttribute('data-bs-toggle','modal');
                 aDelete.setAttribute('data-bs-target','#myModal');
-                aDelete.setAttribute('onClick',`deleteItem(${data.id})`);
+                aDelete.setAttribute('onClick',`deleteSchedule(${data.id})`);
                 aDelete.setAttribute('href','#');
                 const divDivider = document.createElement('div');
                 divDivider.setAttribute('class','dropdown-divider');
@@ -752,6 +882,70 @@ document.addEventListener("DOMContentLoaded", function () {
         $("#subCategory").val(this.value);
     })
 
+    // start-date value
+    $( "#start-date-credit" ).focusout(function() {
+        $("#start-date-debit").val(this.value);
+        $("#start-date-transfer").val(this.value);
+    });
+    
+    $( "#start-date-debit" ).focusout(function() {
+        $("#start-date-credit").val(this.value);
+        $("#start-date-transfer").val(this.value);
+    });
+    
+    $( "#start-date-transfer" ).focusout(function() {
+        $("#start-date-credit").val(this.value);
+        $("#start-date-debit").val(this.value);
+    });
+
+    // start-time value
+    $( "#start-time-credit" ).focusout(function() {
+        $("#start-time-debit").val(this.value);
+        $("#start-time-transfer").val(this.value);
+    });
+    
+    $( "#start-time-debit" ).focusout(function() {
+        $("#start-time-credit").val(this.value);
+        $("#start-time-transfer").val(this.value);
+    });
+    
+    $( "#start-time-transfer" ).focusout(function() {
+        $("#start-time-credit").val(this.value);
+        $("#start-time-debit").val(this.value);
+    });
+
+    // end-date value
+    $( "#end-date-credit" ).focusout(function() {
+        $("#end-date-debit").val(this.value);
+        $("#end-date-transfer").val(this.value);
+    });
+    
+    $( "#end-date-debit" ).focusout(function() {
+        $("#end-date-credit").val(this.value);
+        $("#end-date-transfer").val(this.value);
+    });
+    
+    $( "#end-date-transfer" ).focusout(function() {
+        $("#end-date-credit").val(this.value);
+        $("#end-date-debit").val(this.value);
+    });
+
+    // end-time value
+    $( "#end-time-credit" ).focusout(function() {
+        $("#end-time-debit").val(this.value);
+        $("#end-time-transfer").val(this.value);
+    });
+    
+    $( "#end-time-debit" ).focusout(function() {
+        $("#end-time-credit").val(this.value);
+        $("#end-time-transfer").val(this.value);
+    });
+    
+    $( "#end-time-transfer" ).focusout(function() {
+        $("#end-time-credit").val(this.value);
+        $("#end-time-debit").val(this.value);
+    });
+
     // repeat
     $( "#repeat-credit" ).focusout(function() {
         $("#repeat-debit").prop("checked",this.checked);
@@ -870,6 +1064,21 @@ document.addEventListener("DOMContentLoaded", function () {
         }else if(action === "budget"){
 
             fetch("/budget/delete",{
+                method: 'POST',
+                body: JSON.stringify({item: item })
+            })
+            .then(response => response.json())
+            .then( result => {
+
+                if(result.message == "success" ){
+                    // Process for all budget display
+                    $(`.${item}`).slideUp( "slow", function(){ this.remove(); });
+                    $("#myModal .btn-close").click()
+                }
+            })
+        }else if(action === "schedule"){
+
+            fetch("/schedule/delete",{
                 method: 'POST',
                 body: JSON.stringify({item: item })
             })
@@ -1421,6 +1630,13 @@ function deleteBudget(id){
     
 };
 
+function deleteSchedule(id){
+    
+    $("#submitDelete").attr('data-id',id);
+    $("#submitDelete").attr('data-action',"schedule");
+    
+};
+
 function edit(id){
     sessionStorage.setItem("previousScreen", id);
 }
@@ -1559,6 +1775,110 @@ function editBudget(){
             window.location.href = "/budget";
         }
     })
+}
+
+function budgetTransaction(titles, id){
+
+    let data = {
+        id: id
+    }
+
+    let title = document.getElementById("budgetTransactionTitle");
+    title.innerHTML = titles;
+
+    let expenses = document.getElementById("budgetTransactionExpenses");
+    expenses.innerHTML = "";
+
+    fetch('budget/budgetTransaction',{
+            method: 'POST',
+            body: JSON.stringify( data )
+        })
+        .then(response => response.json())
+        .then(transaction =>{
+
+            transaction.forEach(data => {
+
+                // transaction information
+                const main = document.createElement('div');
+                main.setAttribute('class','dropright');
+                const a = document.createElement('a');
+                a.setAttribute('class',`list-group-item list-group-item-action inbx-clck fs-2 ${data.id}`);
+                a.setAttribute('href',"#");
+                a.setAttribute('id','dropdownMenuLink');
+                a.setAttribute('role','button');
+                a.setAttribute('data-toggle','dropdown');
+                a.setAttribute('aria-haspopup','true');
+                a.setAttribute('aria-expanded','false');
+
+                // transaction description
+                let divRow1 = document.createElement('div');
+                divRow1.setAttribute('class','row');
+                let divRow1Col1 = document.createElement('div');
+                divRow1Col1.setAttribute('class','col');
+                divRow1Col1.setAttribute('style','text-align: left;');
+                let divRow1Col2 = document.createElement('div');
+                divRow1Col2.setAttribute('class','col');
+                divRow1Col2.setAttribute('style','text-align: right;');
+
+                let divRowLabel1 = document.createElement('label');
+                divRowLabel1.setAttribute('style','font-size: 15px;');
+                divRowLabel1.innerHTML = data.descriptionTransaction
+                divRow1Col1.append(divRowLabel1);
+                divRow1.append(divRow1Col1);
+
+                // transfer information
+                let divRow2 = document.createElement('div');
+                divRow2.setAttribute('class','row');
+                let divCol1 = document.createElement('div');
+                let divCol2 = document.createElement('div');
+                let divCol3 = document.createElement('div');
+                let divColLabel1 = document.createElement('label');
+                let divColLabel2 = document.createElement('label');
+                let divColLabel3 = document.createElement('label');
+                divColLabel1.setAttribute('style','font-size: 16px;');
+                divColLabel1.innerHTML = data.transactionDate;
+                divCol1.setAttribute('class','col');
+                divCol1.append(divColLabel1);
+                divRow2.append(divCol1);
+
+
+                // amount and icon
+                divCol3.setAttribute('class','col');
+                divCol3.setAttribute('style','text-align: right;');
+                let i = document.createElement('i');
+                let iYen = document.createElement('i');
+                iYen.setAttribute('class','bi bi-currency-yen');
+                if(data.transactionType === 'credit'){
+                    i.setAttribute('class','bi bi-dash-circle');
+                    i.setAttribute('style','color: red');
+                }else if(data.transactionType === 'debit'){
+                    i.setAttribute('class','bi bi-plus-circle');
+                    i.setAttribute('style','color: rgb(46, 180, 46)');
+                }else if( id != '0' ){
+                    if( data.accountNameTransferFromId == id){
+                        i.setAttribute('class','bi bi-dash-circle');
+                        i.setAttribute('style','color: red');
+                    }else if ( data.accountNameTransferToId == id ){
+                        i.setAttribute('class','bi bi-plus-circle');
+                        i.setAttribute('style','color: rgb(46, 180, 46)');
+                    }
+                }
+                divColLabel3.append(i);
+                divColLabel3.append(iYen);
+                divColLabel3.append(data.amount);
+                divCol3.append(divColLabel3)
+                divRow2.append(divCol3);
+                a.append(divRow1);
+                a.append(divRow2);
+
+                main.append(a);
+
+                if( data.transactionType == "credit"){
+                    expenses.append(main);
+                }
+            });
+
+        })
 }
 
 function searchExpensesIncome(){
@@ -1971,7 +2291,7 @@ function addSched(){
             accountName: $("#accountName-debit").val()
         }
 
-        fetch(`/addTransaction/${id}/debitAdd`,{
+        fetch(`/addSchedule/debitAddSched`,{
             method: 'POST',
             body: JSON.stringify( data )
         })
@@ -2033,7 +2353,7 @@ function addSched(){
             accountNameTo: $("#accountNameTo").val()
         }
 
-        fetch(`/addTransaction/${id}/transferAdd`,{
+        fetch(`/addSchedule/transferAddSched`,{
             method: 'POST',
             body: JSON.stringify( data )
         })
@@ -2067,6 +2387,206 @@ function addSched(){
                     if( error.id == "accountNameTo"){
                         $("#accountNameTo").addClass("is-invalid")
                         $("#invalid-account-transfer-to").html(error.message)
+                    }
+                })
+            } else {
+                window.location.href = "/";
+            }
+        })
+    }
+};
+
+function editSched(){
+
+    if(TRANSACTION_CODE == "credit"){
+        let data = {
+            amount: $("#amount-credit").val(),
+            description: $("#des-credit").val(),
+            category: $("#category").val(),
+            subcategory: $("#subCategory").val(),
+            startDate: $("#start-date-credit").val(),
+            startTime: $("#start-time-credit").val(),
+            endDate: $("#end-date-credit").val(),
+            endTime: $("#end-time-credit").val(),
+            repeat: $("#repeat-credit").is(':checked'),
+            end: $("#ends-credit").is(':checked'),
+            count: $("#periodCount-credit").val(),
+            process: $("#periodProcess-credit").val(),
+            accountName: $("#accountName-credit").val()
+        }
+
+        fetch(`/editSchedule/creditEditSched/${schedule_edit_id}`,{
+            method: 'POST',
+            body: JSON.stringify( data )
+        })
+        .then(response => response.json())
+        .then( result => {
+
+            $("#amount-credit").removeClass("is-invalid")
+            $("#invalid-amount").html("")
+            $("#des-credit").removeClass("is-invalid")
+            $("#invalid-des").html("")
+            $("#category").removeClass("is-invalid")
+            $("#invalid-cat-credit").html("")
+            $("#subCategory").removeClass("is-invalid")
+            $("#invalid-sub-credit").html("")
+            $("#accountName-credit").removeClass("is-invalid")
+            $("#invalid-account").html("")
+            $("#datetime").attr('hidden','hidden')
+            
+            if(result.message == "error" ){
+                result.error.forEach(error =>{
+                    if( error.id == "amount"){
+                        $("#amount-credit").addClass("is-invalid")
+                        $("#amount-div").addClass("is-invalid")
+                        $("#invalid-amount").html(error.message)
+                    }
+                    if( error.id == "description"){
+                        $("#des-credit").addClass("is-invalid")
+                        $("#invalid-des").html(error.message)
+                    }
+                    if( error.id == "category"){
+                        $("#category").addClass("is-invalid")
+                        $("#invalid-cat-credit").html(error.message)
+                    }
+                    if( error.id == "subCategory"){
+                        $("#subCategory").addClass("is-invalid")
+                        $("#invalid-sub-credit").html(error.message)
+                    }
+                    if( error.id == "accountName"){
+                        $("#accountName-credit").addClass("is-invalid")
+                        $("#invalid-account").html(error.message)
+                    }
+                    if( error.id == "datetime"){
+                        $("#datetime").removeAttr('hidden')
+                        $("#datetime").html(error.message)
+                    }
+                })
+            } else {
+                window.location.href = "/";
+            }
+        })
+    }else if(TRANSACTION_CODE == "debit"){
+        let data = {
+            amount: $("#amount-debit").val(),
+            description: $("#des-debit").val(),
+            category: $("#category-debit").val(),
+            subcategory: $("#subCategory-debit").val(),
+            startDate: $("#start-date-debit").val(),
+            startTime: $("#start-time-debit").val(),
+            endDate: $("#end-date-debit").val(),
+            endTime: $("#end-time-debit").val(),
+            repeat: $("#repeat-debit").is(':checked'),
+            end: $("#ends-debit").is(':checked'),
+            count: $("#periodCount-debit").val(),
+            process: $("#periodProcess-debit").val(),
+            accountName: $("#accountName-debit").val()
+        }
+
+        fetch(`/editSchedule/debitEditSched/${schedule_edit_id}`,{
+            method: 'POST',
+            body: JSON.stringify( data )
+        })
+        .then(response => response.json())
+        .then( result => {
+
+            $("#amount-debit").removeClass("is-invalid")
+            $("#invalid-amount-debit").html("")
+            $("#des-debit").removeClass("is-invalid")
+            $("#invalid-des-debit").html("")
+            $("#category-debit").removeClass("is-invalid")
+            $("#invalid-cat-debit").html("")
+            $("#subCategory-debit").removeClass("is-invalid")
+            $("#invalid-sub-debit").html("")
+            $("#accountName-debit").removeClass("is-invalid")
+            $("#invalid-account-debit").html("")
+            
+            if(result.message == "error" ){
+                result.error.forEach(error =>{
+                    if( error.id == "amount"){
+                        $("#amount-debit").addClass("is-invalid")
+                        $("#amount-div-debit").addClass("is-invalid")
+                        $("#invalid-amount-debit").html(error.message)
+                    }
+                    if( error.id == "description"){
+                        $("#des-debit").addClass("is-invalid")
+                        $("#invalid-des-debit").html(error.message)
+                    }
+                    if( error.id == "category"){
+                        $("#category-debit").addClass("is-invalid")
+                        $("#invalid-cat-debit").html(error.message)
+                    }
+                    if( error.id == "subCategory"){
+                        $("#subCategory-debit").addClass("is-invalid")
+                        $("#invalid-sub-debit").html(error.message)
+                    }
+                    if( error.id == "accountName"){
+                        $("#accountName-debit").addClass("is-invalid")
+                        $("#invalid-account-debit").html(error.message)
+                    }
+                    if( error.id == "datetime"){
+                        $("#datetime").removeAttr('hidden')
+                        $("#datetime").html(error.message)
+                    }
+                })
+            } else {
+                window.location.href = "/";
+            }
+        })
+    }else if(TRANSACTION_CODE == "transfer"){
+        let data = {
+            amount: $("#amount-transfer").val(),
+            description: $("#des-transfer").val(),
+            startDate: $("#start-date-transfer").val(),
+            startTime: $("#start-time-transfer").val(),
+            endDate: $("#end-date-transfer").val(),
+            endTime: $("#end-time-transfer").val(),
+            repeat: $("#repeat-transfer").is(':checked'),
+            end: $("#ends-transfer").is(':checked'),
+            count: $("#periodCount-transfer").val(),
+            process: $("#periodProcess-transfer").val(),
+            accountNameFrom: $("#accountNameFrom").val(),
+            accountNameTo: $("#accountNameTo").val()
+        }
+
+        fetch(`/editSchedule/transferEditSched/${schedule_edit_id}`,{
+            method: 'POST',
+            body: JSON.stringify( data )
+        })
+        .then(response => response.json())
+        .then( result => {
+
+            $("#amount-transfer").removeClass("is-invalid")
+            $("#invalid-amount-transfer").html("")
+            $("#des-transfer").removeClass("is-invalid")
+            $("#invalid-des-transfer").html("")
+            $("#accountNameFrom").removeClass("is-invalid")
+            $("#invalid-account-transfer-from").html("")
+            $("#accountNameTo").removeClass("is-invalid")
+            $("#invalid-account-transfer-to").html("")
+            
+            if(result.message == "error" ){
+                result.error.forEach(error =>{
+                    if( error.id == "amount"){
+                        $("#amount-transfer").addClass("is-invalid")
+                        $("#amount-div-transfer").addClass("is-invalid")
+                        $("#invalid-amount-transfer").html(error.message)
+                    }
+                    if( error.id == "description"){
+                        $("#des-transfer").addClass("is-invalid")
+                        $("#invalid-des-transfer").html(error.message)
+                    }
+                    if( error.id == "accountNameFrom"){
+                        $("#accountNameFrom").addClass("is-invalid")
+                        $("#invalid-account-transfer-from").html(error.message)
+                    }
+                    if( error.id == "accountNameTo"){
+                        $("#accountNameTo").addClass("is-invalid")
+                        $("#invalid-account-transfer-to").html(error.message)
+                    }
+                    if( error.id == "datetime"){
+                        $("#datetime").removeAttr('hidden')
+                        $("#datetime").html(error.message)
                     }
                 })
             } else {
