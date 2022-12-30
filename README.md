@@ -47,7 +47,7 @@ Inside the bank account screen, click the transaction item, the dropdown will di
 
   - `budgetApp` - Main application directory.
     - `static` - Holds all static files.
-      - `css` - Contain all css files for styling the website.
+      - `style.css` - Contain all css files for styling the website.
       - `index.js` - Contains all JavaScript files for manipulating the DOM with ajax functionalities.
       - `logo.png` - Logo of the application.
     - `Templates` - Holds all html files.
@@ -56,7 +56,7 @@ Inside the bank account screen, click the transaction item, the dropdown will di
     - `views.py` - Contains all view functions for Account, Categories, Subcategories, Transaction, Budget, Schedule, Settings and Report (mentioned in `urls.py`).
 
 ## About this application
-Making an application that is different to previous web application project is very challenging. It takes a lot of time and effort to think of what application should i make. By thinking of what i need and a tool that can help me in my daily life, I came up to this application. Building from scratch is not an easy task. But while I'm building this application, endless ideas are coming up. What makes this application differ to previous project is that it is all about tracking your money by displaying it by progress bar and graphs. Because it is all about numbers, making it sure that the amount registered, edited and deleted transaction that should reflect to created Budget and graphs in report page is what makes this application complex. The amount should not be more or less to other screens and making sure it is properly reflected and has an equal amount. Building this application helps me to learn more and the complexity of this application is what i really enjoy. And this application is also full mobile responsive support.
+Making an application that is different to previous web application project is very challenging. It takes a lot of time and effort to think of what application should I make. By thinking of what I need and a tool that can help me in my daily life, I came up to this application. Building from scratch is not an easy task. But while I'm building this application, endless ideas are coming up. What makes this application differ to previous project is that it is all about tracking your money by displaying it by progress bar and graphs. Because it is all about numbers, making it sure that the amount registered, edited and deleted transaction that should reflect to created Budget and graphs in report page is what makes this application complex. The amount should not be more or less to other screens and making sure it is properly reflected and has an equal amount. Building this application helps me to learn more and the complexity of this application is what I really enjoy. And this application is also full mobile responsive support.
 
 ## How to run the application
 1. Clone the code: `git clone https://github.com/guintokylep/budgetApp.git`
