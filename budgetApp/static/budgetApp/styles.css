@@ -13,7 +13,7 @@ select,input{
   border: 1px solid #97cfa3 !important;
   color: #218838 !important;
 }
-label, i{
+label, .fs-4 i{
   color: #218838 !important;
 }
 .contents{
