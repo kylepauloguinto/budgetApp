@@ -1476,6 +1476,7 @@ def budget(request):
 
 def budgetDisplay(request):
 
+    scheduleAutoProcess(request)
     budgets = Budget.objects.filter(userBudget=request.user)
     
     for budget in budgets:
@@ -1819,6 +1820,7 @@ def expensesIncome(request):
 @login_required
 def expensesIncomeDisplay(request):
 
+    scheduleAutoProcess(request)
     data = json.loads(request.body)
     expenses = []
     income = []
@@ -2077,6 +2079,7 @@ def editSchedule(request, id):
 
 def scheduleDisplay(request):
 
+    scheduleAutoProcess(request)
     schedules = Schedule.objects.filter(userSchedule=request.user
                                         ,endedSchedule=False)
     
