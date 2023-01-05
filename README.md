@@ -63,5 +63,8 @@ Making an application that is different to previous web application project is v
 2. Install project dependencies by running `pip install --user django`
 3. Run command prompt in the folder and run `python manage.py makemigrations` and `python manage.py migrate`.
 4. Once installed run command `python manage.py runserver`
-5. In your browser go to `localhost:80000`
+5. In your browser go to `localhost:8000`
 6. You are ready to go!
+
+## Check out my youtube video below
+https://youtu.be/ElZNfXcRVPw
