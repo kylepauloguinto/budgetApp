@@ -257,3 +257,7 @@ ul li {
   top: -8px !important;
   right: -8px !important;
 }
+
+.lang {
+  justify-content: space-between;
+}

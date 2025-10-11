@@ -95,6 +95,7 @@
     ></script>
     {% block head %} {% endblock %}
     <script src="{% static 'budgetApp/index.js' %}"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <link rel="icon" type="image/png" href="/static/budgetApp/logo.png" />
     <link rel="apple-touch-icon" href="/static/budgetApp/logo.png" />
   </head>
@@ -213,4 +214,85 @@
       </div>
     </div>
   </body>
+  <!-- The Modal -->
+  <div class="modal fade" id="autoModal" role="dialog">
+    <div
+      class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable"
+    >
+      <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header lang">
+          <div>
+            <h5 class="font-color eng">⚠️ Important Notice</h5>
+            <h5 class="font-color jap">⚠️ 重要なお知らせ</h5>
+          </div>
+          <div>
+            <button
+              type="button"
+              class="btn btn-success"
+              data-toggle="button"
+              aria-pressed="false"
+              autocomplete="off"
+              id="lang"
+            >
+              日本語版
+            </button>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+        </div>
+
+        <!-- Modal body -->
+        <div class="modal-body">
+          <p class="eng">
+            This project is intended solely for
+            <strong>educational purposes and personal use</strong>. It
+            demonstrates coding techniques and project development concepts.
+            Please note that it’s
+            <strong>not meant for commercial use</strong> or distribution. Use
+            it responsibly and acknowledge any external resources or references
+            where applicable. To check how this project works, please click the
+            youtube video link :
+            <a href="https://youtu.be/ElZNfXcRVPw" target="_blank"
+              >https://youtu.be/ElZNfXcRVPw</a
+            >
+          </p>
+
+          <p class="jap">
+            このプロジェクトは、
+            <strong>教育目的および個人使用</strong>のみを目的としています。
+            コーディング技術とプロジェクト開発の概念を示すものです。
+            <strong>商用利用</strong
+            >または配布を目的としたものではありませんのでご注意ください。
+            責任を持ってご使用ください。また、外部リソースや参考資料がある場合は、必ず明記してください。
+            このプロジェクトの仕組みを確認するには、
+            YouTube動画リンクをクリックしてください。
+            <a href="https://youtu.be/ElZNfXcRVPw" target="_blank"
+              >https://youtu.be/ElZNfXcRVPw</a
+            >
+          </p>
+        </div>
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-close-modal btn-danger eng"
+            data-bs-dismiss="modal"
+          >
+            Close
+          </button>
+          <button
+            type="button"
+            class="btn btn-close-modal btn-danger jap"
+            data-bs-dismiss="modal"
+          >
+            閉じる
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </html>
