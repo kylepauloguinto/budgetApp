@@ -266,3 +266,8 @@ ul li {
   text-align: center;
   color: rgb(20, 133, 5);
 }
+
+.creator {
+  color: rgb(20, 133, 5);
+  text-decoration: underline;
+}
