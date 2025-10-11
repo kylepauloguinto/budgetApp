@@ -261,3 +261,8 @@ ul li {
 .lang {
   justify-content: space-between;
 }
+
+.footer {
+  text-align: center;
+  color: rgb(20, 133, 5);
+}
