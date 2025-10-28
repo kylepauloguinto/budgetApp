@@ -63,6 +63,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'budgetApp.context_processors.static_version',
             ],
         },
     },
@@ -124,11 +125,13 @@ STATIC_URL = '/static/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Optional: if you have additional static folders
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'budgetApp/static'),
-]
+# # Optional: if you have additional static folders
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'budgetApp/static'),
+# ]
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+STATIC_VERSION = '1.0.0'
