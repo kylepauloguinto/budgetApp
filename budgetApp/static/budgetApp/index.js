@@ -31,6 +31,18 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  if (window.location.pathname.endsWith("/login")) {
+    const form = document.getElementById("login-form");
+    const loader = document.getElementById("loader");
+    const button = form.querySelector("button");
+
+    form.addEventListener("submit", () => {
+      // show loader
+      loader.style.display = "flex";
+      button.disabled = true;
+    });
+  }
+
   // category credit pulldown changed in add and edit transaction
   $("#category").change(function () {
     let parentValue = this.value;
