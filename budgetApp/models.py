@@ -127,6 +127,14 @@ class Budget(models.Model):
         }
 
 class Schedule(models.Model):
+    RECURRENCE_CHOICES = [
+        ("none", "None"),
+        ("daily", "Daily"),
+        ("weekly", "Weekly"),
+        ("monthly", "Monthly"),
+        ("yearly", "Yearly"),
+    ]
+
     userSchedule = models.ForeignKey(User, on_delete=models.CASCADE, related_name="userSchedule")
     accountNameSchedule = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="accountNameSchedule")
     accountNameScheduleTransferFrom = models.ForeignKey(Account, on_delete=models.CASCADE, blank=True, null=True, related_name="accountNameScheduleTransferFrom")
@@ -149,6 +157,11 @@ class Schedule(models.Model):
     repeatSchedule = models.BooleanField(default=False)
     periodCountSchedule = models.IntegerField(blank=True, null=True)
     periodProcessSchedule = models.IntegerField(blank=True, null=True)
+    recurrence = models.CharField(
+        max_length=20,
+        choices=RECURRENCE_CHOICES,
+        default="none"
+    )
     ins_date = models.DateTimeField(auto_now_add=True, blank=True)
 
     def serialize(self):

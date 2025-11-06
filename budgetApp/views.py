@@ -15,6 +15,7 @@ from datetime import  date, datetime, timedelta
 import calendar
 
 from .models import User, Categories, SubCategories, Account, Transaction, Budget, Schedule, Report
+from .utils import predict_future_income
 
 all_account = 0 # All account ID
 
@@ -1803,7 +1804,7 @@ def expensesIncome(request):
     categories = Categories.objects.filter(userCategory=request.user).order_by("category")
     subCategories = SubCategories.objects.filter(userSubCategory=request.user).order_by("subCategory")
     years = []
-    for count in range(1000,5001):
+    for count in range(1000,3051):
         years.append(count)
 
     currentDate = datetime.now()
@@ -1815,6 +1816,43 @@ def expensesIncome(request):
         "years": years,
         "currentYear": currentDate.year,
     })
+
+# Display predictions report
+def predictions(request):
+
+    # Dropdown account, categories and subcategories data
+    accounts = Account.objects.filter(userAccount=request.user).order_by("id")
+    categories = Categories.objects.filter(userCategory=request.user).order_by("category")
+    subCategories = SubCategories.objects.filter(userSubCategory=request.user).order_by("subCategory")
+    years = []
+    for count in range(timezone.now().year,timezone.now().year + 100):
+        years.append(count)
+
+    currentDate = datetime.now()
+
+    return render(request, "budgetApp/predictions.html",{
+        "accounts" : accounts,
+        "years": years,
+        "currentYear": currentDate.year,
+    })
+
+@csrf_exempt
+@login_required
+def predictionsDisplay(request):
+
+    data = json.loads(request.body)
+    year = data.get("year")
+    accountName = data.get("accountName")
+    category = data.get("category")
+    subCategory = data.get("subcategory")
+    data = predict_future_income(request.user,accountName, int(year))
+    response = {
+        "labels": [d["date"] for d in data],
+        "values": [d["predicted_total"] for d in data]
+    }
+    
+    return JsonResponse(response, status=200)
+
 
 @csrf_exempt
 @login_required
@@ -2145,6 +2183,19 @@ def creditAddSched(request):
     credit.nextScheduleDateText = countdown(transactionDate)
     credit.periodCountSchedule = data["count"]
     credit.periodProcessSchedule = data["process"]
+
+    if not credit.repeatSchedule:
+        credit.recurrence = "once"
+    elif credit.periodProcessSchedule == "1":
+        credit.recurrence = "daily"
+    elif credit.periodProcessSchedule == "2":
+        credit.recurrence = "weekly"
+    elif credit.periodProcessSchedule == "3":
+        credit.recurrence = "monthly"
+    elif credit.periodProcessSchedule == "4":
+        credit.recurrence = "yearly"
+        
+
     credit.save()
 
     return JsonResponse({"message": "success"}, status=200)
@@ -2208,6 +2259,18 @@ def creditEditSched(request, id):
     credit.nextScheduleDateText = countdown(transactionDate)
     credit.periodCountSchedule = data["count"]
     credit.periodProcessSchedule = data["process"]
+
+    if not credit.repeatSchedule:
+        credit.recurrence = "once"
+    elif credit.periodProcessSchedule == "1":
+        credit.recurrence = "daily"
+    elif credit.periodProcessSchedule == "2":
+        credit.recurrence = "weekly"
+    elif credit.periodProcessSchedule == "3":
+        credit.recurrence = "monthly"
+    elif credit.periodProcessSchedule == "4":
+        credit.recurrence = "yearly"
+
     credit.save()
 
     return JsonResponse({"message": "success"}, status=200)
@@ -2271,6 +2334,18 @@ def debitAddSched(request):
     debit.nextScheduleDateText = countdown(transactionDate)
     debit.periodCountSchedule = data["count"]
     debit.periodProcessSchedule = data["process"]
+
+    if not debit.repeatSchedule:
+        debit.recurrence = "once"
+    elif debit.periodProcessSchedule == "1":
+        debit.recurrence = "daily"
+    elif debit.periodProcessSchedule == "2":
+        debit.recurrence = "weekly"
+    elif debit.periodProcessSchedule == "3":
+        debit.recurrence = "monthly"
+    elif debit.periodProcessSchedule == "4":
+        debit.recurrence = "yearly"
+        
     debit.save()
 
     return JsonResponse({"message": "success"}, status=200)
@@ -2334,6 +2409,18 @@ def debitEditSched(request, id):
     debit.nextScheduleDateText = countdown(transactionDate)
     debit.periodCountSchedule = data["count"]
     debit.periodProcessSchedule = data["process"]
+
+    if not debit.repeatSchedule:
+        debit.recurrence = "once"
+    elif debit.periodProcessSchedule == "1":
+        debit.recurrence = "daily"
+    elif debit.periodProcessSchedule == "2":
+        debit.recurrence = "weekly"
+    elif debit.periodProcessSchedule == "3":
+        debit.recurrence = "monthly"
+    elif debit.periodProcessSchedule == "4":
+        debit.recurrence = "yearly"
+        
     debit.save()
 
     return JsonResponse({"message": "success"}, status=200)
@@ -2389,6 +2476,18 @@ def transferAddSched(request):
     transfer.nextScheduleDateText = countdown(transactionDate)
     transfer.periodCountSchedule = data["count"]
     transfer.periodProcessSchedule = data["process"]
+
+    if not transfer.repeatSchedule:
+        transfer.recurrence = "once"
+    elif transfer.periodProcessSchedule == "1":
+        transfer.recurrence = "daily"
+    elif transfer.periodProcessSchedule == "2":
+        transfer.recurrence = "weekly"
+    elif transfer.periodProcessSchedule == "3":
+        transfer.recurrence = "monthly"
+    elif transfer.periodProcessSchedule == "4":
+        transfer.recurrence = "yearly"
+        
     transfer.save()
 
     return JsonResponse({"message": "success"}, status=200)
@@ -2444,6 +2543,18 @@ def transferEditSched(request, id):
     transfer.nextScheduleDateText = countdown(transactionDate)
     transfer.periodCountSchedule = data["count"]
     transfer.periodProcessSchedule = data["process"]
+
+    if not transfer.repeatSchedule:
+        transfer.recurrence = "once"
+    elif transfer.periodProcessSchedule == "1":
+        transfer.recurrence = "daily"
+    elif transfer.periodProcessSchedule == "2":
+        transfer.recurrence = "weekly"
+    elif transfer.periodProcessSchedule == "3":
+        transfer.recurrence = "monthly"
+    elif transfer.periodProcessSchedule == "4":
+        transfer.recurrence = "yearly"
+        
     transfer.save()
 
     return JsonResponse({"message": "success"}, status=200)

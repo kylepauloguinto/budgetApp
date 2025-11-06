@@ -46,6 +46,9 @@ urlpatterns = [
     path("expensesIncome/expensesIncomeDetail", views.expensesIncomeDetail, name="expensesIncomeDetail"),
     path("accountReport", views.expensesIncome, name="accountReport"),
     path("accountReport/accountReportDisplay", views.expensesIncomeDisplay, name="accountReportDisplay"),
+    path("predictions", views.predictions, name="predictions"),
+    path("predictions/predictionsDisplay", views.predictionsDisplay, name="predictionsDisplay"),
+    path("predictions/predictionsDetail", views.expensesIncomeDetail, name="predictionsDetail"),
 
     #schedule
     path("schedule", views.schedule, name="schedule"),
