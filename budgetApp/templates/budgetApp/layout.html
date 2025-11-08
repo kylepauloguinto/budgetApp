@@ -14,12 +14,15 @@
       integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
       crossorigin="anonymous"
     />
-    <link href="{% static 'budgetApp/styles.css' %}?v={{ STATIC_VERSION }}" rel="stylesheet" />
+    <link
+      href="{% static 'budgetApp/styles.css' %}?v={{ STATIC_VERSION }}"
+      rel="stylesheet"
+    />
     <meta
       name="google-site-verification"
       content="Il39a9zL6khy7yjKA-YTbowqXJElrVe-3Ol8ztkWw3E"
     />
-    <meta name="version" content="1.1.0">
+    <meta name="version" content="1.1.1" />
     <meta name="description" content="" />
     <meta name="keywords" content="" />
     <meta charset="utf-8" />
@@ -110,14 +113,15 @@
       type="image/png"
       href="{% static 'budgetApp/logo.png' %}"
     />
-    <link rel="apple-touch-icon" href="{% static 'budgetApp/logo.png' %}" />
+    <link
+      rel="apple-touch-icon"
+      href="{% static 'budgetApp/logo-mobile-app.png' %}?v={{ STATIC_VERSION }}"
+    />
   </head>
   <body>
     {% if user.is_authenticated %}
     <nav class="navbar navbar-expand-lg navbar-light">
-      <a class="navbar-brand mr-auto" href="{% url 'index' %}"
-        >SpendWise</a
-      >
+      <a class="navbar-brand mr-auto" href="{% url 'index' %}">SpendWise</a>
       <div class="fs-4">
         <i class="bi bi-person-circle"></i>
         <a class="navbar-brand" href="{% url 'index' %}">{{ user.username }}</a>
@@ -310,7 +314,7 @@
   </div>
 
   <!-- Loader -->
-    <div class="loader-overlay" id="loader">
-      <div class="loader" ></div>
-    </div>
+  <div class="loader-overlay" id="loader">
+    <div class="loader"></div>
+  </div>
 </html>
