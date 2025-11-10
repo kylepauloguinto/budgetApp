@@ -42,7 +42,6 @@
       content="black-translucent"
     />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="SpendWise" />
     <meta name="theme-color" content="#dbfadb" />
     <!-- CSS only -->
@@ -134,7 +133,7 @@
       href="{% static 'budgetApp/icons/icon-512x512.png' %}?v={{ STATIC_VERSION }}"
     />
   </head>
-  <body>
+  <body class="safe-area">
     {% if user.is_authenticated %}
     <nav class="navbar navbar-expand-lg navbar-light">
       <a class="navbar-brand mr-auto" href="{% url 'index' %}">SpendWise</a>
