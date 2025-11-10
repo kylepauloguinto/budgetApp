@@ -134,4 +134,4 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-STATIC_VERSION = '1.1.2'
+STATIC_VERSION = '1.1.3'
