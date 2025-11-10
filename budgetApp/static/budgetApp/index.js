@@ -7,6 +7,12 @@ let schedule_edit_id = "";
 let myChart = null;
 
 document.addEventListener("DOMContentLoaded", function () {
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker
+      .register("/service-worker.js")
+      .then((reg) => console.log("Service Worker registered", reg))
+      .catch((err) => console.log("Service Worker error", err));
+  }
   url = window.location.href;
   path = url.split("/")[3];
   id = url.split("/")[4];

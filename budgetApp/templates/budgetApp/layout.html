@@ -18,11 +18,15 @@
       href="{% static 'budgetApp/styles.css' %}?v={{ STATIC_VERSION }}"
       rel="stylesheet"
     />
+    <link
+      href="{% static 'budgetApp/manifest.json' %}?v={{ STATIC_VERSION }}"
+      rel="manifest"
+    />
     <meta
       name="google-site-verification"
       content="Il39a9zL6khy7yjKA-YTbowqXJElrVe-3Ol8ztkWw3E"
     />
-    <meta name="version" content="1.1.1" />
+    <meta name="version" content="1.1.2" />
     <meta name="description" content="" />
     <meta name="keywords" content="" />
     <meta charset="utf-8" />
@@ -32,13 +36,15 @@
       content="width=device-width, initial-scale=1, shrink-to-fit=no"
     />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <!-- iOS home screen -->
     <meta
       name="apple-mobile-web-app-status-bar-style"
       content="black-translucent"
     />
-    <meta name="theme-color" content="#dbfadb" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="SpendWise" />
+    <meta name="theme-color" content="#dbfadb" />
     <!-- CSS only -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css"
@@ -111,11 +117,21 @@
     <link
       rel="icon"
       type="image/png"
-      href="{% static 'budgetApp/logo.png' %}?v={{ STATIC_VERSION }}"
+      href="{% static 'budgetApp/logo/logo.png' %}?v={{ STATIC_VERSION }}"
     />
     <link
       rel="apple-touch-icon"
-      href="{% static 'budgetApp/logo-mobile-app.png' %}?v={{ STATIC_VERSION }}"
+      href="{% static 'budgetApp/icons/icon-192x192.png' %}?v={{ STATIC_VERSION }}"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="192x192"
+      href="{% static 'budgetApp/icons/icon-192x192.png' %}?v={{ STATIC_VERSION }}"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="192x192"
+      href="{% static 'budgetApp/icons/icon-512x512.png' %}?v={{ STATIC_VERSION }}"
     />
   </head>
   <body>
