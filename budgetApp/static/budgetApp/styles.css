@@ -1,3 +1,9 @@
+@media all and (display-mode: standalone) {
+  body {
+    background-color: #dbfadb;
+    margin-top: 0;
+  }
+}
 body {
   background-color: #e9f8e9 !important;
 }
@@ -275,8 +281,10 @@ ul li {
 /* Loader overlay */
 .loader-overlay {
   position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: rgba(255, 255, 255, 0.7);
   display: flex;
   justify-content: center;
@@ -291,7 +299,7 @@ ul li {
 }
 
 .loader:after {
-  content: '¥';
+  content: "¥";
   display: inline-block;
   width: 48px;
   height: 48px;
@@ -300,16 +308,17 @@ ul li {
   line-height: 40px;
   font-size: 32px;
   font-weight: bold;
-  background: #FFD700;
-  color: #DAA520;
+  background: #ffd700;
+  color: #daa520;
   border: 4px double;
   box-sizing: border-box;
-  box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, .1);
+  box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.1);
   animation: coin-flip 4s cubic-bezier(0, 0.2, 0.8, 1) infinite;
 }
 
 @keyframes coin-flip {
-  0%, 100% {
+  0%,
+  100% {
     animation-timing-function: cubic-bezier(0.5, 0, 1, 0.5);
   }
 
